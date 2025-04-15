@@ -3,157 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gesture Recognition</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <title>SignSpeak - Modern Sign Language Learning</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
         }
 
         header {
-            background-color: #4CAF50;
-            color: white;
+            background-color: white;
             padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 2rem;
         }
 
         header h1 {
-            margin: 0;
-            font-size: 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
         }
 
         nav {
             display: flex;
-            gap: 1rem;
+            gap: 2rem;
         }
 
         nav a {
-            color: white;
+            color: var(--text-color);
             text-decoration: none;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: color 0.3s;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
         }
 
         nav a:hover {
-            color: #d4f4d4;
+            background-color: var(--primary-color);
+            color: white;
         }
 
         main {
-            text-align: center;
+            margin-top: 6rem;
             padding: 2rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        main h2 {
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 3rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .hero h2 {
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
         }
 
-        main p {
+        .hero p {
             font-size: 1.2rem;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .warning {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            margin-top: 1rem;
         }
 
         .features {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 2rem;
-            margin-top: 2rem;
+            margin-top: 3rem;
         }
 
         .feature {
-            background-color: white;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            width: 250px;
-            transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .feature:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
         }
 
         .feature h3 {
+            color: var(--primary-color);
             font-size: 1.5rem;
             margin-bottom: 1rem;
+            font-weight: 600;
         }
 
         .feature p {
+            color: #64748b;
             font-size: 1rem;
-            color: #666;
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background-color: #dbeafe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
         }
 
         footer {
-            margin-top: 2rem;
-            font-size: 0.9rem;
-            color: #666;
+            background-color: white;
+            padding: 2rem;
             text-align: center;
-            padding: 1rem;
-            background-color: #f4f4f9;
+            margin-top: 4rem;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        footer p {
+            color: #64748b;
         }
 
         footer a {
-            color: #4CAF50;
+            color: var(--primary-color);
             text-decoration: none;
+            font-weight: 500;
         }
 
         footer a:hover {
             text-decoration: underline;
         }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero {
+                padding: 2rem 1rem;
+            }
+
+            .hero h2 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>SignSpeak</h1>
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="text_to_sign.html">Text to Sign</a>
-            <a href="image_to_sign.html">Image to Sign</a>
-            <a href="webcam.html">Webcam</a>
-            <a href="alphabet.html">Learn Alphabet</a>
-        </nav>
+        <div class="header-content">
+            <h1>SignSpeak</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="text_to_sign.html">Text to Sign</a>
+                <a href="image_to_sign.html">Image to Sign</a>
+                <a href="webcam.html">Webcam</a>
+                <a href="alphabet.html">Learn Alphabet</a>
+            </nav>
+        </div>
     </header>
     <main>
-        <h2>Welcome to the Future of Communication</h2>
-        <p>
-            Our platform is revolutionizing the way we communicate with deaf and mute individuals. By leveraging cutting-edge gesture recognition technology, we aim to bridge the communication gap and foster inclusivity.
-        </p>
-        <p style="color: red; font-weight: bold;">Note: This is a prototype. Use with caution.</p>
+        <section class="hero">
+            <h2>Breaking Barriers in Communication</h2>
+            <p>
+                Experience the future of sign language communication. Our platform leverages cutting-edge AI technology
+                to bridge the gap between spoken and sign language, making communication more accessible for everyone.
+            </p>
+            <div class="warning">Note: This is a prototype. Features are in beta testing.</div>
+        </section>
         <div class="features">
             <a href="text_to_sign.html" class="feature">
+                <div class="feature-icon">📝</div>
                 <h3>Text to Sign</h3>
-                <p>Convert text into sign language animations to communicate effectively.</p>
+                <p>Convert written text into sign language animations with precision and clarity.</p>
             </a>
             <a href="image_to_sign.html" class="feature">
+                <div class="feature-icon">📸</div>
                 <h3>Image to Sign</h3>
-                <p>Upload images and interpret gestures with precision and accuracy.</p>
+                <p>Upload and analyze images to interpret sign language gestures accurately.</p>
             </a>
             <a href="webcam.html" class="feature">
-                <h3>Webcam</h3>
-                <p>Experience real-time gesture recognition through your webcam.</p>
+                <div class="feature-icon">📹</div>
+                <h3>Real-time Recognition</h3>
+                <p>Experience instant sign language detection through your webcam.</p>
             </a>
             <a href="alphabet.html" class="feature">
-                <h3>Learn Alphabet</h3>
-                <p>Master the ASL alphabet with our interactive learning guide.</p>
+                <div class="feature-icon">🔤</div>
+                <h3>Learn ASL Alphabet</h3>
+                <p>Master the ASL alphabet with our interactive learning tools.</p>
             </a>
         </div>
     </main>
     <footer>
-        <p>Developed as part of the Capstone Project | <a href="#">Learn More</a></p>
+        <p>Developed with ❤️ as part of the Capstone Project | <a href="#">Learn More</a></p>
     </footer>
 </body>
 </html>

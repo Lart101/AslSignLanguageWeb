@@ -3,175 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to Sign</title>
-    <link rel="stylesheet" href="/static/styles.css">
-    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <title>Image to Sign - SignSpeak</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
-            background-color: #4CAF50;
-            color: white;
+            background-color: white;
             padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 2rem;
         }
 
         header h1 {
-            margin: 0;
-            font-size: 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
         }
 
         nav {
             display: flex;
-            gap: 1rem;
+            gap: 2rem;
         }
 
         nav a {
-            color: white;
+            color: var(--text-color);
             text-decoration: none;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: color 0.3s;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
         }
 
         nav a:hover {
-            color: #d4f4d4;
+            background-color: var(--primary-color);
+            color: white;
         }
 
         main {
-            text-align: center;
+            margin-top: 6rem;
             padding: 2rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            flex: 1;
         }
 
-        main h2 {
-            font-size: 2.5rem;
+        .content-section {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .content-section h2 {
+            color: var(--primary-color);
+            font-size: 2rem;
             margin-bottom: 1rem;
+            text-align: center;
         }
 
-        main p {
-            font-size: 1.2rem;
-            line-height: 1.6;
+        .content-section p {
+            color: #64748b;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .warning {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            margin: 1rem auto;
+            display: block;
+            width: fit-content;
+        }
+
+        #upload-form {
             max-width: 800px;
             margin: 0 auto;
+            text-align: center;
         }
 
-        .features {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 2rem;
+        .file-input-container {
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .file-input-label:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        #upload-result {
             margin-top: 2rem;
         }
 
-        .feature {
-            background-color: white;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            text-align: center;
-            width: 250px;
-            transition: transform 0.3s, box-shadow 0.3s;
+        .output_canvas {
+            max-width: 100%;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .feature:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        .output {
+            background-color: rgba(0, 127, 139, 0.9);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+            font-weight: 500;
         }
 
-        .feature h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature p {
-            font-size: 1rem;
-            color: #666;
+        #loading-indicator {
+            padding: 1rem;
+            color: var(--primary-color);
+            font-weight: 500;
         }
 
         footer {
-            margin-top: 2rem;
-            font-size: 0.9rem;
-            color: #666;
+            background-color: white;
+            padding: 2rem;
             text-align: center;
-            padding: 1rem;
-            background-color: #f4f4f9;
+            margin-top: auto;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        footer p {
+            color: #64748b;
         }
 
         footer a {
-            color: #4CAF50;
+            color: var(--primary-color);
             text-decoration: none;
+            font-weight: 500;
         }
 
         footer a:hover {
             text-decoration: underline;
         }
 
-        #result-image {
-            display: none;
-            max-width: 100%;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            margin: 0 auto;
-        }
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
 
-        .output_canvas {
-            max-width: 100%;
-            border: 2px solid #4CAF50;
-            border-radius: 4px;
-            margin-top: 20px;
-        }
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
 
-        .output {
-            width: 100%;
-            font-size: calc(8px + 1.2vw);
-            margin-top: 10px;
-            padding: 10px;
-            background-color: rgba(0, 127, 139, 0.8);
-            color: white;
-            border-radius: 4px;
+            main {
+                padding: 1rem;
+            }
+
+            .content-section {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>SignSpeak</h1>
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="text_to_sign.html">Text to Sign</a>
-            <a href="image_to_sign.html">Image to Sign</a>
-            <a href="webcam.html">Webcam</a>
-        </nav>
+        <div class="header-content">
+            <h1>SignSpeak</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="text_to_sign.html">Text to Sign</a>
+                <a href="image_to_sign.html">Image to Sign</a>
+                <a href="webcam.html">Webcam</a>
+                <a href="alphabet.html">Learn Alphabet</a>
+            </nav>
+        </div>
     </header>
     <main>
-        <h2>Image to Sign</h2>
-        <p>Upload an image to convert it into sign language:</p>
-        <p style="color: red; font-weight: bold;">Note: This is a prototype. Use with caution.</p>
-        <form id="upload-form">
-            <input type="file" id="image-upload" accept="image/*" required>
-            <br>
-            <button type="submit">Upload</button>
-        </form>
-        <div id="upload-result" style="margin-top: 20px;">
-            <div id="loading-indicator" style="display: none;">Processing...</div>
-            <img id="result-image" style="display: none; max-width: 100%; border: 2px solid #ddd; border-radius: 8px;">
+        <section class="content-section">
+            <h2>Image to Sign Recognition</h2>
+            <p>Upload an image containing sign language gestures, and our AI will analyze and interpret the signs for you.</p>
+            <div class="warning">Note: This is a prototype. Features are in beta testing.</div>
+            <form id="upload-form">
+                <div class="file-input-container">
+                    <label for="image-upload" class="file-input-label">
+                        Choose Image
+                    </label>
+                    <input type="file" id="image-upload" accept="image/*" required>
+                </div>
+                <button type="submit">Analyze Sign Language</button>
+            </form>
+        </section>
+        <div id="upload-result">
+            <div id="loading-indicator" style="display: none;">
+                <div class="loading-text">Processing your image...</div>
+            </div>
             <canvas id="output_canvas" class="output_canvas" width="640" height="480"></canvas>
             <p id="gesture_output" class="output"></p>
             <p id="upload-text"></p>
         </div>
     </main>
     <footer>
-        <p>Developed as part of the Capstone Project | <a href="#">Learn More</a></p>
+        <p>Developed with ❤️ as part of the Capstone Project | <a href="#">Learn More</a></p>
     </footer>
     <script type="module">
         import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";

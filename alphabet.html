@@ -4,112 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn ASL Alphabet - SignSpeak</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
         }
 
         header {
-            background-color: #4CAF50;
-            color: white;
+            background-color: white;
             padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 2rem;
         }
 
         header h1 {
-            margin: 0;
-            font-size: 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
         }
 
         nav {
             display: flex;
-            gap: 1rem;
+            gap: 2rem;
         }
 
         nav a {
-            color: white;
+            color: var(--text-color);
             text-decoration: none;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: color 0.3s;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
         }
 
         nav a:hover {
-            color: #d4f4d4;
+            background-color: var(--primary-color);
+            color: white;
         }
 
         main {
+            margin-top: 5rem;
             padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .alphabet-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            padding: 2rem 0;
-        }
-
-        .letter-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-            scroll-margin-top: 100px;
-        }
-
-        .letter-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .letter {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-
-        .sign-image {
-            width: 150px;
-            height: 150px;
-            margin: 1rem auto;
-            background-color: #f8f8f8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
         }
 
         .instructions {
-            background-color: white;
+            background: white;
             padding: 2rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto 2rem;
         }
 
-        footer {
-            text-align: center;
-            padding: 1rem;
-            background-color: #f4f4f9;
-            margin-top: 2rem;
+        .instructions h2 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .instructions p {
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .practice-container {
             display: flex;
-            flex-direction: row;
             gap: 2rem;
-            max-width: 1200px;
-            margin: 2rem auto;
+            max-width: 1400px;
+            margin: 0 auto;
             position: relative;
         }
 
@@ -118,6 +113,21 @@
             max-height: 80vh;
             overflow-y: auto;
             padding-right: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--background-color);
+        }
+
+        .alphabet-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .alphabet-section::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        .alphabet-section::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 20px;
         }
 
         .quick-alphabet {
@@ -125,12 +135,12 @@
             top: 0;
             background: white;
             padding: 1rem;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 1rem;
             z-index: 10;
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
             gap: 0.5rem;
         }
 
@@ -140,46 +150,111 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #4CAF50;
+            background: var(--primary-color);
             color: white;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             text-decoration: none;
-            transition: transform 0.2s, background-color 0.2s;
+            transition: var(--transition);
         }
 
         .letter-quick-link:hover {
             transform: translateY(-2px);
-            background: #45a049;
+            background: var(--secondary-color);
+        }
+
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem 0;
+        }
+
+        .letter-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: var(--transition);
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .letter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .letter-card.selected {
+            border: 3px solid var(--primary-color);
+            transform: translateY(-5px);
+        }
+
+        .letter {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .sign-image {
+            width: 150px;
+            height: 150px;
+            margin: 1rem auto;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .sign-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+        }
+
+        .letter-card p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 1rem;
         }
 
         .webcam-section {
             position: sticky;
-            top: 2rem;
-            height: fit-content;
-            flex: 1;
-            padding: 1rem;
+            top: 7rem;
+            width: 400px;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .webcam-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .webcam-section p {
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 1rem;
         }
 
         .video-container {
             position: relative;
             width: 100%;
-            max-width: 480px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
             margin-bottom: 1rem;
         }
 
         #webcam {
             width: 100%;
             transform: rotateY(180deg);
-            -webkit-transform: rotateY(180deg);
-            -moz-transform: rotateY(180deg);
+            background-color: #f1f5f9;
+            border-radius: var(--border-radius);
         }
 
         .output_canvas {
@@ -189,59 +264,115 @@
             width: 100%;
             height: 100%;
             transform: rotateY(180deg);
-            -webkit-transform: rotateY(180deg);
-            -moz-transform: rotateY(180deg);
         }
 
         .output {
-            width: 100%;
-            font-size: calc(8px + 1.2vw);
-            margin-top: 10px;
-            padding: 10px;
-            background-color: rgba(0, 127, 139, 0.8);
+            background-color: rgba(0, 127, 139, 0.9);
             color: white;
-            border-radius: 4px;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+            font-weight: 500;
         }
 
         .control-btn {
-            padding: 10px 20px;
-            margin: 10px 0;
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 4px;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-            z-index: 100;
-            position: relative;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 1rem;
         }
 
         .control-btn:hover {
-            background-color: #45a049;
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
         }
 
-        .selected {
-            border: 3px solid #4CAF50;
-            transform: translateY(-5px);
+        footer {
+            background-color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+        }
+
+        footer p {
+            color: #64748b;
+        }
+
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1024px) {
+            .practice-container {
+                flex-direction: column;
+            }
+
+            .webcam-section {
+                position: relative;
+                width: 100%;
+                top: 0;
+                margin-bottom: 2rem;
+            }
+
+            .alphabet-section {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .quick-alphabet {
+                grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+            }
+
+            .letter-quick-link {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>SignSpeak</h1>
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="text_to_sign.html">Text to Sign</a>
-            <a href="image_to_sign.html">Image to Sign</a>
-            <a href="webcam.html">Webcam</a>
-            <a href="alphabet.html">Learn Alphabet</a>
-        </nav>
+        <div class="header-content">
+            <h1>SignSpeak</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="text_to_sign.html">Text to Sign</a>
+                <a href="image_to_sign.html">Image to Sign</a>
+                <a href="webcam.html">Webcam</a>
+                <a href="alphabet.html">Learn Alphabet</a>
+            </nav>
+        </div>
     </header>
     <main>
         <div class="instructions">
-            <h2>American Sign Language Alphabet</h2>
-            <p>Learn the basic ASL alphabet with our interactive guide. Click on a letter to practice, and use your webcam to get real-time feedback on your signing.</p>
+            <h2>Learn American Sign Language Alphabet</h2>
+            <p>Click on any letter to practice and use your webcam to get real-time feedback on your signing. 
+               Our AI will help you perfect your hand signs.</p>
         </div>
         <div class="practice-container">
             <div class="alphabet-section">
@@ -471,7 +602,7 @@
         </div>
     </main>
     <footer>
-        <p>Developed as part of the Capstone Project | <a href="#">Learn More</a></p>
+        <p>Developed with ❤️ as part of the Capstone Project | <a href="#">Learn More</a></p>
     </footer>
     <script type="module">
         import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
