@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Sign</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #d4f4d4;
+        }
+
+        main {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        main h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        main p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature {
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            text-align: center;
+            width: 250px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature p {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        footer {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            padding: 1rem;
+            background-color: #f4f4f9;
+        }
+
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        #result-image {
+            display: none;
+            max-width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+
+        .output_canvas {
+            max-width: 100%;
+            border: 2px solid #4CAF50;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .output {
+            width: 100%;
+            font-size: calc(8px + 1.2vw);
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(0, 127, 139, 0.8);
+            color: white;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SignSpeak</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="text_to_sign.html">Text to Sign</a>
+            <a href="image_to_sign.html">Image to Sign</a>
+            <a href="webcam.html">Webcam</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Image to Sign</h2>
+        <p>Upload an image to convert it into sign language:</p>
+        <p style="color: red; font-weight: bold;">Note: This is a prototype. Use with caution.</p>
+        <form id="upload-form">
+            <input type="file" id="image-upload" accept="image/*" required>
+            <br>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="upload-result" style="margin-top: 20px;">
+            <div id="loading-indicator" style="display: none;">Processing...</div>
+            <img id="result-image" style="display: none; max-width: 100%; border: 2px solid #ddd; border-radius: 8px;">
+            <canvas id="output_canvas" class="output_canvas" width="640" height="480"></canvas>
+            <p id="gesture_output" class="output"></p>
+            <p id="upload-text"></p>
+        </div>
+    </main>
+    <footer>
+        <p>Developed as part of the Capstone Project | <a href="#">Learn More</a></p>
+    </footer>
+    <script type="module">
+        import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+
+        let gestureRecognizer;
+        let runningMode = "IMAGE";
+
+        // Initialize the GestureRecognizer
+        const createGestureRecognizer = async () => {
+            const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+            gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage//SignLang.task",
+                    delegate: "GPU"
+                },
+                runningMode: runningMode
+            });
+        };
+        createGestureRecognizer();
+
+        const canvasElement = document.getElementById("output_canvas");
+        const canvasCtx = canvasElement.getContext("2d");
+        const gestureOutput = document.getElementById("gesture_output");
+
+        // Image Upload and Processing
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('image-upload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an image file.');
+                return;
+            }
+
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const resultImage = document.getElementById('result-image');
+            const uploadText = document.getElementById('upload-text');
+
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            resultImage.style.display = 'none';
+            gestureOutput.style.display = 'none';
+            uploadText.innerText = '';
+
+            try {
+                // Create an image element to process
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                
+                img.onload = async () => {
+                    // Wait for gesture recognizer to be ready
+                    while (!gestureRecognizer) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+
+                    // Set canvas dimensions to match image
+                    canvasElement.width = img.width;
+                    canvasElement.height = img.height;
+
+                    // Draw the image on canvas
+                    canvasCtx.drawImage(img, 0, 0);
+
+                    // Process the image with MediaPipe
+                    const results = gestureRecognizer.recognize(img);
+
+                    if (results.landmarks) {
+                        const drawingUtils = new DrawingUtils(canvasCtx);
+                        
+                        for (const landmarks of results.landmarks) {
+                            drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
+                                color: "#00FF00",
+                                lineWidth: 5
+                            });
+                            drawingUtils.drawLandmarks(landmarks, {
+                                color: "#FF0000",
+                                lineWidth: 2
+                            });
+                        }
+                    }
+
+                    // Display results
+                    loadingIndicator.style.display = 'none';
+                    canvasElement.style.display = 'block';
+
+                    if (results.gestures.length > 0) {
+                        gestureOutput.style.display = 'block';
+                        const categoryName = results.gestures[0][0].categoryName;
+                        const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
+                        const handedness = results.handednesses[0][0].displayName;
+                        gestureOutput.innerText = `Gesture: ${categoryName}\nConfidence: ${categoryScore}%\nHand: ${handedness}`;
+                    } else {
+                        gestureOutput.style.display = 'block';
+                        gestureOutput.innerText = 'No gestures detected in the image';
+                    }
+                };
+
+                img.onerror = () => {
+                    loadingIndicator.style.display = 'none';
+                    uploadText.innerText = 'Error loading the image.';
+                };
+            } catch (error) {
+                loadingIndicator.style.display = 'none';
+                uploadText.innerText = 'An error occurred while processing the image.';
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

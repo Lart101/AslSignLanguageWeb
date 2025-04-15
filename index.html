@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesture Recognition</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #d4f4d4;
+        }
+
+        main {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        main h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        main p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature {
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            text-align: center;
+            width: 250px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature p {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        footer {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            padding: 1rem;
+            background-color: #f4f4f9;
+        }
+
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SignSpeak</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="text_to_sign.html">Text to Sign</a>
+            <a href="image_to_sign.html">Image to Sign</a>
+            <a href="webcam.html">Webcam</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Welcome to the Future of Communication</h2>
+        <p>
+            Our platform is revolutionizing the way we communicate with deaf and mute individuals. By leveraging cutting-edge gesture recognition technology, we aim to bridge the communication gap and foster inclusivity.
+        </p>
+        <p style="color: red; font-weight: bold;">Note: This is a prototype. Use with caution.</p>
+        <div class="features">
+            <a href="text_to_sign.html" class="feature">
+                <h3>Text to Sign</h3>
+                <p>Convert text into sign language animations to communicate effectively.</p>
+            </a>
+            <a href="image_to_sign.html" class="feature">
+                <h3>Image to Sign</h3>
+                <p>Upload images and interpret gestures with precision and accuracy.</p>
+            </a>
+            <a href="webcam.html" class="feature">
+                <h3>Webcam</h3>
+                <p>Experience real-time gesture recognition through your webcam.</p>
+            </a>
+        </div>
+    </main>
+    <footer>
+        <p>Developed as part of the Capstone Project | <a href="#">Learn More</a></p>
+    </footer>
+</body>
+</html>
