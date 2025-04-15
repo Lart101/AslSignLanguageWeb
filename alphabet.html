@@ -267,12 +267,32 @@
         }
 
         .output {
-            background-color: rgba(0, 127, 139, 0.9);
-            color: white;
-            padding: 1rem;
+            background-color: #000000;
+            color: #ffffff;
+            padding: 1.2rem;
             border-radius: var(--border-radius);
             margin-top: 1rem;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            white-space: pre-line;
+        }
+
+        /* Update success/error states for gesture output */
+        .output.success {
+            background-color: #000000;
+            border: 2px solid #ffffff;
+        }
+
+        .output.error {
+            background-color: #000000;
+            border: 2px solid #ffffff;
+        }
+
+        .output.neutral {
+            background-color: #000000;
+            border: 2px solid #ffffff;
         }
 
         .control-btn {
@@ -740,14 +760,14 @@
                 
                 if (selectedLetter) {
                     if (categoryName.toUpperCase() === selectedLetter.toUpperCase()) {
-                        gestureOutput.style.backgroundColor = "rgba(0, 255, 0, 0.8)";
+                        gestureOutput.className = 'output success';
                         gestureOutput.innerText = `Correct! You're showing the letter ${selectedLetter}`;
                     } else {
-                        gestureOutput.style.backgroundColor = "rgba(255, 0, 0, 0.8)";
+                        gestureOutput.className = 'output error';
                         gestureOutput.innerText = `Keep practicing! You showed ${categoryName}, but we're looking for ${selectedLetter}`;
                     }
                 } else {
-                    gestureOutput.style.backgroundColor = "rgba(0, 127, 139, 0.8)";
+                    gestureOutput.className = 'output neutral';
                     gestureOutput.innerText = `Detected letter: ${categoryName}\nConfidence: ${categoryScore}%`;
                 }
             } else {
