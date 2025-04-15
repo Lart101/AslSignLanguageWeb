@@ -263,7 +263,7 @@
                 const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
                 gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
                     baseOptions: {
-                        modelAssetPath: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage//SignLang.task",
+                        modelAssetPath: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage//gesture_recognizer.task",
                         delegate: "GPU"
                     },
                     runningMode: runningMode

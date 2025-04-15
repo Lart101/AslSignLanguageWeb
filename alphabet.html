@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn ASL Alphabet - SignSpeak</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #d4f4d4;
+        }
+
+        main {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem 0;
+        }
+
+        .letter-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .letter-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .letter {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .sign-image {
+            width: 150px;
+            height: 150px;
+            margin: 1rem auto;
+            background-color: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .instructions {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #f4f4f9;
+            margin-top: 2rem;
+        }
+
+        .practice-container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 2rem auto;
+            gap: 2rem;
+        }
+
+        .alphabet-section {
+            flex: 1;
+            max-width: 60%;
+        }
+
+        .webcam-section {
+            flex: 1;
+            max-width: 40%;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        #webcam {
+            width: 100%;
+            transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
+            -moz-transform: rotateY(180deg);
+        }
+
+        .output_canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
+            -moz-transform: rotateY(180deg);
+        }
+
+        .output {
+            width: 100%;
+            font-size: calc(8px + 1.2vw);
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(0, 127, 139, 0.8);
+            color: white;
+            border-radius: 4px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            margin: 10px 0;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .control-btn:hover {
+            background-color: #45a049;
+        }
+
+        .selected {
+            border: 3px solid #4CAF50;
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SignSpeak</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="text_to_sign.html">Text to Sign</a>
+            <a href="image_to_sign.html">Image to Sign</a>
+            <a href="webcam.html">Webcam</a>
+            <a href="alphabet.html">Learn Alphabet</a>
+        </nav>
+    </header>
+    <main>
+        <div class="instructions">
+            <h2>American Sign Language Alphabet</h2>
+            <p>Learn the basic ASL alphabet with our interactive guide. Click on a letter to practice, and use your webcam to get real-time feedback on your signing.</p>
+        </div>
+        <div class="practice-container">
+            <div class="alphabet-section">
+                <div class="alphabet-grid">
+                    <div class="letter-card" data-letter="A">
+                        <div class="letter">A</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/A.png" alt="Sign for letter A" width="120">
+                        </div>
+                        <p>Make a fist with your thumb alongside</p>
+                    </div>
+                    <div class="letter-card" data-letter="B">
+                        <div class="letter">B</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/B.png" alt="Sign for letter B" width="120">
+                        </div>
+                        <p>Hold your hand up with fingers together, thumb tucked</p>
+                    </div>
+                    <div class="letter-card" data-letter="C">
+                        <div class="letter">C</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/C.png" alt="Sign for letter C" width="120">
+                        </div>
+                        <p>Curve your hand in a C shape</p>
+                    </div>
+                    <div class="letter-card" data-letter="D">
+                        <div class="letter">D</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/D.png" alt="Sign for letter D" width="120">
+                        </div>
+                        <p>Index finger up, other fingers curled</p>
+                    </div>
+                    <div class="letter-card" data-letter="E">
+                        <div class="letter">E</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/E.png" alt="Sign for letter E" width="120">
+                        </div>
+                        <p>Curl all fingers, show fingertips</p>
+                    </div>
+                    <div class="letter-card" data-letter="F">
+                        <div class="letter">F</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/F.png" alt="Sign for letter F" width="120">
+                        </div>
+                        <p>Connect thumb and index, other fingers up</p>
+                    </div>
+                    <div class="letter-card" data-letter="G">
+                        <div class="letter">G</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/G.png" alt="Sign for letter G" width="120">
+                        </div>
+                        <p>Point index finger sideways, thumb straight</p>
+                    </div>
+                    <div class="letter-card" data-letter="H">
+                        <div class="letter">H</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/H.png" alt="Sign for letter H" width="120">
+                        </div>
+                        <p>Index and middle finger straight, others closed</p>
+                    </div>
+                    <div class="letter-card" data-letter="I">
+                        <div class="letter">I</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/I.png" alt="Sign for letter I" width="120">
+                        </div>
+                        <p>Pinky finger up, others closed</p>
+                    </div>
+                    <div class="letter-card" data-letter="J">
+                        <div class="letter">J</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/J.png" alt="Sign for letter J" width="120">
+                        </div>
+                        <p>Pinky up, draw a J in the air</p>
+                    </div>
+                    <div class="letter-card" data-letter="K">
+                        <div class="letter">K</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/K.png" alt="Sign for letter K" width="120">
+                        </div>
+                        <p>Index and middle finger up, thumb between</p>
+                    </div>
+                    <div class="letter-card" data-letter="L">
+                        <div class="letter">L</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/L.png" alt="Sign for letter L" width="120">
+                        </div>
+                        <p>Index finger and thumb make L shape</p>
+                    </div>
+                    <div class="letter-card" data-letter="M">
+                        <div class="letter">M</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/M.png" alt="Sign for letter M" width="120">
+                        </div>
+                        <p>Three fingers over thumb</p>
+                    </div>
+                    <div class="letter-card" data-letter="N">
+                        <div class="letter">N</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/N.png" alt="Sign for letter N" width="120">
+                        </div>
+                        <p>Two fingers over thumb</p>
+                    </div>
+                    <div class="letter-card" data-letter="O">
+                        <div class="letter">O</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/O.png" alt="Sign for letter O" width="120">
+                        </div>
+                        <p>Fingers curved into O shape</p>
+                    </div>
+                    <div class="letter-card" data-letter="P">
+                        <div class="letter">P</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/P.png" alt="Sign for letter P" width="120">
+                        </div>
+                        <p>Point middle finger down, index straight</p>
+                    </div>
+                    <div class="letter-card" data-letter="Q">
+                        <div class="letter">Q</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/Q.png" alt="Sign for letter Q" width="120">
+                        </div>
+                        <p>Point index finger down, thumb out</p>
+                    </div>
+                    <div class="letter-card" data-letter="R">
+                        <div class="letter">R</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/R.png" alt="Sign for letter R" width="120">
+                        </div>
+                        <p>Cross index and middle finger</p>
+                    </div>
+                    <div class="letter-card" data-letter="S">
+                        <div class="letter">S</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/S.png" alt="Sign for letter S" width="120">
+                        </div>
+                        <p>Make a fist with thumb over fingers</p>
+                    </div>
+                    <div class="letter-card" data-letter="T">
+                        <div class="letter">T</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/T.png" alt="Sign for letter T" width="120">
+                        </div>
+                        <p>Thumb between index and middle finger</p>
+                    </div>
+                    <div class="letter-card" data-letter="U">
+                        <div class="letter">U</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/U.png" alt="Sign for letter U" width="120">
+                        </div>
+                        <p>Index and middle finger up together</p>
+                    </div>
+                    <div class="letter-card" data-letter="V">
+                        <div class="letter">V</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/V.png" alt="Sign for letter V" width="120">
+                        </div>
+                        <p>Index and middle finger in V shape</p>
+                    </div>
+                    <div class="letter-card" data-letter="W">
+                        <div class="letter">W</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/W.png" alt="Sign for letter W" width="120">
+                        </div>
+                        <p>Index, middle, and ring finger up</p>
+                    </div>
+                    <div class="letter-card" data-letter="X">
+                        <div class="letter">X</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/X.png" alt="Sign for letter X" width="120">
+                        </div>
+                        <p>Hook index finger, others closed</p>
+                    </div>
+                    <div class="letter-card" data-letter="Y">
+                        <div class="letter">Y</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/Y.png" alt="Sign for letter Y" width="120">
+                        </div>
+                        <p>Thumb and pinky extended</p>
+                    </div>
+                    <div class="letter-card" data-letter="Z">
+                        <div class="letter">Z</div>
+                        <div class="sign-image">
+                            <img src="https://www.signasl.org/img/signs/alpha/Z.png" alt="Sign for letter Z" width="120">
+                        </div>
+                        <p>Draw a Z with index finger</p>
+                    </div>
+                </div>
+            </div>
+            <div class="webcam-section">
+                <h3>Practice Area</h3>
+                <p>Show your hand sign to the camera</p>
+                <div class="video-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas class="output_canvas" id="output_canvas"></canvas>
+                </div>
+                <p id="gesture_output" class="output"></p>
+                <button id="webcamButton" class="control-btn">Enable Camera</button>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>Developed as part of the Capstone Project | <a href="#">Learn More</a></p>
+    </footer>
+    <script type="module">
+        import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+
+        let gestureRecognizer;
+        let runningMode = "IMAGE";
+        let webcamRunning = false;
+        let selectedLetter = null;
+
+        // Initialize the GestureRecognizer
+        const createGestureRecognizer = async () => {
+            const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+            gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage//gesture_recognizer.task",
+                    delegate: "GPU"
+                },
+                runningMode: runningMode
+            });
+        };
+        createGestureRecognizer();
+
+        const video = document.getElementById("webcam");
+        const canvasElement = document.getElementById("output_canvas");
+        const canvasCtx = canvasElement.getContext("2d");
+        const gestureOutput = document.getElementById("gesture_output");
+        const enableWebcamButton = document.getElementById("webcamButton");
+
+        // Add click handlers to letter cards
+        document.querySelectorAll('.letter-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.letter-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedLetter = card.dataset.letter;
+            });
+        });
+
+        // Enable webcam
+        enableWebcamButton.addEventListener("click", enableCam);
+
+        function enableCam() {
+            if (!gestureRecognizer) {
+                alert("Please wait for gestureRecognizer to load");
+                return;
+            }
+
+            if (webcamRunning) {
+                webcamRunning = false;
+                enableWebcamButton.innerText = "Enable Camera";
+                const stream = video.srcObject;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            } else {
+                webcamRunning = true;
+                enableWebcamButton.innerText = "Disable Camera";
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        video.srcObject = stream;
+                        video.addEventListener("loadeddata", predictWebcam);
+                    });
+            }
+        }
+
+        let lastVideoTime = -1;
+        let results = undefined;
+
+        async function predictWebcam() {
+            if (runningMode === "IMAGE") {
+                runningMode = "VIDEO";
+                await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
+            }
+
+            let nowInMs = Date.now();
+            if (video.currentTime !== lastVideoTime) {
+                lastVideoTime = video.currentTime;
+                results = gestureRecognizer.recognizeForVideo(video, nowInMs);
+            }
+
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            const drawingUtils = new DrawingUtils(canvasCtx);
+
+            if (results.landmarks) {
+                for (const landmarks of results.landmarks) {
+                    drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
+                        color: "#00FF00",
+                        lineWidth: 5
+                    });
+                    drawingUtils.drawLandmarks(landmarks, {
+                        color: "#FF0000",
+                        lineWidth: 2
+                    });
+                }
+            }
+
+            canvasCtx.restore();
+
+            if (results.gestures.length > 0) {
+                gestureOutput.style.display = "block";
+                const categoryName = results.gestures[0][0].categoryName;
+                const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
+                
+                if (selectedLetter) {
+                    if (categoryName === selectedLetter) {
+                        gestureOutput.style.backgroundColor = "rgba(0, 255, 0, 0.8)";
+                        gestureOutput.innerText = `Correct! You're showing the letter ${selectedLetter}`;
+                    } else {
+                        gestureOutput.style.backgroundColor = "rgba(255, 0, 0, 0.8)";
+                        gestureOutput.innerText = `Keep practicing! You showed ${categoryName}, but we're looking for ${selectedLetter}`;
+                    }
+                } else {
+                    gestureOutput.style.backgroundColor = "rgba(0, 127, 139, 0.8)";
+                    gestureOutput.innerText = `Detected letter: ${categoryName}\nConfidence: ${categoryScore}%`;
+                }
+            } else {
+                gestureOutput.style.display = "none";
+            }
+
+            if (webcamRunning) {
+                window.requestAnimationFrame(predictWebcam);
+            }
+        }
+    </script>
+</body>
+</html>
