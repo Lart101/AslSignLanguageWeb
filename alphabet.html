@@ -163,6 +163,16 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 1rem;
         }
 
         #webcam {
@@ -203,6 +213,8 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s;
+            z-index: 100;
+            position: relative;
         }
 
         .control-btn:hover {
@@ -468,6 +480,8 @@
         let runningMode = "IMAGE";
         let webcamRunning = false;
         let selectedLetter = null;
+        const videoHeight = "360px";
+        const videoWidth = "480px";
 
         // Initialize the GestureRecognizer
         const createGestureRecognizer = async () => {
@@ -497,10 +511,20 @@
             });
         });
 
-        // Enable webcam
-        enableWebcamButton.addEventListener("click", enableCam);
+        function hasGetUserMedia() {
+            return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        }
 
-        function enableCam() {
+        // Enable webcam
+        if (hasGetUserMedia()) {
+            enableWebcamButton.addEventListener("click", enableCam);
+        } else {
+            console.warn("getUserMedia() is not supported by your browser");
+            enableWebcamButton.innerText = "Webcam Not Supported";
+            enableWebcamButton.disabled = true;
+        }
+
+        async function enableCam() {
             if (!gestureRecognizer) {
                 alert("Please wait for gestureRecognizer to load");
                 return;
@@ -509,6 +533,7 @@
             if (webcamRunning) {
                 webcamRunning = false;
                 enableWebcamButton.innerText = "Enable Camera";
+                // Stop the webcam
                 const stream = video.srcObject;
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
@@ -516,11 +541,21 @@
             } else {
                 webcamRunning = true;
                 enableWebcamButton.innerText = "Disable Camera";
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(stream => {
-                        video.srcObject = stream;
-                        video.addEventListener("loadeddata", predictWebcam);
-                    });
+                // Start the webcam
+                try {
+                    const constraints = {
+                        video: {
+                            width: 640,
+                            height: 480
+                        }
+                    };
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    video.srcObject = stream;
+                    video.addEventListener("loadeddata", predictWebcam);
+                } catch (err) {
+                    console.error("Error accessing webcam:", err);
+                    alert("Error accessing webcam. Please make sure you have granted camera permissions.");
+                }
             }
         }
 
@@ -528,6 +563,15 @@
         let results = undefined;
 
         async function predictWebcam() {
+            canvasElement.style.width = videoWidth;
+            canvasElement.style.height = videoHeight;
+            video.style.width = videoWidth;
+            video.style.height = videoHeight;
+
+            // Make sure the canvas is setup
+            canvasElement.width = video.videoWidth;
+            canvasElement.height = video.videoHeight;
+            
             if (runningMode === "IMAGE") {
                 runningMode = "VIDEO";
                 await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
@@ -547,11 +591,11 @@
                 for (const landmarks of results.landmarks) {
                     drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
                         color: "#00FF00",
-                        lineWidth: 2  // Reduced from 5 to 2
+                        lineWidth: 2
                     });
                     drawingUtils.drawLandmarks(landmarks, {
                         color: "#FF0000",
-                        lineWidth: 1  // Reduced from 2 to 1
+                        lineWidth: 1
                     });
                 }
             }
@@ -564,7 +608,7 @@
                 const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
                 
                 if (selectedLetter) {
-                    if (categoryName.toUpperCase() === selectedLetter.toUpperCase()) {  // Case-insensitive comparison
+                    if (categoryName.toUpperCase() === selectedLetter.toUpperCase()) {
                         gestureOutput.style.backgroundColor = "rgba(0, 255, 0, 0.8)";
                         gestureOutput.innerText = `Correct! You're showing the letter ${selectedLetter}`;
                     } else {

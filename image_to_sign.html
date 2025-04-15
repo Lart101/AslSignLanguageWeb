@@ -211,31 +211,24 @@
             const resultImage = document.getElementById('result-image');
             const uploadText = document.getElementById('upload-text');
 
-            // Show loading indicator
             loadingIndicator.style.display = 'block';
             resultImage.style.display = 'none';
             gestureOutput.style.display = 'none';
             uploadText.innerText = '';
 
             try {
-                // Create an image element to process
                 const img = new Image();
                 img.src = URL.createObjectURL(file);
                 
                 img.onload = async () => {
-                    // Wait for gesture recognizer to be ready
                     while (!gestureRecognizer) {
                         await new Promise(resolve => setTimeout(resolve, 100));
                     }
 
-                    // Set canvas dimensions to match image
                     canvasElement.width = img.width;
                     canvasElement.height = img.height;
-
-                    // Draw the image on canvas
                     canvasCtx.drawImage(img, 0, 0);
 
-                    // Process the image with MediaPipe
                     const results = gestureRecognizer.recognize(img);
 
                     if (results.landmarks) {
@@ -244,16 +237,15 @@
                         for (const landmarks of results.landmarks) {
                             drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
                                 color: "#00FF00",
-                                lineWidth: 5
+                                lineWidth: 2
                             });
                             drawingUtils.drawLandmarks(landmarks, {
                                 color: "#FF0000",
-                                lineWidth: 2
+                                lineWidth: 1
                             });
                         }
                     }
 
-                    // Display results
                     loadingIndicator.style.display = 'none';
                     canvasElement.style.display = 'block';
 
@@ -262,10 +254,10 @@
                         const categoryName = results.gestures[0][0].categoryName;
                         const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
                         const handedness = results.handednesses[0][0].displayName;
-                        gestureOutput.innerText = `Gesture: ${categoryName}\nConfidence: ${categoryScore}%\nHand: ${handedness}`;
+                        gestureOutput.innerText = `Detected Sign: ${categoryName}\nConfidence: ${categoryScore}%\nHand: ${handedness}`;
                     } else {
                         gestureOutput.style.display = 'block';
-                        gestureOutput.innerText = 'No gestures detected in the image';
+                        gestureOutput.innerText = 'No hand signs detected in the image';
                     }
                 };
 
