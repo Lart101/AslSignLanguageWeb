@@ -118,14 +118,18 @@
 
         .video-container {
             position: relative;
-            width: fit-content;
-            margin: 2rem auto;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
             border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            aspect-ratio: 4/3;
         }
 
         #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             transform: rotateY(180deg);
             -webkit-transform: rotateY(180deg);
             -moz-transform: rotateY(180deg);
@@ -137,10 +141,11 @@
             position: absolute;
             left: 0;
             top: 0;
+            width: 100%;
+            height: 100%;
             transform: rotateY(180deg);
             -webkit-transform: rotateY(180deg);
             -moz-transform: rotateY(180deg);
-            border-radius: var(--border-radius);
         }
 
         .controls {
@@ -260,8 +265,8 @@
         <section class="content-section">
             <h2>Real-time Sign Language Detection</h2>
             <p>
-                Experience instant sign language recognition through your webcam. Our AI-powered system 
-                detects and interprets hand gestures in real-time, making communication more accessible.
+                Practice sign language with real-time hand tracking using MediaPipe. Show your hand signs 
+                to the camera and get instant feedback on your gestures.
             </p>
             <div class="warning">Note: This is a prototype. Features are in beta testing.</div>
             
@@ -359,12 +364,11 @@
         let results = undefined;
 
         async function predictWebcam() {
-            canvasElement.style.width = videoWidth;
-            canvasElement.style.height = videoHeight;
-            video.style.width = videoWidth;
-            video.style.height = videoHeight;
-
-            // Make sure the canvas is setup
+            // Remove fixed dimensions and make it responsive
+            canvasElement.style.width = '100%';
+            canvasElement.style.height = '100%';
+            
+            // Make sure the canvas is setup with the video's actual dimensions
             canvasElement.width = video.videoWidth;
             canvasElement.height = video.videoHeight;
             
