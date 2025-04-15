@@ -131,40 +131,59 @@
         <p>Enter text below to convert it into sign language:</p>
         <p style="color: red; font-weight: bold;">Note: This is a prototype. Use with caution.</p>
         <form id="text-to-sign-form">
-            <textarea id="input-text" placeholder="Type your text here..."></textarea>
+            <textarea id="input-text" placeholder="Type your text here..." style="width: 80%; max-width: 600px; height: 100px; margin: 1rem; padding: 0.5rem;"></textarea>
             <br>
-            <button type="button" onclick="translateText()">Convert</button>
+            <button type="button" onclick="translateText()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Convert</button>
         </form>
-        <div id="translated-images" style="margin-top: 20px;">
+        <div id="translated-images" style="margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
             <!-- Translated images will appear here -->
         </div>
     </main>
     <script>
-        async function translateText() {
-            const inputText = document.getElementById('input-text').value;
-            const response = await fetch('/translate_text', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ text: inputText })
-            });
-
-            const data = await response.json();
+        function translateText() {
+            const inputText = document.getElementById('input-text').value.toUpperCase();
             const imagesContainer = document.getElementById('translated-images');
             imagesContainer.innerHTML = '';
 
-            if (data.images) {
-                data.images.forEach(imageUrl => {
+            if (inputText.trim() === '') {
+                imagesContainer.innerHTML = '<p>Please enter some text to translate.</p>';
+                return;
+            }
+
+            for (let char of inputText) {
+                if (/[A-Z]/.test(char)) {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.style.textAlign = 'center';
+                    
                     const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.alt = 'Sign Language';
-                    img.style.margin = '10px';
-                    img.style.width = '100px';
-                    imagesContainer.appendChild(img);
-                });
-            } else {
-                imagesContainer.innerHTML = '<p>No images found for the input text.</p>';
+                    img.src = `sign_language_images/alphabet_${char}.jpg`;
+                    img.alt = `Sign for letter ${char}`;
+                    img.style.width = '120px';
+                    img.style.height = '120px';
+                    img.style.margin = '5px';
+                    img.style.border = '2px solid #4CAF50';
+                    img.style.borderRadius = '8px';
+                    
+                    const letter = document.createElement('p');
+                    letter.textContent = char;
+                    letter.style.margin = '5px';
+                    letter.style.fontSize = '1.2rem';
+                    letter.style.fontWeight = 'bold';
+                    
+                    imgContainer.appendChild(img);
+                    imgContainer.appendChild(letter);
+                    imagesContainer.appendChild(imgContainer);
+                } else if (char === ' ') {
+                    const space = document.createElement('div');
+                    space.style.width = '40px';
+                    space.style.height = '120px';
+                    space.style.margin = '5px';
+                    imagesContainer.appendChild(space);
+                }
+            }
+
+            if (imagesContainer.children.length === 0) {
+                imagesContainer.innerHTML = '<p>No valid letters found to translate. Please enter A-Z characters.</p>';
             }
         }
     </script>
