@@ -500,7 +500,7 @@
                 const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
                 
                 if (selectedLetter) {
-                    if (categoryName === selectedLetter) {
+                    if (categoryName.toUpperCase() === selectedLetter.toUpperCase()) {  // Case-insensitive comparison
                         gestureOutput.style.backgroundColor = "rgba(0, 255, 0, 0.8)";
                         gestureOutput.innerText = `Correct! You're showing the letter ${selectedLetter}`;
                     } else {

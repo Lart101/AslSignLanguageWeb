@@ -141,7 +141,7 @@
     </main>
     <script>
         function translateText() {
-            const inputText = document.getElementById('input-text').value.toUpperCase();
+            const inputText = document.getElementById('input-text').value;
             const imagesContainer = document.getElementById('translated-images');
             imagesContainer.innerHTML = '';
 
@@ -151,12 +151,13 @@
             }
 
             for (let char of inputText) {
-                if (/[A-Z]/.test(char)) {
+                if (/[a-zA-Z]/.test(char)) {  // Modified to accept both lower and uppercase
+                    const upperChar = char.toUpperCase();  // Convert to uppercase for image filename
                     const imgContainer = document.createElement('div');
                     imgContainer.style.textAlign = 'center';
                     
                     const img = document.createElement('img');
-                    img.src = `sign_language_images/alphabet_${char}.jpg`;
+                    img.src = `sign_language_images/alphabet_${upperChar}.jpg`;
                     img.alt = `Sign for letter ${char}`;
                     img.style.width = '120px';
                     img.style.height = '120px';
@@ -165,7 +166,7 @@
                     img.style.borderRadius = '8px';
                     
                     const letter = document.createElement('p');
-                    letter.textContent = char;
+                    letter.textContent = char;  // Keep original case in display
                     letter.style.margin = '5px';
                     letter.style.fontSize = '1.2rem';
                     letter.style.fontWeight = 'bold';
@@ -183,7 +184,7 @@
             }
 
             if (imagesContainer.children.length === 0) {
-                imagesContainer.innerHTML = '<p>No valid letters found to translate. Please enter A-Z characters.</p>';
+                imagesContainer.innerHTML = '<p>No valid letters found to translate. Please enter A-Z or a-z characters.</p>';
             }
         }
     </script>
