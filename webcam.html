@@ -346,11 +346,11 @@
                     for (const landmarks of results.landmarks) {
                         drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
                             color: "#00FF00",
-                            lineWidth: 5
+                            lineWidth: 2  // Reduced from 5 to 2
                         });
                         drawingUtils.drawLandmarks(landmarks, {
                             color: "#FF0000",
-                            lineWidth: 2
+                            lineWidth: 1  // Reduced from 2 to 1
                         });
                     }
                 }
