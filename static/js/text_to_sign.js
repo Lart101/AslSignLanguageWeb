@@ -318,7 +318,7 @@ function setupCombinedVideoPlayer(letters) {
             // Reset to beginning after showing "Completed"
             setTimeout(() => {
                 currentLetterIndex = 0;
-                currentLetterIndicator.textContent = "Ready to start";
+                currentLetterIndicator.textContent = "Click PLAY to start";
                 progressBar.style.width = "0%";
                 progressCurrent.textContent = "0";
                 progressPercentage.textContent = "0%";
@@ -367,7 +367,7 @@ function setupCombinedVideoPlayer(letters) {
     });
     
     // Initialize with ready state
-    currentLetterIndicator.textContent = "Ready to start";
+    currentLetterIndicator.textContent = "Click PLAY to start";
     progressTotal.textContent = videoSequence.length;
 }
 
