@@ -327,6 +327,17 @@ button:hover {
     padding: 1rem;
 }
 
+.sign-container img {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    max-width: 120px; /* Changed from fixed width to max-width */
+    max-height: 120px; /* Changed from fixed height to max-height */
+    object-fit: contain; /* Changed from 'cover' to 'contain' to show full image */
+    width: auto; /* Allow natural width */
+    height: auto; /* Allow natural height */
+}
+
+/* You might also want to adjust the container to ensure consistent layout */
 .sign-container {
     background: white;
     padding: 1rem;
@@ -334,20 +345,18 @@ button:hover {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     transition: var(--transition);
     text-align: center;
+    min-height: 170px; /* Add minimum height to maintain layout consistency */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
-
 .sign-container:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.sign-container img {
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-}
+
 
 .sign-container video {
     border-radius: 8px;
