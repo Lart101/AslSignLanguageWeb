@@ -3,8 +3,8 @@ function translateText() {
     const imagesContainer = document.getElementById('translated-images');
     const videosContainer = document.getElementById('translated-videos');
     
-    // Get selected mode
-    const isAvatarMode = document.querySelector('input[name="mode"]:checked').value === 'avatar';
+    // Get selected mode from dropdown instead of radio buttons
+    const isAvatarMode = document.getElementById('display-mode').value === 'avatar';
     
     // Clear previous translations
     imagesContainer.innerHTML = '';
@@ -373,40 +373,34 @@ function setupCombinedVideoPlayer(letters) {
 
 // Add event listeners when the document is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    const modeRadios = document.querySelectorAll('input[name="mode"]');
+    const displayModeSelect = document.getElementById('display-mode');
     const controlsPanel = document.getElementById('video-controls-panel');
     
     // Mode selection change event
-    modeRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            const imagesContainer = document.getElementById('translated-images');
-            const videosContainer = document.getElementById('translated-videos');
-            
-            if (this.value === 'avatar') {
-                // Switch to Avatar mode
-                imagesContainer.style.display = 'none';
-                videosContainer.style.display = 'flex';
-                controlsPanel.style.display = 'flex'; // Show video controls
-            } else {
-                // Switch to Image mode
-                imagesContainer.style.display = 'flex';
-                videosContainer.style.display = 'none';
-                controlsPanel.style.display = 'none'; // Hide video controls
+    displayModeSelect.addEventListener('change', function() {
+        const imagesContainer = document.getElementById('translated-images');
+        const videosContainer = document.getElementById('translated-videos');
+        
+        if (this.value === 'avatar') {
+            // Switch to Avatar mode
+            imagesContainer.style.display = 'none';
+            videosContainer.style.display = 'flex';
+            if (controlsPanel) {
+                controlsPanel.style.display = 'flex'; // Show video controls if it exists
             }
-            
-            // Clear current translations when switching modes
-            imagesContainer.innerHTML = '';
-            videosContainer.innerHTML = '';
-        });
+        } else {
+            // Switch to Image mode
+            imagesContainer.style.display = 'flex';
+            videosContainer.style.display = 'none';
+            if (controlsPanel) {
+                controlsPanel.style.display = 'none'; // Hide video controls if it exists
+            }
+        }
+        
+        // Clear current translations when switching modes
+        imagesContainer.innerHTML = '';
+        videosContainer.innerHTML = '';
     });
-    
-    // Playback speed change event
-    document.getElementById('playback-speed').addEventListener('change', updatePlaybackSpeed);
-    
-    // Global control buttons events
-    document.getElementById('play-all-btn').addEventListener('click', playAllVideos);
-    document.getElementById('pause-all-btn').addEventListener('click', pauseAllVideos);
-    document.getElementById('restart-all-btn').addEventListener('click', restartAllVideos);
     
     // Mobile menu toggle
     document.querySelector('.menu-toggle').addEventListener('click', function() {
@@ -415,11 +409,32 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize UI state based on default mode
-    const defaultMode = document.querySelector('input[name="mode"]:checked').value;
-    if (defaultMode === 'avatar') {
+    const defaultMode = document.getElementById('display-mode').value;
+    if (defaultMode === 'avatar' && controlsPanel) {
         controlsPanel.style.display = 'flex';
-    } else {
+    } else if (controlsPanel) {
         controlsPanel.style.display = 'none';
+    }
+    
+    // For backward compatibility with existing control elements
+    const playbackSpeed = document.getElementById('playback-speed');
+    if (playbackSpeed) {
+        playbackSpeed.addEventListener('change', updatePlaybackSpeed);
+    }
+    
+    const playAllBtn = document.getElementById('play-all-btn');
+    if (playAllBtn) {
+        playAllBtn.addEventListener('click', playAllVideos);
+    }
+    
+    const pauseAllBtn = document.getElementById('pause-all-btn');
+    if (pauseAllBtn) {
+        pauseAllBtn.addEventListener('click', pauseAllVideos);
+    }
+    
+    const restartAllBtn = document.getElementById('restart-all-btn');
+    if (restartAllBtn) {
+        restartAllBtn.addEventListener('click', restartAllVideos);
     }
 });
 

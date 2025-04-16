@@ -80,7 +80,24 @@ nav a:hover {
     background-color: var(--primary-color);
     color: white;
 }
+.form-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
 
+.display-mode-selector {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    min-width: 120px;
+}
+
+#text-to-sign-form button {
+    flex: 1;
+}
 main {
     margin-top: 6rem;
     padding: 2rem;
