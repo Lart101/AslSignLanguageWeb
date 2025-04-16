@@ -30,12 +30,25 @@
             <h2>Text to Sign Translation</h2>
             <p>Enter your text below and watch it transform into sign language. Our system will convert each letter into its corresponding ASL sign.</p>
             <div class="warning">Note: This is a prototype. Features are in beta testing.</div>
+            
+            <div class="mode-selector">
+                <label>
+                    <input type="radio" name="mode" value="image" checked> Image Mode
+                </label>
+                <label>
+                    <input type="radio" name="mode" value="avatar"> Avatar Mode
+                </label>
+            </div>
+            
+            
+            
             <form id="text-to-sign-form">
                 <textarea id="input-text" placeholder="Type your text here to see it in sign language..." required></textarea>
                 <button type="button" onclick="translateText()">Translate to Sign Language</button>
             </form>
         </section>
         <div id="translated-images"></div>
+        <div id="translated-videos" style="display: none;"></div>
     </main>
     <footer>
         <p>Developed with ❤️ as part of the Capstone Project | <a href="#">Learn More</a></p>
