@@ -492,19 +492,19 @@ footer a:hover {
 /* Combined Video Player Styles - Improved Layout */
 .combined-video-player {
     width: 100%;
-    max-width: 800px;
+    max-width: 1100px; /* Increased from 800px to 1100px */
     margin: 0 auto 2rem;
     background-color: white;
     border-radius: var(--border-radius);
-    padding: 1.5rem;
+    padding: 2.5rem; /* Increased padding from 1.5rem to 2.5rem */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .combined-video-player h3 {
     text-align: center;
     color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    font-size: 1.4rem;
+    margin-bottom: 2rem; /* Increased from 1.5rem to 2rem */
+    font-size: 1.6rem; /* Increased from 1.4rem to 1.6rem */
     font-weight: 600;
     border-bottom: 2px solid #e2e8f0;
     padding-bottom: 0.75rem;
@@ -513,7 +513,7 @@ footer a:hover {
 .combined-player {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2rem; /* Increased from 1.5rem to 2rem */
 }
 
 /* Video and letter display container */
@@ -526,7 +526,7 @@ footer a:hover {
 
 .combined-player video {
     width: 100%;
-    max-width: 320px;
+    max-width: 400px; /* Increased from 320px to 400px */
     border-radius: var(--border-radius);
     background-color: #f8fafc;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -535,28 +535,31 @@ footer a:hover {
 .current-letter-display {
     background-color: var(--primary-color);
     color: white;
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 2rem; /* Increased from 0.75rem 1.5rem to 1rem 2rem */
     border-radius: var(--border-radius);
     font-weight: 600;
     text-align: center;
-    font-size: 1.1rem;
-    margin-top: 0.5rem;
+    font-size: 1.3rem; /* Increased from 1.1rem to 1.3rem */
+    margin-top: 1rem; /* Increased from 0.5rem to 1rem */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Set width to 100% */
+    max-width: 400px; /* Match the video width */
 }
 
 /* Progress tracking */
 .progress-section {
     width: 100%;
-    margin: 0.5rem 0;
+    margin: 1.5rem 0; /* Increased from 0.5rem to 1.5rem */
 }
 
 .progress-container {
     width: 100%;
-    height: 10px;
+    height: 16px; /* Increased from 10px to 16px */
     background-color: #e2e8f0;
-    border-radius: 10px;
+    border-radius: 12px; /* Increased from 10px to 12px */
     overflow: hidden;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem; /* Increased from 0.75rem to 1rem */
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .progress-bar {
@@ -569,15 +572,16 @@ footer a:hover {
 .progress-stats {
     display: flex;
     justify-content: space-between;
-    font-size: 0.85rem;
-    color: #64748b;
+    font-size: 1rem; /* Increased from 0.85rem to 1rem */
+    color: #4b5563; /* Darker color from #64748b to #4b5563 */
+    font-weight: 500;
 }
 
 /* Controls section */
 .controls-section {
     background-color: #f1f5f9;
     border-radius: var(--border-radius);
-    padding: 1rem;
+    padding: 1.5rem; /* Increased from 1rem to 1.5rem */
     margin-top: 0.5rem;
 }
 
@@ -586,22 +590,23 @@ footer a:hover {
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 1.5rem; /* Increased from 1rem to 1.5rem */
 }
 
 .primary-controls {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem; /* Increased from 0.5rem to 1rem */
 }
 
 .control-btn {
-    min-width: 100px;
-    padding: 0.75rem 1rem;
+    min-width: 120px; /* Increased from 100px to 120px */
+    padding: 1rem 1.5rem; /* Increased from 0.75rem 1rem to 1rem 1.5rem */
     border-radius: var(--border-radius);
     border: none;
     background-color: var(--primary-color);
     color: white;
     font-weight: 500;
+    font-size: 1.1rem; /* Added font-size */
     cursor: pointer;
     transition: var(--transition);
     display: flex;
@@ -669,9 +674,9 @@ footer a:hover {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    padding: 1rem;
+    gap: 1rem; /* Increased from 0.75rem to 1rem */
+    margin-top: 2rem; /* Increased from 1.5rem to 2rem */
+    padding: 1.5rem; /* Increased from 1rem to 1.5rem */
     background-color: #f8fafc;
     border-radius: var(--border-radius);
     border: 1px solid #e2e8f0;
@@ -679,13 +684,14 @@ footer a:hover {
 
 .sequence-letter {
     display: inline-flex;
-    width: 35px;
-    height: 35px;
+    width: 45px; /* Increased from 35px to 45px */
+    height: 45px; /* Increased from 35px to 45px */
     align-items: center;
     justify-content: center;
     background-color: #e2e8f0;
-    border-radius: 6px;
+    border-radius: 8px; /* Increased from 6px to 8px */
     font-weight: 600;
+    font-size: 1.2rem; /* Added font-size */
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -710,23 +716,26 @@ footer a:hover {
 
 /* Tips section */
 .sign-language-tips {
-    margin-top: 1.5rem;
+    margin-top: 2.5rem; /* Increased from 1.5rem to 2.5rem */
     background-color: #eff6ff;
-    border-left: 4px solid var(--primary-color);
-    padding: 1rem;
+    border-left: 5px solid var(--primary-color); /* Increased from 4px to 5px */
+    padding: 1.5rem; /* Increased from 1rem to 1.5rem */
     border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .sign-language-tips h4 {
-    font-size: 1rem;
+    font-size: 1.2rem; /* Increased from 1rem to 1.2rem */
     color: var(--primary-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem; /* Increased from 0.5rem to 0.75rem */
+    font-weight: 600;
 }
 
 .sign-language-tips p {
-    font-size: 0.9rem;
-    color: #475569;
+    font-size: 1.05rem; /* Increased from 0.9rem to 1.05rem */
+    color: #374151; /* Darker color */
     margin: 0;
+    line-height: 1.6;
 }
 
 /* Responsive adjustments */
