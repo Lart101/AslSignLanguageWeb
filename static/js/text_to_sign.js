@@ -118,16 +118,10 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     progressBar.id = 'progress-bar';
     progressBar.className = 'progress-bar';
     
-    const progressStats = document.createElement('div');
-    progressStats.className = 'progress-stats';
-    progressStats.innerHTML = `
-        <span id="progress-current">0</span> of <span id="progress-total">${validLetters.length}</span> letters
-        <span id="progress-percentage">0%</span>
-    `;
+    // Removed progress stats display that showed letter count and percentage
     
     progressContainer.appendChild(progressBar);
     progressSection.appendChild(progressContainer);
-    progressSection.appendChild(progressStats);
     
     // Controls section
     const controlsSection = document.createElement('div');
@@ -326,10 +320,9 @@ function setupCombinedVideoPlayer(letters) {
     
     // Helper function to update progress indicators
     function updateProgressIndicators() {
-        progressCurrent.textContent = currentLetterIndex + 1;
         const progress = ((currentLetterIndex + 1) / videoSequence.length) * 100;
         progressBar.style.width = `${progress}%`;
-        progressPercentage.textContent = `${Math.round(progress)}%`;
+        // Removed text-based progress indicators
     }
     
     // Event listener for when a video ends
@@ -344,8 +337,7 @@ function setupCombinedVideoPlayer(letters) {
                 currentLetterIndex = 0;
                 currentLetterIndicator.textContent = "Click PLAY to start";
                 progressBar.style.width = "0%";
-                progressCurrent.textContent = "0";
-                progressPercentage.textContent = "0%";
+                // Removed references to progress text elements
                 letterElements.forEach(el => {
                     el.classList.remove('active');
                     el.classList.remove('completed');
@@ -395,8 +387,7 @@ function setupCombinedVideoPlayer(letters) {
         
         // Reset progress indicators
         progressBar.style.width = "0%";
-        progressCurrent.textContent = "0";
-        progressPercentage.textContent = "0%";
+        // Removed references to progress text elements
         
         // Small delay to ensure proper reset before starting again
         setTimeout(() => {
