@@ -148,11 +148,14 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     playPauseBtn.id = 'combined-play-pause-btn';
     playPauseBtn.dataset.state = 'paused';
     
-    // Restart button
+    // STOP button
     const restartBtn = document.createElement('button');
     restartBtn.className = 'control-btn restart-btn';
-    restartBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Restart';
+    restartBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16"></rect></svg> Stop';
     restartBtn.id = 'combined-restart-btn';
+    restartBtn.style.backgroundColor = '#ff3b30'; // Red background
+    restartBtn.style.color = 'white'; // White text for contrast
+    restartBtn.style.borderColor = '#d9322a'; // Darker red border
     
     // Speed control - moved to be after restart button
     const speedControl = document.createElement('div');
@@ -437,8 +440,12 @@ function setupCombinedVideoPlayer(letters) {
     
     // Restart button event
     restartBtn.addEventListener('click', function() {
-        // Stop current playback if any
+        // Force stop current playback
         video.pause();
+        video.removeAttribute('src'); // Remove source to stop any loading
+        video.load(); // Reset the video element
+        
+        // Reset state
         isPlaying = false;
         updatePlayPauseButton(false);
         
@@ -459,7 +466,16 @@ function setupCombinedVideoPlayer(letters) {
         
         // Small delay to ensure proper reset before starting again
         setTimeout(() => {
-            playCurrentLetter();
+            // Instead of immediately playing, check if we should play
+            if (playPauseBtn.dataset.state === 'playing') {
+                playCurrentLetter();
+            } else {
+                // Just prepare the first video without playing it
+                if (videoSequence.length > 0) {
+                    video.src = videoSequence[0].src;
+                    video.load();
+                }
+            }
         }, 50);
     });
     
