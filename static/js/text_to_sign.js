@@ -154,10 +154,7 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     restartBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Restart';
     restartBtn.id = 'combined-restart-btn';
     
-    primaryControls.appendChild(playPauseBtn);
-    primaryControls.appendChild(restartBtn);
-    
-    // Speed control - part of the horizontal row
+    // Speed control - moved to be after restart button
     const speedControl = document.createElement('div');
     speedControl.className = 'speed-control';
     speedControl.style.display = 'flex';
@@ -175,15 +172,41 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
         </select>
     `;
     
+    // Add elements to primary controls in correct order
+    primaryControls.appendChild(playPauseBtn);
+    primaryControls.appendChild(restartBtn);
+    primaryControls.appendChild(speedControl);
+    
     // Add controls to wrapper
     controlsWrapper.appendChild(primaryControls);
-    controlsWrapper.appendChild(speedControl);
     controlsSection.appendChild(controlsWrapper);
     
     // Add video and controls to the left column
     leftColumn.appendChild(videoAndDisplay);
     leftColumn.appendChild(controlsSection);
     
+    // Set white background for the controls with a consistent look
+ 
+    controlsWrapper.style.padding = '10px';
+    controlsWrapper.style.borderRadius = '5px';
+    controlsWrapper.style.border = 'none';
+    controlsWrapper.style.boxShadow = 'none';
+    
+    // Style the playback speed control container with a thin black border
+    speedControl.style.border = '1px solid black';
+    speedControl.style.borderRadius = '4px';
+    speedControl.style.padding = '4px 8px';
+    
+    // Style the playback speed dropdown
+const speedDropdown = speedControl.querySelector('select');
+if (speedDropdown) {
+    speedDropdown.style.border = '1px solid black';
+    speedDropdown.style.outline = 'none';
+    speedDropdown.style.background = 'transparent';
+    speedDropdown.style.padding = '0 4px';
+    speedDropdown.style.borderRadius = '3px';
+}
+
     // Right column: Progress and Letter Sequence
     const rightColumn = document.createElement('div');
     rightColumn.style.display = 'flex';
