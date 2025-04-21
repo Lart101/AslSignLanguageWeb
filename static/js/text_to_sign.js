@@ -236,6 +236,7 @@ function setupCombinedVideoPlayer(letters) {
     
     let currentLetterIndex = 0;
     let videoSequence = [];
+    let isPlaying = false; // Track if playback is in progress
     
     // Create an array of letter videos with their sources
     for (let letter of letters) {
@@ -251,50 +252,33 @@ function setupCombinedVideoPlayer(letters) {
             const currentVideo = videoSequence[currentLetterIndex];
             video.src = currentVideo.src;
             video.load();
+            isPlaying = true;
             
             // Update current letter display
             currentLetterIndicator.textContent = `Now signing: "${currentVideo.letter}"`;
             
             // Highlight current letter in sequence and mark completed ones
-            letterElements.forEach((el, index) => {
-                el.classList.remove('active');
-                
-                // Find the corresponding index in the original text
-                let letterIndex = 0;
-                let count = 0;
-                for (let i = 0; i < letterElements.length; i++) {
-                    if (/[a-zA-Z]/.test(letterElements[i].textContent)) {
-                        if (count === currentLetterIndex) {
-                            letterIndex = i;
-                            break;
-                        }
-                        count++;
-                    }
-                }
-                
-                if (index === letterIndex) {
-                    el.classList.add('active');
-                }
-                
-                // Mark completed letters
-                if (count < currentLetterIndex && /[a-zA-Z]/.test(letterElements[i].textContent)) {
-                    letterElements[i].classList.add('completed');
-                }
-            });
+            updateLetterHighlighting();
             
             // Update progress indicators
-            progressCurrent.textContent = currentLetterIndex + 1;
-            const progress = ((currentLetterIndex + 1) / videoSequence.length) * 100;
-            progressBar.style.width = `${progress}%`;
-            progressPercentage.textContent = `${Math.round(progress)}%`;
+            updateProgressIndicators();
             
             // Set playback speed
             video.playbackRate = parseFloat(speedSelect.value);
             
             // Play the video
-            video.play();
+            const playPromise = video.play();
+            
+            // Handle play promise to avoid race conditions
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Playback error:', error);
+                    isPlaying = false;
+                });
+            }
         } else {
             // End of sequence
+            isPlaying = false;
             currentLetterIndicator.textContent = "✓ Translation completed";
             progressBar.style.width = "100%";
             progressPercentage.textContent = "100%";
@@ -309,8 +293,48 @@ function setupCombinedVideoPlayer(letters) {
         }
     }
     
+    // Helper function to update letter highlighting
+    function updateLetterHighlighting() {
+        letterElements.forEach((el, index) => {
+            el.classList.remove('active');
+            
+            // Find the corresponding index in the original text
+            let letterIndex = 0;
+            let count = 0;
+            for (let i = 0; i < letterElements.length; i++) {
+                if (/[a-zA-Z]/.test(letterElements[i].textContent)) {
+                    if (count === currentLetterIndex) {
+                        letterIndex = i;
+                        break;
+                    }
+                    count++;
+                }
+            }
+            
+            if (index === letterIndex) {
+                el.classList.add('active');
+            }
+            
+            // Mark completed letters
+            if (count < currentLetterIndex && /[a-zA-Z]/.test(el.textContent)) {
+                el.classList.add('completed');
+            } else if (count >= currentLetterIndex) {
+                el.classList.remove('completed');
+            }
+        });
+    }
+    
+    // Helper function to update progress indicators
+    function updateProgressIndicators() {
+        progressCurrent.textContent = currentLetterIndex + 1;
+        const progress = ((currentLetterIndex + 1) / videoSequence.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressPercentage.textContent = `${Math.round(progress)}%`;
+    }
+    
     // Event listener for when a video ends
     video.addEventListener('ended', function() {
+        isPlaying = false;
         currentLetterIndex++;
         if (currentLetterIndex < videoSequence.length) {
             playCurrentLetter();
@@ -348,17 +372,36 @@ function setupCombinedVideoPlayer(letters) {
     
     // Pause button event
     pauseBtn.addEventListener('click', function() {
-        video.pause();
+        if (!video.paused) {
+            video.pause();
+            isPlaying = false;
+        }
     });
     
     // Restart button event
     restartBtn.addEventListener('click', function() {
+        // Stop current playback if any
+        video.pause();
+        isPlaying = false;
+        
+        // Reset to first letter
         currentLetterIndex = 0;
+        
+        // Reset all letter highlighting
         letterElements.forEach(el => {
             el.classList.remove('active');
             el.classList.remove('completed');
         });
-        playCurrentLetter();
+        
+        // Reset progress indicators
+        progressBar.style.width = "0%";
+        progressCurrent.textContent = "0";
+        progressPercentage.textContent = "0%";
+        
+        // Small delay to ensure proper reset before starting again
+        setTimeout(() => {
+            playCurrentLetter();
+        }, 50);
     });
     
     // Speed change event
