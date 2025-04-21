@@ -33,6 +33,7 @@ The project utilizes the following datasets for training and development:
 ## Credits
 - ASL Alphabet Chart images courtesy of [Super Star Worksheets](https://superstarworksheets.com/asl/asl-alphabet/asl-alphabet-chart/)
 - Model implementation using [Google's MediaPipe Solutions](https://ai.google.dev/edge/mediapipe/solutions/vision/gesture_recognizer)
+- Avatar videos courtesy of [www.signingsavvy.com](https://www.signingsavvy.com)
 
 ## License
 Please note that while this project is open source, the datasets and resources used have their own licensing terms. Make sure to comply with their respective licenses when using or redistributing this project.
