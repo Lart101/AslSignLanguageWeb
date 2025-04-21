@@ -244,6 +244,11 @@ if (speedDropdown) {
         letterSpan.textContent = letter;
         if (!/[a-zA-Z]/.test(letter)) {
             letterSpan.className += ' non-letter';
+        } else {
+            // Make alphabet letters clickable
+            letterSpan.style.cursor = 'pointer';
+            letterSpan.dataset.letter = letter;
+            letterSpan.title = `Click to play sign for "${letter}"`;
         }
         letterSequence.appendChild(letterSpan);
     }
@@ -399,6 +404,60 @@ function setupCombinedVideoPlayer(letters) {
         progressBar.style.width = `${progress}%`;
     }
     
+    // Function to jump to specific letter in the sequence
+    function jumpToLetter(letterToJump) {
+        // Find the index of this letter in our sequence
+        const letterIndex = letters.findIndex(l => l.toUpperCase() === letterToJump.toUpperCase());
+        
+        if (letterIndex >= 0) {
+            // Force stop current playback
+            video.pause();
+            
+            // Update the current index
+            currentLetterIndex = letterIndex;
+            
+            // Update UI
+            letterElements.forEach(el => {
+                el.classList.remove('active');
+                el.classList.remove('completed');
+            });
+            
+            // Mark all previous letters as completed
+            let letterCount = 0;
+            for (let i = 0; i < letterElements.length; i++) {
+                if (!/[a-zA-Z]/.test(letterElements[i].textContent)) continue;
+                
+                if (letterCount < currentLetterIndex) {
+                    letterElements[i].classList.add('completed');
+                }
+                letterCount++;
+            }
+            
+            // Play this letter's video
+            playCurrentLetter();
+        }
+    }
+    
+    // Add click events to the letter sequence elements
+    letterElements.forEach(letterElement => {
+        if (letterElement.dataset.letter) {
+            letterElement.addEventListener('click', function() {
+                const letterToPlay = this.dataset.letter.toUpperCase();
+                
+                // If in start state (not playing), should automatically stop first
+                if (currentLetterIndex === 0 && 
+                    currentLetterIndicator.textContent === "Click PLAY to start" && 
+                    playPauseBtn.dataset.state === 'paused') {
+                    // Reset everything as if we clicked stop
+                    restartBtn.click();
+                }
+                
+                // Jump to this letter
+                jumpToLetter(letterToPlay);
+            });
+        }
+    });
+
     // Event listener for when a video ends
     video.addEventListener('ended', function() {
         isPlaying = false;

@@ -714,6 +714,57 @@ footer a:hover {
     box-shadow: none;
 }
 
+.letter-sequence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+
+.sequence-letter {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    border-radius: 4px;
+    background-color: #e9e9e9;
+    transition: all 0.2s ease;
+}
+
+.sequence-letter.non-letter {
+    background-color: transparent;
+    border: none;
+}
+
+.sequence-letter:not(.non-letter) {
+    cursor: pointer;
+    border: 1px solid #ccc;
+}
+
+.sequence-letter:not(.non-letter):hover {
+    background-color: #d0d0d0;
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sequence-letter.active {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.sequence-letter.completed {
+    background-color: #28a745;
+    color: white;
+}
+
 /* Tips section */
 .sign-language-tips {
     margin-top: 2.5rem; /* Increased from 1.5rem to 2.5rem */
