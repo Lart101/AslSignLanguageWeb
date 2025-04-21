@@ -369,6 +369,9 @@ function setupCombinedVideoPlayer(letters) {
             video.classList.remove('fade-in');
             video.classList.add('fade-out');
             
+            // Store current playback rate to apply after loading new video
+            const currentSpeed = parseFloat(speedSelect.value);
+            
             // Wait for fade out to complete before changing source
             setTimeout(() => {
                 // Change video source
@@ -388,11 +391,11 @@ function setupCombinedVideoPlayer(letters) {
                 // Update progress indicators
                 updateProgressIndicators();
                 
-                // Set playback speed
-                video.playbackRate = parseFloat(speedSelect.value);
-                
                 // Once video is ready to play, fade it in
                 video.oncanplay = function() {
+                    // Apply the playback rate to the newly loaded video
+                    video.playbackRate = currentSpeed;
+                    
                     // Start morph/dissolve transition
                     video.classList.remove('fade-out');
                     video.classList.add('morph-in'); // Changed to morph-in for dissolve effect
@@ -654,7 +657,15 @@ function setupCombinedVideoPlayer(letters) {
     
     // Speed change event
     speedSelect.addEventListener('change', function() {
-        video.playbackRate = parseFloat(this.value);
+        const newSpeed = parseFloat(this.value);
+        
+        // Apply speed change immediately to current video if it exists
+        if (video && video.src) {
+            video.playbackRate = newSpeed;
+        }
+        
+        // Also update global playback speed for any future videos
+        updatePlaybackSpeed(newSpeed);
     });
     
     // Initialize with ready state
@@ -766,17 +777,33 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Global video control functions (for backward compatibility)
-function updatePlaybackSpeed() {
-    const speed = document.getElementById('playback-speed').value;
-    const combinedVideo = document.getElementById('combined-video');
+function updatePlaybackSpeed(speedValue) {
+    // Use provided speed value if available, otherwise get from dropdown
+    const speed = speedValue || document.getElementById('playback-speed')?.value || "1";
+    const speedNumeric = parseFloat(speed);
     
+    // Update main combined video if it exists
+    const combinedVideo = document.getElementById('combined-video');
     if (combinedVideo) {
-        combinedVideo.playbackRate = parseFloat(speed);
-    } else {
-        const videos = document.querySelectorAll('#translated-videos video');
-        videos.forEach(video => {
-            video.playbackRate = parseFloat(speed);
-        });
+        combinedVideo.playbackRate = speedNumeric;
+    } 
+    
+    // Also update any individual videos (for backwards compatibility)
+    const videos = document.querySelectorAll('#translated-videos video');
+    videos.forEach(video => {
+        video.playbackRate = speedNumeric;
+    });
+    
+    // Update any speed dropdowns to keep UI in sync
+    const combinedSpeedSelect = document.getElementById('combined-playback-speed');
+    const mainSpeedSelect = document.getElementById('playback-speed');
+    
+    if (combinedSpeedSelect && combinedSpeedSelect.value !== String(speedNumeric)) {
+        combinedSpeedSelect.value = String(speedNumeric);
+    }
+    
+    if (mainSpeedSelect && mainSpeedSelect.value !== String(speedNumeric)) {
+        mainSpeedSelect.value = String(speedNumeric);
     }
 }
 
