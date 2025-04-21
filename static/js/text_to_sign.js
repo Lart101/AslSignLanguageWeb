@@ -294,6 +294,7 @@ function setupCombinedVideoPlayer(letters) {
     let currentLetterIndex = 0;
     let videoSequence = [];
     let isPlaying = false; // Track if playback is in progress
+    let isTransitioning = false; // Track if we're in a transition
     
     // Create an array of letter videos with their sources
     for (let letter of letters) {
@@ -302,6 +303,46 @@ function setupCombinedVideoPlayer(letters) {
             src: `static/sign_language_gif/${letter}.mp4`
         });
     }
+    
+    // Add CSS for fade transition
+    const style = document.createElement('style');
+    style.textContent = `
+        #combined-video {
+            transition: opacity 0.3s ease-in-out, transform 0.5s ease-in-out;
+        }
+        #combined-video.fade-out {
+            opacity: 0;
+        }
+        #combined-video.fade-in {
+            opacity: 1;
+        }
+        #combined-video.morph-in {
+            opacity: 1;
+            animation: dissolveEffect 0.5s ease-in-out;
+        }
+        
+        @keyframes dissolveEffect {
+            0% { 
+                opacity: 0.2; 
+                filter: blur(10px);
+                transform: scale(0.95);
+            }
+            50% { 
+                opacity: 0.7; 
+                filter: blur(5px);
+                transform: scale(0.98);
+            }
+            100% { 
+                opacity: 1; 
+                filter: blur(0);
+                transform: scale(1);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Initially set video to fully visible
+    video.classList.add('fade-in');
     
     // Function to update play/pause button appearance
     function updatePlayPauseButton(playing) {
@@ -316,40 +357,67 @@ function setupCombinedVideoPlayer(letters) {
         }
     }
     
-    // Function to load and play the current letter's video
+    // Function to load and play the current letter's video with fade transition
     function playCurrentLetter() {
+        if (isTransitioning) return; // Prevent multiple transitions at once
+        
         if (currentLetterIndex < videoSequence.length) {
             const currentVideo = videoSequence[currentLetterIndex];
-            video.src = currentVideo.src;
-            video.load();
-            isPlaying = true;
             
-            // Update play/pause button
-            updatePlayPauseButton(true);
+            // Start fade out transition
+            isTransitioning = true;
+            video.classList.remove('fade-in');
+            video.classList.add('fade-out');
             
-            // Update current letter display
-            currentLetterIndicator.textContent = `Now signing: "${currentVideo.letter}"`;
-            
-            // Highlight current letter in sequence and mark completed ones
-            updateLetterHighlighting();
-            
-            // Update progress indicators
-            updateProgressIndicators();
-            
-            // Set playback speed
-            video.playbackRate = parseFloat(speedSelect.value);
-            
-            // Play the video
-            const playPromise = video.play();
-            
-            // Handle play promise to avoid race conditions
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log('Playback error:', error);
-                    isPlaying = false;
-                    updatePlayPauseButton(false);
-                });
-            }
+            // Wait for fade out to complete before changing source
+            setTimeout(() => {
+                // Change video source
+                video.src = currentVideo.src;
+                video.load();
+                isPlaying = true;
+                
+                // Update play/pause button
+                updatePlayPauseButton(true);
+                
+                // Update current letter display
+                currentLetterIndicator.textContent = `Now signing: "${currentVideo.letter}"`;
+                
+                // Highlight current letter in sequence and mark completed ones
+                updateLetterHighlighting();
+                
+                // Update progress indicators
+                updateProgressIndicators();
+                
+                // Set playback speed
+                video.playbackRate = parseFloat(speedSelect.value);
+                
+                // Once video is ready to play, fade it in
+                video.oncanplay = function() {
+                    // Start morph/dissolve transition
+                    video.classList.remove('fade-out');
+                    video.classList.add('morph-in'); // Changed to morph-in for dissolve effect
+                    
+                    // Play the video
+                    const playPromise = video.play();
+                    
+                    // Handle play promise to avoid race conditions
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log('Playback error:', error);
+                            isPlaying = false;
+                            updatePlayPauseButton(false);
+                        });
+                    }
+                    
+                    // Reset transition flag after morph-in completes
+                    setTimeout(() => {
+                        isTransitioning = false;
+                        // Remove the morph-in class after transition completes
+                        video.classList.remove('morph-in');
+                        video.classList.add('fade-in');
+                    }, 500); // Slightly longer for the morph effect
+                };
+            }, 300); // Match the transition duration in the CSS
         } else {
             // End of sequence
             isPlaying = false;
@@ -409,7 +477,7 @@ function setupCombinedVideoPlayer(letters) {
         // Find the index of this letter in our sequence
         const letterIndex = letters.findIndex(l => l.toUpperCase() === letterToJump.toUpperCase());
         
-        if (letterIndex >= 0) {
+        if (letterIndex >= 0 && !isTransitioning) {
             // Force stop current playback
             video.pause();
             
@@ -442,40 +510,88 @@ function setupCombinedVideoPlayer(letters) {
     letterElements.forEach(letterElement => {
         if (letterElement.dataset.letter) {
             letterElement.addEventListener('click', function() {
+                // Get the letter to play and find its index in our sequence
                 const letterToPlay = this.dataset.letter.toUpperCase();
+                const letterIndex = letters.findIndex(l => l.toUpperCase() === letterToPlay);
                 
-                // If in start state (not playing), should automatically stop first
-                if (currentLetterIndex === 0 && 
-                    currentLetterIndicator.textContent === "Click PLAY to start" && 
-                    playPauseBtn.dataset.state === 'paused') {
-                    // Reset everything as if we clicked stop
-                    restartBtn.click();
+                if (letterIndex >= 0) {
+                    // Force stop any current playback and transitions
+                    video.pause();
+                    
+                    // Clear any pending timeouts that might interfere with our jump
+                    for (let i = 1; i < 1000; i++) {
+                        window.clearTimeout(i);
+                    }
+                    
+                    // Reset transition state
+                    isTransitioning = false;
+                    
+                    // Update the current index
+                    currentLetterIndex = letterIndex;
+                    
+                    // Update UI - reset all letter highlights first
+                    letterElements.forEach(el => {
+                        el.classList.remove('active');
+                        el.classList.remove('completed');
+                    });
+                    
+                    // Mark all previous letters as completed
+                    let letterCount = 0;
+                    for (let i = 0; i < letterElements.length; i++) {
+                        if (!/[a-zA-Z]/.test(letterElements[i].textContent)) continue;
+                        
+                        if (letterCount < currentLetterIndex) {
+                            letterElements[i].classList.add('completed');
+                        }
+                        letterCount++;
+                    }
+                    
+                    // Reset video transitions before playing the new letter
+                    video.classList.remove('fade-out', 'fade-in', 'morph-in');
+                    
+                    // Ensure we're in a fresh state before playing
+                    setTimeout(() => {
+                        // Force play flag to true so the video plays regardless of previous state
+                        isPlaying = true;
+                        
+                        // Play this letter's video
+                        playCurrentLetter();
+                    }, 50);
                 }
-                
-                // Jump to this letter
-                jumpToLetter(letterToPlay);
             });
         }
     });
 
     // Event listener for when a video ends
     video.addEventListener('ended', function() {
-        isPlaying = false;
-        updatePlayPauseButton(false);
-        currentLetterIndex++;
-        if (currentLetterIndex < videoSequence.length) {
-            playCurrentLetter();
-        } else {
-            // Reset to beginning after showing "Completed"
-            setTimeout(() => {
-                currentLetterIndex = 0;
-                currentLetterIndicator.textContent = "Click PLAY to start";
-                progressBar.style.width = "0%";
-                letterElements.forEach(el => {
-                    el.classList.remove('active');
-                    el.classList.remove('completed');
-                });
-            }, 3000);
+        if (!isTransitioning) {
+            isPlaying = false;
+            updatePlayPauseButton(false);
+            currentLetterIndex++;
+            if (currentLetterIndex < videoSequence.length) {
+                playCurrentLetter();
+            } else {
+                // Fade out video at the end
+                video.classList.remove('fade-in');
+                video.classList.add('fade-out');
+                
+                // Reset to beginning after showing "Completed"
+                setTimeout(() => {
+                    currentLetterIndex = 0;
+                    currentLetterIndicator.textContent = "Click PLAY to start";
+                    progressBar.style.width = "0%";
+                    letterElements.forEach(el => {
+                        el.classList.remove('active');
+                        el.classList.remove('completed');
+                    });
+                    
+                    // Fade back in empty video
+                    setTimeout(() => {
+                        video.classList.remove('fade-out');
+                        video.classList.add('fade-in');
+                    }, 300);
+                }, 3000);
+            }
         }
     });
     
@@ -497,12 +613,20 @@ function setupCombinedVideoPlayer(letters) {
         }
     });
     
-    // Restart button event
+    // Stop button event
     restartBtn.addEventListener('click', function() {
-        // Force stop current playback
+        // Force stop current playback and any transitions
         video.pause();
         video.removeAttribute('src'); // Remove source to stop any loading
         video.load(); // Reset the video element
+        
+        // Force cancel any ongoing transitions
+        isTransitioning = false;
+        
+        // Clear any pending timeouts
+        for (let i = 1; i < 10000; i++) {
+            window.clearTimeout(i);
+        }
         
         // Reset state
         isPlaying = false;
@@ -520,22 +644,12 @@ function setupCombinedVideoPlayer(letters) {
         // Reset progress indicators
         progressBar.style.width = "0%";
         
+        // Reset all animations and transitions
+        video.classList.remove('fade-out', 'fade-in', 'morph-in');
+        video.classList.add('fade-in');
+        
         // Update text
         currentLetterIndicator.textContent = "Click PLAY to start";
-        
-        // Small delay to ensure proper reset before starting again
-        setTimeout(() => {
-            // Instead of immediately playing, check if we should play
-            if (playPauseBtn.dataset.state === 'playing') {
-                playCurrentLetter();
-            } else {
-                // Just prepare the first video without playing it
-                if (videoSequence.length > 0) {
-                    video.src = videoSequence[0].src;
-                    video.load();
-                }
-            }
-        }, 50);
     });
     
     // Speed change event
