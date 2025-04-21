@@ -141,17 +141,12 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     primaryControls.style.flexDirection = 'row';
     primaryControls.style.gap = '10px';
     
-    // Play button
-    const playBtn = document.createElement('button');
-    playBtn.className = 'control-btn play-btn';
-    playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Play';
-    playBtn.id = 'combined-play-btn';
-    
-    // Pause button
-    const pauseBtn = document.createElement('button');
-    pauseBtn.className = 'control-btn pause-btn';
-    pauseBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> Pause';
-    pauseBtn.id = 'combined-pause-btn';
+    // Play/Pause toggle button
+    const playPauseBtn = document.createElement('button');
+    playPauseBtn.className = 'control-btn play-btn';
+    playPauseBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Play';
+    playPauseBtn.id = 'combined-play-pause-btn';
+    playPauseBtn.dataset.state = 'paused';
     
     // Restart button
     const restartBtn = document.createElement('button');
@@ -159,8 +154,7 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     restartBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Restart';
     restartBtn.id = 'combined-restart-btn';
     
-    primaryControls.appendChild(playBtn);
-    primaryControls.appendChild(pauseBtn);
+    primaryControls.appendChild(playPauseBtn);
     primaryControls.appendChild(restartBtn);
     
     // Speed control - part of the horizontal row
@@ -259,15 +253,11 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
 // Set up the video sequence functionality
 function setupCombinedVideoPlayer(letters) {
     const video = document.getElementById('combined-video');
-    const playBtn = document.getElementById('combined-play-btn');
-    const pauseBtn = document.getElementById('combined-pause-btn');
+    const playPauseBtn = document.getElementById('combined-play-pause-btn');
     const restartBtn = document.getElementById('combined-restart-btn');
     const speedSelect = document.getElementById('combined-playback-speed');
     const progressBar = document.getElementById('progress-bar');
     const currentLetterIndicator = document.getElementById('current-letter-indicator');
-    const progressCurrent = document.getElementById('progress-current');
-    const progressTotal = document.getElementById('progress-total');
-    const progressPercentage = document.getElementById('progress-percentage');
     const letterElements = document.querySelectorAll('.sequence-letter');
     
     let currentLetterIndex = 0;
@@ -282,6 +272,19 @@ function setupCombinedVideoPlayer(letters) {
         });
     }
     
+    // Function to update play/pause button appearance
+    function updatePlayPauseButton(playing) {
+        if (playing) {
+            playPauseBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> Pause';
+            playPauseBtn.dataset.state = 'playing';
+            playPauseBtn.className = 'control-btn pause-btn'; // Apply pause styling
+        } else {
+            playPauseBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Play';
+            playPauseBtn.dataset.state = 'paused';
+            playPauseBtn.className = 'control-btn play-btn'; // Apply play styling
+        }
+    }
+    
     // Function to load and play the current letter's video
     function playCurrentLetter() {
         if (currentLetterIndex < videoSequence.length) {
@@ -289,6 +292,9 @@ function setupCombinedVideoPlayer(letters) {
             video.src = currentVideo.src;
             video.load();
             isPlaying = true;
+            
+            // Update play/pause button
+            updatePlayPauseButton(true);
             
             // Update current letter display
             currentLetterIndicator.textContent = `Now signing: "${currentVideo.letter}"`;
@@ -310,14 +316,15 @@ function setupCombinedVideoPlayer(letters) {
                 playPromise.catch(error => {
                     console.log('Playback error:', error);
                     isPlaying = false;
+                    updatePlayPauseButton(false);
                 });
             }
         } else {
             // End of sequence
             isPlaying = false;
+            updatePlayPauseButton(false);
             currentLetterIndicator.textContent = "✓ Translation completed";
             progressBar.style.width = "100%";
-            progressPercentage.textContent = "100%";
             
             // Mark all letters as completed
             letterElements.forEach(el => {
@@ -364,12 +371,12 @@ function setupCombinedVideoPlayer(letters) {
     function updateProgressIndicators() {
         const progress = ((currentLetterIndex + 1) / videoSequence.length) * 100;
         progressBar.style.width = `${progress}%`;
-        // Removed text-based progress indicators
     }
     
     // Event listener for when a video ends
     video.addEventListener('ended', function() {
         isPlaying = false;
+        updatePlayPauseButton(false);
         currentLetterIndex++;
         if (currentLetterIndex < videoSequence.length) {
             playCurrentLetter();
@@ -379,7 +386,6 @@ function setupCombinedVideoPlayer(letters) {
                 currentLetterIndex = 0;
                 currentLetterIndicator.textContent = "Click PLAY to start";
                 progressBar.style.width = "0%";
-                // Removed references to progress text elements
                 letterElements.forEach(el => {
                     el.classList.remove('active');
                     el.classList.remove('completed');
@@ -388,8 +394,8 @@ function setupCombinedVideoPlayer(letters) {
         }
     });
     
-    // Play button event
-    playBtn.addEventListener('click', function() {
+    // Play/Pause button event
+    playPauseBtn.addEventListener('click', function() {
         if (video.paused) {
             if (currentLetterIndex >= videoSequence.length) {
                 currentLetterIndex = 0;
@@ -400,15 +406,9 @@ function setupCombinedVideoPlayer(letters) {
             }
             playCurrentLetter();
         } else {
-            video.play();
-        }
-    });
-    
-    // Pause button event
-    pauseBtn.addEventListener('click', function() {
-        if (!video.paused) {
             video.pause();
             isPlaying = false;
+            updatePlayPauseButton(false);
         }
     });
     
@@ -417,6 +417,7 @@ function setupCombinedVideoPlayer(letters) {
         // Stop current playback if any
         video.pause();
         isPlaying = false;
+        updatePlayPauseButton(false);
         
         // Reset to first letter
         currentLetterIndex = 0;
@@ -429,7 +430,9 @@ function setupCombinedVideoPlayer(letters) {
         
         // Reset progress indicators
         progressBar.style.width = "0%";
-        // Removed references to progress text elements
+        
+        // Update text
+        currentLetterIndicator.textContent = "Click PLAY to start";
         
         // Small delay to ensure proper reset before starting again
         setTimeout(() => {
@@ -444,7 +447,6 @@ function setupCombinedVideoPlayer(letters) {
     
     // Initialize with ready state
     currentLetterIndicator.textContent = "Click PLAY to start";
-    progressTotal.textContent = videoSequence.length;
 }
 
 // Add event listeners when the document is loaded
@@ -569,7 +571,10 @@ function updatePlaybackSpeed() {
 function playAllVideos() {
     const combinedVideo = document.getElementById('combined-video');
     if (combinedVideo) {
-        document.getElementById('combined-play-btn').click();
+        // Only trigger click if video is paused
+        if (combinedVideo.paused) {
+            document.getElementById('combined-play-pause-btn').click();
+        }
     } else {
         const videos = document.querySelectorAll('#translated-videos video');
         videos.forEach(video => video.play());
@@ -579,7 +584,10 @@ function playAllVideos() {
 function pauseAllVideos() {
     const combinedVideo = document.getElementById('combined-video');
     if (combinedVideo) {
-        document.getElementById('combined-pause-btn').click();
+        // Only trigger click if video is playing
+        if (!combinedVideo.paused) {
+            document.getElementById('combined-play-pause-btn').click();
+        }
     } else {
         const videos = document.querySelectorAll('#translated-videos video');
         videos.forEach(video => video.pause());
