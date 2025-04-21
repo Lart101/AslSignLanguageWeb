@@ -238,16 +238,18 @@ if (speedDropdown) {
     letterSequence.innerHTML = '<h4 style="width:100%; margin-bottom:0.75rem; text-align:center;">Letter Sequence</h4>';
     
     // Create letter blocks
-    for (let letter of originalText) {
+    for (let i = 0; i < originalText.length; i++) {
+        const letter = originalText[i];
         const letterSpan = document.createElement('span');
         letterSpan.className = 'sequence-letter';
         letterSpan.textContent = letter;
         if (!/[a-zA-Z]/.test(letter)) {
             letterSpan.className += ' non-letter';
         } else {
-            // Make alphabet letters clickable
+            // Make alphabet letters clickable and store position info
             letterSpan.style.cursor = 'pointer';
             letterSpan.dataset.letter = letter;
+            letterSpan.dataset.position = i; // Store position in the original text
             letterSpan.title = `Click to play sign for "${letter}"`;
         }
         letterSequence.appendChild(letterSpan);
@@ -513,11 +515,29 @@ function setupCombinedVideoPlayer(letters) {
     letterElements.forEach(letterElement => {
         if (letterElement.dataset.letter) {
             letterElement.addEventListener('click', function() {
-                // Get the letter to play and find its index in our sequence
-                const letterToPlay = this.dataset.letter.toUpperCase();
-                const letterIndex = letters.findIndex(l => l.toUpperCase() === letterToPlay);
+                // Get the exact position of this letter in the original text
+                const position = parseInt(this.dataset.position);
                 
-                if (letterIndex >= 0) {
+                // Get the letter to play
+                const letterToPlay = this.dataset.letter.toUpperCase();
+                
+                // Count up to this specific position to find the correct index in our sequence
+                let validLetterCount = -1;  // Start at -1 because we'll count to the current letter
+                let targetLetterIndex = -1;
+                
+                // Loop through all letters up to and including this one
+                for (let i = 0; i <= position; i++) {
+                    const char = letterElements[i].textContent.toUpperCase();
+                    if (/[A-Z]/.test(char)) {
+                        validLetterCount++;
+                        if (i === position) {
+                            targetLetterIndex = validLetterCount;
+                        }
+                    }
+                }
+                
+                // Make sure we found a valid index
+                if (targetLetterIndex >= 0) {
                     // Force stop any current playback and transitions
                     video.pause();
                     
@@ -529,8 +549,8 @@ function setupCombinedVideoPlayer(letters) {
                     // Reset transition state
                     isTransitioning = false;
                     
-                    // Update the current index
-                    currentLetterIndex = letterIndex;
+                    // Update the current index to our specific target
+                    currentLetterIndex = targetLetterIndex;
                     
                     // Update UI - reset all letter highlights first
                     letterElements.forEach(el => {
