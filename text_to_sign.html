@@ -32,7 +32,12 @@
             <div class="warning">Note: This is a prototype. Features are in beta testing.</div>
             
             <form id="text-to-sign-form">
-                <textarea id="input-text" placeholder="Type your text here to see it in sign language..." required></textarea>
+                <div class="input-container">
+                    <textarea id="input-text" placeholder="Type your text here to see it in sign language..." required maxlength="70"></textarea>
+                    <div class="char-indicator">
+                        <span id="char-count">0</span>/70 characters (letters only)
+                    </div>
+                </div>
                 <div class="form-actions">
                     <button type="button" onclick="translateText()">Translate to Sign Language</button>
                     <select id="display-mode" class="display-mode-selector">

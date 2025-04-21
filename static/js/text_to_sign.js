@@ -85,9 +85,24 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     titleElement.textContent = `Sign Language Translation: "${originalText}"`;
     combinedPlayerContainer.appendChild(titleElement);
     
-    // Create video element and player structure
+    // Create video element and player structure with flex layout
     const videoPlayer = document.createElement('div');
     videoPlayer.className = 'combined-player';
+    videoPlayer.style.display = 'flex';
+    videoPlayer.style.flexDirection = 'column'; // Main container is a column
+    
+    // Create a row container for video+controls and progress+sequence
+    const rowContainer = document.createElement('div');
+    rowContainer.style.display = 'flex';
+    rowContainer.style.flexDirection = 'row';
+    rowContainer.style.gap = '20px';
+    rowContainer.style.alignItems = 'flex-start';
+    
+    // Left column: Video and Controls - now 50% of the space
+    const leftColumn = document.createElement('div');
+    leftColumn.style.display = 'flex';
+    leftColumn.style.flexDirection = 'column';
+    leftColumn.style.width = '50%'; // Increased to 50% of available space
     
     // Video and current letter section
     const videoAndDisplay = document.createElement('div');
@@ -95,8 +110,8 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     
     const video = document.createElement('video');
     video.id = 'combined-video';
-    video.width = 320;
-    video.height = 240;
+    video.style.width = '100%'; // Make video fill the column
+    video.style.height = 'auto'; // Keep aspect ratio
     video.controls = false; // We'll add custom controls
     
     // Create a container for the current letter display
@@ -107,32 +122,24 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     videoAndDisplay.appendChild(video);
     videoAndDisplay.appendChild(currentLetterDisplay);
     
-    // Progress section
-    const progressSection = document.createElement('div');
-    progressSection.className = 'progress-section';
-    
-    const progressContainer = document.createElement('div');
-    progressContainer.className = 'progress-container';
-    
-    const progressBar = document.createElement('div');
-    progressBar.id = 'progress-bar';
-    progressBar.className = 'progress-bar';
-    
-    // Removed progress stats display that showed letter count and percentage
-    
-    progressContainer.appendChild(progressBar);
-    progressSection.appendChild(progressContainer);
-    
-    // Controls section
+    // Controls section - now horizontally aligned
     const controlsSection = document.createElement('div');
     controlsSection.className = 'controls-section';
+    controlsSection.style.marginTop = '10px';
     
     const controlsWrapper = document.createElement('div');
     controlsWrapper.className = 'combined-video-controls';
+    controlsWrapper.style.display = 'flex';
+    controlsWrapper.style.flexDirection = 'row';
+    controlsWrapper.style.alignItems = 'center';
+    controlsWrapper.style.justifyContent = 'space-between';
     
-    // Primary controls group
+    // Primary controls group - now horizontal
     const primaryControls = document.createElement('div');
     primaryControls.className = 'primary-controls';
+    primaryControls.style.display = 'flex';
+    primaryControls.style.flexDirection = 'row';
+    primaryControls.style.gap = '10px';
     
     // Play button
     const playBtn = document.createElement('button');
@@ -156,9 +163,12 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     primaryControls.appendChild(pauseBtn);
     primaryControls.appendChild(restartBtn);
     
-    // Speed control
+    // Speed control - part of the horizontal row
     const speedControl = document.createElement('div');
     speedControl.className = 'speed-control';
+    speedControl.style.display = 'flex';
+    speedControl.style.alignItems = 'center';
+    speedControl.style.gap = '5px';
     speedControl.innerHTML = `
         <label for="combined-playback-speed">Playback Speed:</label>
         <select id="combined-playback-speed">
@@ -176,9 +186,35 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     controlsWrapper.appendChild(speedControl);
     controlsSection.appendChild(controlsWrapper);
     
-    // Add letter sequence display
+    // Add video and controls to the left column
+    leftColumn.appendChild(videoAndDisplay);
+    leftColumn.appendChild(controlsSection);
+    
+    // Right column: Progress and Letter Sequence
+    const rightColumn = document.createElement('div');
+    rightColumn.style.display = 'flex';
+    rightColumn.style.flexDirection = 'column';
+    rightColumn.style.flex = '1';
+    
+    // Progress section - now on the right
+    const progressSection = document.createElement('div');
+    progressSection.className = 'progress-section';
+    progressSection.style.marginBottom = '20px';
+    
+    const progressContainer = document.createElement('div');
+    progressContainer.className = 'progress-container';
+    
+    const progressBar = document.createElement('div');
+    progressBar.id = 'progress-bar';
+    progressBar.className = 'progress-bar';
+    
+    progressContainer.appendChild(progressBar);
+    progressSection.appendChild(progressContainer);
+    
+    // Add letter sequence display - also on the right
     const letterSequence = document.createElement('div');
     letterSequence.className = 'letter-sequence';
+    letterSequence.style.marginTop = '20px';
     letterSequence.innerHTML = '<h4 style="width:100%; margin-bottom:0.75rem; text-align:center;">Letter Sequence</h4>';
     
     // Create letter blocks
@@ -192,19 +228,25 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
         letterSequence.appendChild(letterSpan);
     }
     
-    // Add tips section
+    // Add progress and letter sequence to right column
+    rightColumn.appendChild(progressSection);
+    rightColumn.appendChild(letterSequence);
+    
+    // Add left and right columns to row container
+    rowContainer.appendChild(leftColumn);
+    rowContainer.appendChild(rightColumn);
+    
+    // Add tips section - remains at the bottom
     const tipsSection = document.createElement('div');
     tipsSection.className = 'sign-language-tips';
+    tipsSection.style.marginTop = '20px';
     tipsSection.innerHTML = `
         <h4>Tips for Learning Sign Language</h4>
         <p>Pay attention to hand position and movement. Practice along with the videos to improve retention.</p>
     `;
     
     // Assemble video player
-    videoPlayer.appendChild(videoAndDisplay);
-    videoPlayer.appendChild(controlsSection);
-    videoPlayer.appendChild(progressSection);
-    videoPlayer.appendChild(letterSequence);
+    videoPlayer.appendChild(rowContainer);
     videoPlayer.appendChild(tipsSection);
     
     combinedPlayerContainer.appendChild(videoPlayer);
@@ -409,6 +451,43 @@ function setupCombinedVideoPlayer(letters) {
 document.addEventListener('DOMContentLoaded', function() {
     const displayModeSelect = document.getElementById('display-mode');
     const controlsPanel = document.getElementById('video-controls-panel');
+    const inputText = document.getElementById('input-text');
+    const charCounter = document.getElementById('char-count');
+    
+    // Initialize character counter
+    updateCharCount();
+    
+    // Add input event listener to textarea for character counting and validation
+    inputText.addEventListener('input', function() {
+        // Filter out non-alphabetic characters
+        const value = this.value;
+        const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
+        
+        // If the value changed (non-alphabetic characters were removed), update the textarea
+        if (value !== filteredValue) {
+            this.value = filteredValue;
+            
+            // Visual feedback that an invalid character was attempted
+            this.classList.add('invalid');
+            setTimeout(() => {
+                this.classList.remove('invalid');
+            }, 500);
+        }
+        
+        updateCharCount();
+    });
+    
+    // Character counter function
+    function updateCharCount() {
+        const count = inputText.value.length;
+        charCounter.textContent = count;
+        
+        if (count >= 70) {
+            charCounter.classList.add('char-limit-exceeded');
+        } else {
+            charCounter.classList.remove('char-limit-exceeded');
+        }
+    }
     
     // Mode selection change event
     displayModeSelect.addEventListener('change', function() {

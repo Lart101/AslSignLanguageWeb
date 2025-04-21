@@ -790,3 +790,26 @@ footer a:hover {
         min-width: 0;
     }
 }
+
+/* Character Counter Styles */
+.input-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.char-indicator {
+    position: absolute;
+    bottom: -22px;
+    right: 0;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.char-limit-exceeded {
+    color: #ef4444;
+}
+
+textarea.invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
