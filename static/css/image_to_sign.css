@@ -1,5 +1,4 @@
-
-        :root {
+:root {
             --primary-color: #2563eb;
             --secondary-color: #3b82f6;
             --background-color: #f8fafc;
@@ -129,6 +128,20 @@
             width: fit-content;
         }
 
+        .important-notice {
+            padding: 0.75rem 1.5rem;
+            background-color: #e0f7fa;
+            color: #006064;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            margin: 1rem auto 1.5rem;
+            display: block;
+            width: fit-content;
+            border-left: 4px solid #0097a7;
+            text-align: center;
+            max-width: 90%;
+        }
+
         #upload-form {
             max-width: 800px;
             margin: 0 auto;
@@ -205,6 +218,28 @@
             padding: 1rem;
             color: var(--primary-color);
             font-weight: 500;
+        }
+
+        #upload-text {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            display: block;
+            text-align: center;
+            border-left: 4px solid var(--primary-color);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .format-info {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+            text-align: center;
         }
 
         footer {

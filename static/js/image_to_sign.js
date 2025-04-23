@@ -1,4 +1,3 @@
-
 import { GESTURE_MODEL_URL } from './config.js';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
@@ -25,6 +24,21 @@ createGestureRecognizer();
 
 const canvasElement = document.getElementById("output_canvas");
 const canvasCtx = canvasElement.getContext("2d");
+
+// Add image selection indicator
+document.getElementById('image-upload').addEventListener('change', (e) => {
+   const fileInput = e.target;
+   const file = fileInput.files[0];
+   const uploadText = document.getElementById('upload-text');
+   
+   if (file) {
+       uploadText.innerText = `Selected image: ${file.name}`;
+       uploadText.style.display = 'block';
+   } else {
+       uploadText.innerText = '';
+       uploadText.style.display = 'none';
+   }
+});
 
 // Image Upload and Processing
 document.getElementById('upload-form').addEventListener('submit', async (e) => {
@@ -109,7 +123,7 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
                    const categoryName = results.gestures[0][0].categoryName;
                    const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
                    const handedness = results.handednesses[0][0].displayName;
-                   gestureOutput.innerText = `Detected Sign: ${categoryName}\nConfidence: ${categoryScore}%\nHand: ${handedness}`;
+                   gestureOutput.innerText = `Detected Sign: ${categoryName}\nConfidence: ${categoryScore}%`;
                } else {
                    gestureOutput.style.display = 'block';
                    gestureOutput.innerText = 'No hand signs detected in the image. Please ensure your hand is clearly visible in the image.';
