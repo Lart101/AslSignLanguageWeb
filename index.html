@@ -129,6 +129,60 @@
                 </div>
             </div>
         </section>
+
+        <section class="faq">
+            <div class="faq-header">
+                <h3>Frequently Asked Questions</h3>
+                <p>Get answers to the most common questions about SignSpeak</p>
+            </div>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>How accurate is the sign language detection?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our sign language detection leverages MediaPipe's hand tracking technology, providing up to 97% accuracy for clear hand gestures in good lighting conditions. The system continues to improve as we train our models with more data.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Can I use SignSpeak on my mobile device?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes! SignSpeak is designed to be responsive and works on most modern mobile devices with a camera. For the best experience with webcam features, we recommend using Chrome or Firefox browsers.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Is SignSpeak suitable for complete beginners?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Absolutely! We've designed SignSpeak with beginners in mind. Start with our "Learn Alphabet" section to master the basics, then progress to more complex signs and phrases. The interactive feedback helps beginners correct their form immediately.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Does SignSpeak support sign languages other than ASL?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Currently, SignSpeak focuses on American Sign Language (ASL). We're working on expanding to other sign languages in future updates based on user feedback and demand.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>What signs can SignSpeak currently detect?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Currently, SignSpeak can only detect and recognize ASL alphabet letters (A-Z). Support for numbers, common phrases, and other signs is planned for future updates as we continue to improve our recognition technology.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
     <footer>
         <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
@@ -137,6 +191,16 @@
         document.querySelector('.menu-toggle').addEventListener('click', function() {
             this.classList.toggle('active');
             document.querySelector('nav').classList.toggle('active');
+        });
+
+        // FAQ Toggle functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const faqItem = question.parentNode;
+                faqItem.classList.toggle('active');
+                const toggle = question.querySelector('.faq-toggle');
+                toggle.textContent = faqItem.classList.contains('active') ? '-' : '+';
+            });
         });
     </script>
 </body>
