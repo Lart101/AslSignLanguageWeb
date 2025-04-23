@@ -431,14 +431,16 @@ footer a:hover {
 .faq-answer {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    transition: max-height 0.5s cubic-bezier(0, 1, 0, 1), padding 0.4s ease;
     background-color: #f9f9f9;
+    padding: 0 1.5rem;
 }
 
 .faq-item.active .faq-answer {
-    max-height: 300px;
+    max-height: 1000px; /* Increased to accommodate longer answers */
     padding: 1.5rem;
     border-top: 1px solid #eaeaea;
+    transition: max-height 0.5s cubic-bezier(0.5, 0, 1, 0), padding 0.4s ease;
 }
 
 .faq-answer p {
