@@ -48,6 +48,13 @@ function translateText() {
         createCombinedVideoPlayer(videosContainer, validLetters, inputText);
     } else {
         // Image mode - use static images as before
+        const imageGrid = document.createElement('div');
+        imageGrid.className = 'sign-image-grid';
+        imageGrid.style.display = 'flex';
+        imageGrid.style.flexWrap = 'wrap';
+        imageGrid.style.gap = '1rem';
+        imageGrid.style.justifyContent = 'center';
+        
         for (let char of inputText) {
             if (/[a-zA-Z]/.test(char)) {
                 const upperChar = char.toUpperCase();
@@ -57,20 +64,26 @@ function translateText() {
                 const img = document.createElement('img');
                 img.src = `static/sign_language_images/alphabet_${upperChar}.jpg`;
                 img.alt = `Sign for letter ${char}`;
+                img.style.width = 'auto'; // Allow image to size naturally
+                img.style.height = 'auto'; // Allow image to size naturally
+                img.style.maxWidth = '100%'; // But don't exceed container
+                img.style.maxHeight = '120px'; // Maximum height
                 
                 const letter = document.createElement('p');
                 letter.textContent = char;
                 
                 container.appendChild(img);
                 container.appendChild(letter);
-                imagesContainer.appendChild(container);
+                imageGrid.appendChild(container);
             } else if (char === ' ') {
                 const space = document.createElement('div');
                 space.style.width = '40px';
                 space.style.height = '120px';
-                imagesContainer.appendChild(space);
+                imageGrid.appendChild(space);
             }
         }
+        
+        imagesContainer.appendChild(imageGrid);
     }
 }
 
@@ -97,12 +110,15 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     rowContainer.style.flexDirection = 'row';
     rowContainer.style.gap = '20px';
     rowContainer.style.alignItems = 'flex-start';
+    rowContainer.style.flexWrap = 'wrap'; // Allow wrapping on smaller screens
     
-    // Left column: Video and Controls - now 50% of the space
+    // Left column: Video and Controls - now 50% of the space with minimum width
     const leftColumn = document.createElement('div');
     leftColumn.style.display = 'flex';
     leftColumn.style.flexDirection = 'column';
-    leftColumn.style.width = '50%'; // Increased to 50% of available space
+    leftColumn.style.width = '50%'; // Relative width for larger screens
+    leftColumn.style.minWidth = '280px'; // Minimum width for smaller screens
+    leftColumn.style.flex = '1'; // Allow growing and shrinking
     
     // Video and current letter section
     const videoAndDisplay = document.createElement('div');
@@ -110,8 +126,13 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     
     const video = document.createElement('video');
     video.id = 'combined-video';
-    video.style.width = '100%'; // Make video fill the column
+    video.style.width = '50%'; // Make video 50% smaller
     video.style.height = 'auto'; // Keep aspect ratio
+    video.style.maxWidth = '50%'; // Ensure video doesn't overflow container
+    video.style.backgroundColor = 'black'; // Add black background
+    video.style.margin = '0 auto'; // Center the video
+    video.style.display = 'block'; // Ensure display block for margin auto to work
+    video.muted = true; // Mute the video
     video.controls = false; // We'll add custom controls
     
     // Create a container for the current letter display
@@ -122,10 +143,11 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     videoAndDisplay.appendChild(video);
     videoAndDisplay.appendChild(currentLetterDisplay);
     
-    // Controls section - now horizontally aligned
+    // Controls section - now horizontally aligned with wrap for mobile
     const controlsSection = document.createElement('div');
     controlsSection.className = 'controls-section';
     controlsSection.style.marginTop = '10px';
+    controlsSection.style.width = '100%'; // Full width of parent
     
     const controlsWrapper = document.createElement('div');
     controlsWrapper.className = 'combined-video-controls';
@@ -133,13 +155,18 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     controlsWrapper.style.flexDirection = 'row';
     controlsWrapper.style.alignItems = 'center';
     controlsWrapper.style.justifyContent = 'space-between';
+    controlsWrapper.style.flexWrap = 'wrap'; // Allow controls to wrap
+    controlsWrapper.style.gap = '10px'; // Gap between wrapped items
     
-    // Primary controls group - now horizontal
+    // Primary controls group - horizontal but can wrap
     const primaryControls = document.createElement('div');
     primaryControls.className = 'primary-controls';
     primaryControls.style.display = 'flex';
     primaryControls.style.flexDirection = 'row';
     primaryControls.style.gap = '10px';
+    primaryControls.style.flexWrap = 'wrap'; // Allow buttons to wrap
+    primaryControls.style.justifyContent = 'center'; // Center when wrapped
+    primaryControls.style.width = '100%'; // Full width on smaller screens
     
     // Play/Pause toggle button
     const playPauseBtn = document.createElement('button');
@@ -163,6 +190,7 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     speedControl.style.display = 'flex';
     speedControl.style.alignItems = 'center';
     speedControl.style.gap = '5px';
+    speedControl.style.flexWrap = 'nowrap'; // Keep label and select together
     speedControl.innerHTML = `
         <label for="combined-playback-speed">Playback Speed:</label>
         <select id="combined-playback-speed">
@@ -188,38 +216,19 @@ function createCombinedVideoPlayer(container, validLetters, originalText) {
     leftColumn.appendChild(videoAndDisplay);
     leftColumn.appendChild(controlsSection);
     
-    // Set white background for the controls with a consistent look
- 
-    controlsWrapper.style.padding = '10px';
-    controlsWrapper.style.borderRadius = '5px';
-    controlsWrapper.style.border = 'none';
-    controlsWrapper.style.boxShadow = 'none';
-    
-    // Style the playback speed control container with a thin black border
-    speedControl.style.border = '1px solid black';
-    speedControl.style.borderRadius = '4px';
-    speedControl.style.padding = '4px 8px';
-    
-    // Style the playback speed dropdown
-const speedDropdown = speedControl.querySelector('select');
-if (speedDropdown) {
-    speedDropdown.style.border = '1px solid black';
-    speedDropdown.style.outline = 'none';
-    speedDropdown.style.background = 'transparent';
-    speedDropdown.style.padding = '0 4px';
-    speedDropdown.style.borderRadius = '3px';
-}
-
     // Right column: Progress and Letter Sequence
     const rightColumn = document.createElement('div');
     rightColumn.style.display = 'flex';
     rightColumn.style.flexDirection = 'column';
-    rightColumn.style.flex = '1';
+    rightColumn.style.flex = '1'; // Allow growing
+    rightColumn.style.minWidth = '280px'; // Minimum width for smaller screens
+    rightColumn.style.width = '100%'; // Full width on small screens
     
     // Progress section - now on the right
     const progressSection = document.createElement('div');
     progressSection.className = 'progress-section';
     progressSection.style.marginBottom = '20px';
+    progressSection.style.width = '100%'; // Full width
     
     const progressContainer = document.createElement('div');
     progressContainer.className = 'progress-container';
@@ -235,6 +244,7 @@ if (speedDropdown) {
     const letterSequence = document.createElement('div');
     letterSequence.className = 'letter-sequence';
     letterSequence.style.marginTop = '20px';
+    letterSequence.style.width = '100%'; // Full width
     letterSequence.innerHTML = '<h4 style="width:100%; margin-bottom:0.75rem; text-align:center;">Letter Sequence</h4>';
     
     // Create letter blocks
@@ -267,6 +277,7 @@ if (speedDropdown) {
     const tipsSection = document.createElement('div');
     tipsSection.className = 'sign-language-tips';
     tipsSection.style.marginTop = '20px';
+    tipsSection.style.width = '100%'; // Full width
     tipsSection.innerHTML = `
         <h4>Tips for Learning Sign Language</h4>
         <p>Pay attention to hand position and movement. Practice along with the videos to improve retention.</p>
@@ -281,6 +292,63 @@ if (speedDropdown) {
     
     // Set up the video sequence player
     setupCombinedVideoPlayer(validLetters);
+    
+    // Add window resize listener to adjust layout dynamically
+    window.addEventListener('resize', adjustVideoPlayerLayout);
+    
+    // Initial layout adjustment
+    adjustVideoPlayerLayout();
+}
+
+// Function to adjust layout based on screen size
+function adjustVideoPlayerLayout() {
+    const windowWidth = window.innerWidth;
+    const rowContainer = document.querySelector('.combined-player > div');
+    const leftColumn = document.querySelector('.combined-player > div > div:first-child');
+    const rightColumn = document.querySelector('.combined-player > div > div:last-child');
+    const controlsWrapper = document.querySelector('.combined-video-controls');
+    const primaryControls = document.querySelector('.primary-controls');
+    
+    if (!rowContainer) return; // Exit if elements don't exist yet
+    
+    if (windowWidth < 768) {
+        // Mobile layout
+        rowContainer.style.flexDirection = 'column';
+        
+        if (leftColumn) {
+            leftColumn.style.width = '100%';
+            leftColumn.style.marginBottom = '20px';
+        }
+        
+        if (rightColumn) {
+            rightColumn.style.width = '100%';
+        }
+        
+        if (controlsWrapper) {
+            controlsWrapper.style.flexDirection = 'column';
+        }
+        
+        if (primaryControls) {
+            primaryControls.style.width = '100%';
+            primaryControls.style.justifyContent = 'center';
+        }
+    } else {
+        // Desktop layout
+        rowContainer.style.flexDirection = 'row';
+        
+        if (leftColumn) {
+            leftColumn.style.width = '50%';
+            leftColumn.style.marginBottom = '0';
+        }
+        
+        if (rightColumn) {
+            rightColumn.style.width = '50%';
+        }
+        
+        if (controlsWrapper) {
+            controlsWrapper.style.flexDirection = 'row';
+        }
+    }
 }
 
 // Set up the video sequence functionality
@@ -302,7 +370,7 @@ function setupCombinedVideoPlayer(letters) {
     for (let letter of letters) {
         videoSequence.push({
             letter: letter,
-            src: `static/sign_language_gif/${letter}.mp4`
+            src: `static/sign_language_gif/${letter}.Mp4`
         });
     }
     
