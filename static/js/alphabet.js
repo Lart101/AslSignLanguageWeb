@@ -1,4 +1,3 @@
-
 import { GESTURE_MODEL_URL } from './config.js';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
@@ -8,6 +7,15 @@ let webcamRunning = false;
 let selectedLetter = null;
 const videoHeight = "360px";
 const videoWidth = "480px";
+
+// Sound elements
+const selectSound = document.getElementById('selectSound');
+const correctSound = document.getElementById('correctSound');
+const incorrectSound = document.getElementById('incorrectSound');
+const cameraSound = document.getElementById('cameraSound');
+
+// Sound settings
+let soundEnabled = true;
 
 // Initialize the GestureRecognizer
 const createGestureRecognizer = async () => {
@@ -28,12 +36,23 @@ const canvasCtx = canvasElement.getContext("2d");
 const gestureOutput = document.getElementById("gesture_output");
 const enableWebcamButton = document.getElementById("webcamButton");
 
+// Function to play sound
+function playSound(audioElement) {
+    if (soundEnabled && audioElement) {
+        audioElement.currentTime = 0;
+        audioElement.play().catch(error => {
+            console.warn('Error playing sound:', error);
+        });
+    }
+}
+
 // Add click handlers to letter cards
 document.querySelectorAll('.letter-card').forEach(card => {
     card.addEventListener('click', () => {
         document.querySelectorAll('.letter-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         selectedLetter = card.dataset.letter;
+        playSound(selectSound);
     });
 });
 
@@ -55,6 +74,8 @@ async function enableCam() {
         alert("Please wait for gestureRecognizer to load");
         return;
     }
+
+    playSound(cameraSound);
 
     if (webcamRunning) {
         webcamRunning = false;
@@ -87,6 +108,7 @@ async function enableCam() {
 
 let lastVideoTime = -1;
 let results = undefined;
+let lastDetectedGesture = null;
 
 async function predictWebcam() {
     // Remove fixed dimensions and make it responsive
@@ -132,13 +154,25 @@ async function predictWebcam() {
         const categoryName = results.gestures[0][0].categoryName;
         const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
         
+        // Only play sounds when the detected gesture changes
+        const gestureChanged = lastDetectedGesture !== categoryName;
+        lastDetectedGesture = categoryName;
+        
         if (selectedLetter) {
             if (categoryName.toUpperCase() === selectedLetter.toUpperCase()) {
                 gestureOutput.className = 'output success';
                 gestureOutput.innerText = `Correct! You're showing the letter ${selectedLetter}`;
+                
+                if (gestureChanged) {
+                    playSound(correctSound);
+                }
             } else {
                 gestureOutput.className = 'output error';
                 gestureOutput.innerText = `Keep practicing! You showed ${categoryName}, but we're looking for ${selectedLetter}`;
+                
+                if (gestureChanged) {
+                    playSound(incorrectSound);
+                }
             }
         } else {
             gestureOutput.className = 'output neutral';
@@ -146,6 +180,7 @@ async function predictWebcam() {
         }
     } else {
         gestureOutput.style.display = "none";
+        lastDetectedGesture = null;
     }
 
     if (webcamRunning) {
@@ -168,3 +203,29 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
     this.classList.toggle('active');
     document.querySelector('nav').classList.toggle('active');
 });
+
+// Add sound toggle button to the UI
+function createSoundToggle() {
+    const soundToggle = document.createElement('button');
+    soundToggle.id = 'soundToggle';
+    soundToggle.className = 'control-btn sound-toggle';
+    soundToggle.innerHTML = '🔊 Sound On';
+    soundToggle.style.marginLeft = '10px';
+    
+    soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+            soundToggle.innerHTML = '🔊 Sound On';
+            playSound(selectSound); // Play a sound to confirm sound is on
+        } else {
+            soundToggle.innerHTML = '🔇 Sound Off';
+        }
+    });
+    
+    // Add the button next to the webcam button
+    const webcamButton = document.getElementById('webcamButton');
+    webcamButton.parentNode.insertBefore(soundToggle, webcamButton.nextSibling);
+}
+
+// Call the function to create the sound toggle button
+createSoundToggle();
