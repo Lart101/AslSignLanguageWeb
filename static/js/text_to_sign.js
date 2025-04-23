@@ -370,7 +370,7 @@ function setupCombinedVideoPlayer(letters) {
     for (let letter of letters) {
         videoSequence.push({
             letter: letter,
-            src: `static/sign_language_gif/${letter}.Mp4`
+            src: `static/sign_language_gif/${letter}.mp4`
         });
     }
     
