@@ -368,9 +368,12 @@ function setupCombinedVideoPlayer(letters) {
     
     // Create an array of letter videos with their sources
     for (let letter of letters) {
+        // Get the base URL of the current page
+        const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        
         videoSequence.push({
             letter: letter,
-            src: `static/sign_language_gif/${letter}.mp4`
+            src: `${baseUrl}static/sign_language_gif/${letter}.mp4`
         });
     }
     
