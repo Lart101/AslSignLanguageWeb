@@ -449,6 +449,102 @@ footer a:hover {
     color: #555;
 }
 
+/* User Guides Section */
+.user-guides {
+    padding: 4rem 2rem;
+    margin-top: 4rem;
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.guides-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.guides-header h3 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.guides-header p {
+    max-width: 700px;
+    margin: 0 auto;
+    color: #64748b;
+}
+
+.guides-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.guide-item {
+    background-color: #f8fafc;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+    transition: var(--transition);
+}
+
+.guide-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
+}
+
+.guide-item h4 {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.guide-content h5 {
+    font-size: 1rem;
+    color: #334155;
+    margin: 1.5rem 0 0.75rem 0;
+}
+
+.guide-content h5:first-child {
+    margin-top: 0;
+}
+
+.guide-content ol, .guide-content ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.guide-content li {
+    margin-bottom: 0.5rem;
+    color: #475569;
+}
+
+.system-requirements {
+    background-color: #f0f7ff;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-color);
+}
+
+.system-requirements h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.system-requirements ul {
+    padding-left: 1.5rem;
+}
+
+.system-requirements li {
+    margin-bottom: 0.75rem;
+    color: #475569;
+}
+
 @media (max-width: 768px) {
     .faq-question h4 {
         font-size: 1rem;
