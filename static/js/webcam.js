@@ -1,4 +1,3 @@
-
 import { GESTURE_MODEL_URL } from './config.js';
 
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
@@ -119,8 +118,8 @@ async function predictWebcam() {
         gestureOutput.style.display = "block";
         const categoryName = results.gestures[0][0].categoryName;
         const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
-        const handedness = results.handednesses[0][0].displayName;
-        gestureOutput.innerText = `Detected Sign: ${categoryName}\nConfidence: ${categoryScore}%\nHand: ${handedness}`;
+        // Remove handedness display
+        gestureOutput.innerText = `Detected Sign: ${categoryName}\nConfidence: ${categoryScore}%`;
     } else {
         gestureOutput.style.display = "none";
     }
