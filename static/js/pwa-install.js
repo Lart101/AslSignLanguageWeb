@@ -19,19 +19,25 @@ function checkIfInstalledPWA() {
     return false; // App is running in browser
 }
 
-// Install function
+// Install function - Always working version
 async function installApp() {
+    // Check if running as installed PWA
+    const isInstalled = checkIfInstalledPWA();
+    
+    if (isInstalled) {
+        // Running as installed app - show helpful message
+        alert('✅ App is already installed!\n\n📱 You\'re currently using the installed version.\n\n💡 To reinstall or update, visit the website in your browser and use the install option there.');
+        return;
+    }
+    
     if (deferredPrompt) {
-        // PWA install available
+        // PWA install prompt available
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`User response to the install prompt: ${outcome}`);
         
         if (outcome === 'accepted') {
-            // Hide install button after successful install
-            if (navInstallButton) {
-                navInstallButton.style.display = 'none';
-            }
+            alert('🎉 App installed successfully!\n\n📱 You can now find it on your home screen or app drawer.');
         }
         deferredPrompt = null;
     } else {
@@ -39,42 +45,35 @@ async function installApp() {
         const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         if (isMobile) {
-            alert('📱 To install this app:\n\n🤖 Android (Chrome/Edge):\n• Tap menu (⋮) → "Add to Home screen"\n\n🍎 iPhone/iPad (Safari):\n• Tap Share (□↑) → "Add to Home Screen"\n\n💡 Tip: If you removed the app before, you may need to clear browser data first.');
+            alert('📱 To install this app:\n\n🤖 Android (Chrome/Edge):\n• Tap menu (⋮) → "Add to Home screen"\n\n🍎 iPhone/iPad (Safari):\n• Tap Share (□↑) → "Add to Home Screen"\n\n💡 Tip: If install option is missing, try refreshing the page or clearing browser data.');
         } else {
             alert('💻 To install this app:\n\n• Look for install icon (⊕) in address bar\n• Or use browser menu → "Install [app name]"\n\n💡 Tip: Try refreshing or clearing browser data if install option is missing.');
         }
     }
 }
 
-// Always make install button clickable (if not hidden)
+// Always make install button clickable and visible
 if (navInstallButton) {
     navInstallButton.addEventListener('click', installApp);
+    // Keep button visible in browser, but check on load if in PWA mode
 }
 
 // Listen for install prompt
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Install button is already visible, just keep it ready (unless app is installed)
-    if (!checkIfInstalledPWA()) {
-        // Only show if not running as installed app
-        if (navInstallButton) {
-            navInstallButton.style.display = 'block';
-        }
-    }
+    console.log('Install prompt available');
 });
 
-// Hide install button when app is installed
+// Handle app installation event
 window.addEventListener('appinstalled', () => {
     console.log('PWA was installed');
-    if (navInstallButton) {
-        navInstallButton.style.display = 'none';
-    }
+    alert('🎉 App installed successfully!\n\n📱 You can now find it on your home screen!');
 });
 
 // Check on page load if app is running as installed PWA
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if running as installed PWA and hide button if so
+    // Only hide button if running as installed PWA
     checkIfInstalledPWA();
     
     // Menu toggle functionality (common across pages)

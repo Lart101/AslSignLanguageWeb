@@ -64,40 +64,7 @@
         <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
     </footer>
     <script type="module" src="static\js\webcam.js"></script>
-    
-    <script>
-        // PWA Install functionality
-        let deferredPrompt;
-        const navInstallButton = document.getElementById('navInstallButton');
-        
-        async function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to the install prompt: ${outcome}`);
-                deferredPrompt = null;
-                if (navInstallButton) {
-                    navInstallButton.style.display = 'none';
-                }
-            }
-        }
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            if (navInstallButton) {
-                navInstallButton.style.display = 'block';
-                navInstallButton.addEventListener('click', installApp);
-            }
-        });
-
-        window.addEventListener('appinstalled', () => {
-            console.log('PWA was installed');
-            if (navInstallButton) {
-                navInstallButton.style.display = 'none';
-            }
-        });
-    </script>
+    <script src="static/js/pwa-install.js"></script>
    
 </body>
 </html>
