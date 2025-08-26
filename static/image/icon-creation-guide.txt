@@ -1,0 +1,21 @@
+<!-- Temporary Icon Solution -->
+<!-- 
+Since you need icons immediately, here are quick solutions:
+
+OPTION 1: Use favicon.io with emoji
+1. Go to https://favicon.io/favicon-generator/
+2. Type "🤟" (ASL I Love You sign) or "👋" or "✋"
+3. Choose background color: #4CAF50 (your theme color)
+4. Download the package
+5. Use the 192x192.png and 512x512.png files
+
+OPTION 2: Quick emoji icons
+I'll create simple text-based icons for you below.
+
+OPTION 3: Use online PNG generators
+- https://favicon.io/emoji-favicons/ - Direct emoji to icon
+- https://www.favicon-generator.org/ - Upload any image
+- https://realfavicongenerator.net/ - Professional PWA icons
+
+Recommended emoji for ASL app: 🤟 (I Love You in ASL)
+-->

@@ -10,14 +10,8 @@
   "scope": "./",
   "icons": [
     {
-      "src": "./static/image/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./static/image/icon-512.png",
-      "sizes": "512x512",
+      "src": "./static/image/GestureL-LandingPic.png",
+      "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"
     }
