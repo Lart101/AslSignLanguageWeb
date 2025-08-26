@@ -1,6 +1,18 @@
 // PWA Install functionality - Universal script
 let deferredPrompt;
-const navInstallButton = document.getElementById('navInstallButton');
+// Grab (potentially multiple) install buttons if duplicate markup was accidentally introduced
+let navInstallButton = document.getElementById('navInstallButton');
+
+// Defensive: remove any accidental duplicate install buttons that might have been left in the DOM
+// This prevents the UI from showing two green "Install App" buttons side by side.
+const installButtons = document.querySelectorAll('#navInstallButton');
+if (installButtons.length > 1) {
+    // Keep the first, remove the rest
+    for (let i = 1; i < installButtons.length; i++) {
+        installButtons[i].parentElement?.removeChild(installButtons[i]);
+    }
+    navInstallButton = installButtons[0];
+}
 
 // Check if app is running as installed PWA and hide install button
 function checkIfInstalledPWA() {
