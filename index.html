@@ -208,12 +208,8 @@
     <footer>
         <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
     </footer>
+    <script src="static/js/pwa-install.js"></script>
     <script>
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            this.classList.toggle('active');
-            document.querySelector('nav').classList.toggle('active');
-        });
-
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -226,76 +222,6 @@
                     });
             });
         }
-
-        // PWA Install Prompt
-        let deferredPrompt;
-        const navInstallButton = document.getElementById('navInstallButton');
-        
-        // Install function
-        async function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to the install prompt: ${outcome}`);
-                deferredPrompt = null;
-                
-                // Hide both install buttons
-                const floatingInstallButton = document.querySelector('.install-button');
-                if (floatingInstallButton) {
-                    floatingInstallButton.remove();
-                }
-                if (navInstallButton) {
-                    navInstallButton.style.display = 'none';
-                }
-            }
-        }
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the mini-infobar from appearing on mobile
-            e.preventDefault();
-            // Stash the event so it can be triggered later
-            deferredPrompt = e;
-            
-            // Show navigation install button
-            if (navInstallButton) {
-                navInstallButton.style.display = 'block';
-                navInstallButton.addEventListener('click', installApp);
-            }
-            
-            // Create floating install button if it doesn't exist
-            const installButton = document.createElement('button');
-            installButton.textContent = '📱 Install App';
-            installButton.className = 'install-button';
-            installButton.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #4CAF50;
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 5px;
-                cursor: pointer;
-                z-index: 1000;
-                font-size: 14px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            `;
-            
-            installButton.addEventListener('click', installApp);
-            document.body.appendChild(installButton);
-        });
-
-        // Hide install buttons when app is installed
-        window.addEventListener('appinstalled', () => {
-            console.log('PWA was installed');
-            const floatingInstallButton = document.querySelector('.install-button');
-            if (floatingInstallButton) {
-                floatingInstallButton.remove();
-            }
-            if (navInstallButton) {
-                navInstallButton.style.display = 'none';
-            }
-        });
     </script>
 </body>
 </html>

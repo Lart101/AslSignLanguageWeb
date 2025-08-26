@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asl-web-v2';
+const CACHE_NAME = 'asl-web-v3';
 const urlsToCache = [
   './',
   './index.html',
