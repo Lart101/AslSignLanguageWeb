@@ -1,27 +1,30 @@
 const CACHE_NAME = 'asl-web-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/alphabet.html',
-  '/webcam.html',
-  '/text_to_sign.html',
-  '/image_to_sign.html',
-  '/static/css/index.css',
-  '/static/css/alphabet.css',
-  '/static/css/webcam.css',
-  '/static/css/text_to_sign.css',
-  '/static/css/image_to_sign.css',
-  '/static/js/config.js',
-  '/static/js/alphabet.js',
-  '/static/js/webcam.js',
-  '/static/js/text_to_sign.js',
-  '/static/js/image_to_sign.js',
-  '/static/image/GestureL-LandingPic.png',
-  '/static/models/letters.task',
-  '/static/audio/camera.mp3',
-  '/static/audio/correct.mp3',
-  '/static/audio/incorrect.mp3',
-  '/static/audio/select.mp3'
+  './',
+  './index.html',
+  './alphabet.html',
+  './webcam.html',
+  './text_to_sign.html',
+  './image_to_sign.html',
+  './download.html',
+  './static/css/index.css',
+  './static/css/alphabet.css',
+  './static/css/webcam.css',
+  './static/css/text_to_sign.css',
+  './static/css/image_to_sign.css',
+  './static/css/download.css',
+  './static/js/config.js',
+  './static/js/alphabet.js',
+  './static/js/webcam.js',
+  './static/js/text_to_sign.js',
+  './static/js/image_to_sign.js',
+  './static/js/pwa-install.js',
+  './static/image/GestureL-LandingPic.png',
+  './static/models/letters.task',
+  './static/audio/camera.mp3',
+  './static/audio/correct.mp3',
+  './static/audio/incorrect.mp3',
+  './static/audio/select.mp3'
 ];
 
 // Install event - cache resources
@@ -78,7 +81,7 @@ self.addEventListener('fetch', event => {
         return fetch(event.request).catch(() => {
           // If both cache and network fail, show offline page
           if (event.request.destination === 'document') {
-            return caches.match('/index.html');
+            return caches.match('./index.html');
           }
         });
       })
