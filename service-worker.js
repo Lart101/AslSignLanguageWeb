@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asl-web-v1';
+const CACHE_NAME = 'asl-web-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,13 +6,11 @@ const urlsToCache = [
   './webcam.html',
   './text_to_sign.html',
   './image_to_sign.html',
-  './download.html',
   './static/css/index.css',
   './static/css/alphabet.css',
   './static/css/webcam.css',
   './static/css/text_to_sign.css',
   './static/css/image_to_sign.css',
-  './static/css/download.css',
   './static/js/config.js',
   './static/js/alphabet.js',
   './static/js/webcam.js',
