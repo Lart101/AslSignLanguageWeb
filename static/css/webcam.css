@@ -85,6 +85,26 @@
             color: white;
         }
 
+        /* Navigation Install Button */
+        .nav-install-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+
+        .nav-install-btn:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+
         main {
             margin-top: 6rem;
             padding: 2rem;
