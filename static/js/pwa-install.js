@@ -2,6 +2,23 @@
 let deferredPrompt;
 const navInstallButton = document.getElementById('navInstallButton');
 
+// Check if app is running as installed PWA and hide install button
+function checkIfInstalledPWA() {
+    // Check if running in standalone mode (installed PWA)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isInWebAppiOS = window.navigator.standalone === true;
+    const isInWebAppChrome = window.matchMedia('(display-mode: standalone)').matches;
+    
+    // If running as installed app, hide install button
+    if (isStandalone || isInWebAppiOS || isInWebAppChrome) {
+        if (navInstallButton) {
+            navInstallButton.style.display = 'none';
+        }
+        return true; // App is installed and running
+    }
+    return false; // App is running in browser
+}
+
 // Install function
 async function installApp() {
     if (deferredPrompt) {
@@ -18,12 +35,18 @@ async function installApp() {
         }
         deferredPrompt = null;
     } else {
-        // No PWA prompt available - show simple instructions
-        alert('To install this app:\n\n📱 Mobile: Use "Add to Home Screen" from your browser menu\n💻 Desktop: Look for install icon in address bar');
+        // No PWA prompt available - show detailed instructions
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            alert('📱 To install this app:\n\n🤖 Android (Chrome/Edge):\n• Tap menu (⋮) → "Add to Home screen"\n\n🍎 iPhone/iPad (Safari):\n• Tap Share (□↑) → "Add to Home Screen"\n\n💡 Tip: If you removed the app before, you may need to clear browser data first.');
+        } else {
+            alert('💻 To install this app:\n\n• Look for install icon (⊕) in address bar\n• Or use browser menu → "Install [app name]"\n\n💡 Tip: Try refreshing or clearing browser data if install option is missing.');
+        }
     }
 }
 
-// Always make install button clickable
+// Always make install button clickable (if not hidden)
 if (navInstallButton) {
     navInstallButton.addEventListener('click', installApp);
 }
@@ -32,7 +55,13 @@ if (navInstallButton) {
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Install button is already visible, just keep it ready
+    // Install button is already visible, just keep it ready (unless app is installed)
+    if (!checkIfInstalledPWA()) {
+        // Only show if not running as installed app
+        if (navInstallButton) {
+            navInstallButton.style.display = 'block';
+        }
+    }
 });
 
 // Hide install button when app is installed
@@ -43,8 +72,12 @@ window.addEventListener('appinstalled', () => {
     }
 });
 
-// Menu toggle functionality (common across pages)
+// Check on page load if app is running as installed PWA
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if running as installed PWA and hide button if so
+    checkIfInstalledPWA();
+    
+    // Menu toggle functionality (common across pages)
     const menuToggle = document.querySelector('.menu-toggle');
     const nav = document.querySelector('nav');
     
