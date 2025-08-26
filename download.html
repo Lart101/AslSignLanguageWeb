@@ -62,8 +62,8 @@
                             </div>
                         </button>
                         
-                        <div id="installStatus" class="install-status">
-                            <p>Click the button above to install SignSpeak as an app on your device!</p>
+                        <div class="install-status">
+                            <p>Click the button above to install SignSpeak as an app!</p>
                         </div>
                     </div>
                 </div>
@@ -328,119 +328,36 @@
             });
         });
 
-        // Enhanced install button for download page
+        // Simple install button for download page
         const primaryInstallButton = document.getElementById('primaryInstallButton');
-        const installStatus = document.getElementById('installStatus');
-        let installAttempted = false;
-
-        // Make install button always clickable
+        
+        // Make install button work directly
         primaryInstallButton.addEventListener('click', async () => {
-            if (installAttempted) return;
-            
-            installAttempted = true;
-            
-            // Update button to show loading state
-            primaryInstallButton.innerHTML = `
-                <span class="icon">⏳</span>
-                <div class="btn-text">
-                    <span class="title">Checking...</span>
-                    <span class="subtitle">Preparing installation</span>
-                </div>
-            `;
-            primaryInstallButton.disabled = true;
-            
-            // Wait a moment for PWA prompt to be ready
-            setTimeout(async () => {
-                if (deferredPrompt) {
-                    // PWA install is available
-                    try {
-                        deferredPrompt.prompt();
-                        const { outcome } = await deferredPrompt.userChoice;
-                        console.log(`User response: ${outcome}`);
-                        
-                        if (outcome === 'accepted') {
-                            primaryInstallButton.innerHTML = `
-                                <span class="icon">✅</span>
-                                <div class="btn-text">
-                                    <span class="title">App Installed!</span>
-                                    <span class="subtitle">Check your home screen</span>
-                                </div>
-                            `;
-                            installStatus.innerHTML = '<p style="color: #4CAF50;">✅ <strong>Success!</strong> SignSpeak has been installed on your device.</p>';
-                        } else {
-                            // User declined
-                            primaryInstallButton.innerHTML = `
-                                <span class="icon">📱</span>
-                                <div class="btn-text">
-                                    <span class="title">Install App</span>
-                                    <span class="subtitle">Try again anytime</span>
-                                </div>
-                            `;
-                            primaryInstallButton.disabled = false;
-                            installAttempted = false;
-                            installStatus.innerHTML = '<p style="color: #ff9800;">ℹ️ Installation was cancelled. You can try again anytime!</p>';
-                        }
-                        deferredPrompt = null;
-                    } catch (error) {
-                        console.error('Install failed:', error);
-                        showManualInstructions();
-                    }
-                } else {
-                    // PWA not ready or not supported, show manual instructions
-                    showManualInstructions();
+            if (deferredPrompt) {
+                // PWA install available - use it
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    primaryInstallButton.innerHTML = `
+                        <span class="icon">✅</span>
+                        <div class="btn-text">
+                            <span class="title">Installed!</span>
+                            <span class="subtitle">Check your home screen</span>
+                        </div>
+                    `;
                 }
-            }, 1000);
-        });
-
-        function showManualInstructions() {
-            primaryInstallButton.innerHTML = `
-                <span class="icon">📋</span>
-                <div class="btn-text">
-                    <span class="title">Manual Install</span>
-                    <span class="subtitle">Follow guide below</span>
-                </div>
-            `;
-            primaryInstallButton.disabled = true;
-            installStatus.innerHTML = `
-                <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 1.5rem; border-radius: 12px; margin: 1rem 0;">
-                    <h4 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.5rem;">🤟</span>
-                        <span>Ready to Install SignSpeak!</span>
-                    </h4>
-                    <p style="margin: 0; opacity: 0.9; line-height: 1.5;">
-                        Your browser supports PWA installation! Follow the step-by-step instructions below to add SignSpeak to your device. 
-                        Once installed, it will work like a native app with offline capabilities.
-                    </p>
-                </div>
-            `;
-        }
-
-        // Override the PWA install functionality for this page
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Update status to show PWA is ready
-            installStatus.innerHTML = '<p style="color: #4CAF50;">🎉 <strong>Ready to install!</strong> Your browser supports automatic installation.</p>';
-            
-            // Also show nav button
-            if (navInstallButton) {
-                navInstallButton.style.display = 'block';
-                navInstallButton.addEventListener('click', installApp);
+                deferredPrompt = null;
+            } else {
+                // No PWA prompt available - show simple message
+                alert('To install:\n\n📱 Mobile: Use "Add to Home Screen" from your browser menu\n💻 Desktop: Look for install icon in address bar');
             }
         });
 
-        // Check if already installed
-        window.addEventListener('appinstalled', () => {
-            primaryInstallButton.innerHTML = `
-                <span class="icon">✅</span>
-                <div class="btn-text">
-                    <span class="title">Already Installed</span>
-                    <span class="subtitle">App is ready to use</span>
-                </div>
-            `;
-            primaryInstallButton.disabled = true;
-            installStatus.innerHTML = '<p style="color: #4CAF50;">✅ <strong>SignSpeak is installed!</strong> You can find it on your home screen or app menu.</p>';
+        // Store the install prompt when available
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
         });
     </script>
 </body>
