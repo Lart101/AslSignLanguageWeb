@@ -46,23 +46,17 @@ header h1 {
     color: var(--primary-color);
 }
 
-/* Always-dropdown navigation */
+nav {
+    display: flex;
+    gap: 2rem;
+}
+
 .menu-toggle {
-    display: flex; /* always visible now */
+    display: none;
     flex-direction: column;
     gap: 4px;
     cursor: pointer;
     padding: 5px;
-    width: 40px;
-    height: 32px;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-    transition: var(--transition);
-}
-
-.menu-toggle:hover {
-    background: #eff6ff;
 }
 
 .menu-toggle span {
@@ -74,26 +68,9 @@ header h1 {
 }
 
 nav {
-    display: none; /* hidden until toggled */
-    position: absolute;
-    top: 100%;
-    right: 0;
-    width: 230px;
-    background-color: white;
-    flex-direction: column;
-    padding: 1rem;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
-    gap: 0.5rem;
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
-    border: 1px solid #e2e8f0;
-    animation: dropdownFade 0.25s ease;
+    display: flex;
+    gap: 2rem;
 }
-
-@keyframes dropdownFade {
-    from {opacity:0; transform: translateY(-4px);} to {opacity:1; transform: translateY(0);}
-}
-
-nav.active { display: flex; }
 
 nav a {
     color: var(--text-color);
@@ -605,13 +582,64 @@ footer a:hover {
 }
 
 @media (max-width: 768px) {
-    .header-content { padding: 0.5rem 1.25rem; }
-    nav { width: 200px; }
-    nav a { padding: 0.7rem 0.9rem; }
-    .hero { grid-template-columns: 1fr; padding: 3rem 1.5rem; }
-    .hero-image { order: -1; }
-    .hero h2 { font-size: 2rem; }
-    .cta-buttons { flex-direction: column; }
-    .features { grid-template-columns: 1fr; }
-    .testimonials-grid { grid-template-columns: 1fr; }
+    .header-content {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 2rem;
+    }
+
+    .menu-toggle {
+        display: flex;
+        order: 2;
+    }
+
+    nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 200px;
+        background-color: white;
+        flex-direction: column;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        gap: 0.5rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+
+    nav.active {
+        display: flex;
+    }
+
+    nav a {
+        width: 100%;
+        text-align: left;
+        padding: 0.75rem 1rem;
+    }
+
+    .hero {
+        grid-template-columns: 1fr;
+        padding: 3rem 1.5rem;
+    }
+
+    .hero-image {
+        order: -1;
+    }
+
+    .hero h2 {
+        font-size: 2rem;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+    }
+
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
 }

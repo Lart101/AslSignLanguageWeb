@@ -47,12 +47,18 @@ header h1 {
     color: var(--primary-color);
 }
 
-/* Always-dropdown navigation */
-.menu-toggle { display:flex; flex-direction:column; gap:4px; cursor:pointer; padding:6px; width:40px; height:34px; justify-content:center; align-items:center; border-radius:8px; transition: var(--transition); }
-.menu-toggle:hover { background:#eff6ff; }
-nav { display:none; position:absolute; top:100%; right:0; width:220px; background:white; flex-direction:column; padding:1rem; gap:0.5rem; box-shadow:0 8px 18px rgba(0,0,0,0.12); border:1px solid #e2e8f0; border-radius:0 0 var(--border-radius) var(--border-radius); animation: dropdownFade 0.25s ease; }
-nav.active { display:flex; }
-@keyframes dropdownFade { from{opacity:0;transform:translateY(-4px);} to{opacity:1;transform:translateY(0);} }
+nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    padding: 5px;
+}
 
 .menu-toggle span {
     display: block;
