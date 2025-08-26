@@ -331,6 +331,11 @@
         // Simple install button for download page
         const primaryInstallButton = document.getElementById('primaryInstallButton');
         
+        // Hide navigation install button on download page (we have the main one)
+        if (navInstallButton) {
+            navInstallButton.style.display = 'none';
+        }
+        
         // Make install button work directly
         primaryInstallButton.addEventListener('click', async () => {
             if (deferredPrompt) {
