@@ -513,57 +513,102 @@ footer a:hover {
 }
 
 .guides-header p {
-    max-width: 700px;
+    max-width: 500px;
     margin: 0 auto;
     color: #64748b;
+    font-size: 1.1rem;
 }
 
 .guides-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
     margin-bottom: 3rem;
 }
 
 .guide-item {
     background-color: #f8fafc;
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: var(--border-radius);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+    text-align: center;
     transition: var(--transition);
+    border: 1px solid #e2e8f0;
 }
 
 .guide-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+
+.guide-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
 }
 
 .guide-item h4 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: var(--primary-color);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e2e8f0;
-}
-
-.guide-content h5 {
-    font-size: 1rem;
-    color: #334155;
-    margin: 1.5rem 0 0.75rem 0;
-}
-
-.guide-content h5:first-child {
-    margin-top: 0;
-}
-
-.guide-content ol, .guide-content ul {
-    padding-left: 1.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.guide-content li {
     margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.guide-item p {
     color: #475569;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.guide-item small {
+    color: #64748b;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.quick-tips {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    color: white;
+    text-align: center;
+}
+
+.quick-tips h4 {
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+}
+
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.tip {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
+    .guides-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .guide-item {
+        padding: 1rem;
+    }
+    
+    .guide-icon {
+        font-size: 2rem;
+    }
+    
+    .tips-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .system-requirements {
