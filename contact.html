@@ -131,7 +131,7 @@
                                 <span class="faq-toggle">+</span>
                             </div>
                             <div class="faq-answer">
-                                <p>Our AI-powered recognition system is trained on thousands of ASL gestures and provides good accuracy for basic signs. However, it's still in development and may not be perfect for all users or lighting conditions. We recommend using it as a learning aid alongside traditional ASL instruction.</p>
+                                <p>Our basic recognition system uses MediaPipe technology and works reasonably well for simple signs, but it's still a learning project and may not always be accurate. We recommend using it as a practice tool alongside proper ASL instruction from qualified teachers.</p>
                             </div>
                         </div>
                         
@@ -141,7 +141,7 @@
                                 <span class="faq-toggle">+</span>
                             </div>
                             <div class="faq-answer">
-                                <p>Please review our open-source license on GitHub. While the platform is free to use for educational and personal purposes, commercial usage may have different terms depending on the specific components used. Contact us for partnership opportunities.</p>
+                                <p>This is a student capstone project created for educational purposes. You can check our GitHub repository for licensing details. Since this is a learning project, we encourage educational use, but please remember this isn't a professional product.</p>
                             </div>
                         </div>
 
@@ -151,7 +151,7 @@
                                 <span class="faq-toggle">+</span>
                             </div>
                             <div class="faq-answer">
-                                <p>Currently, SignSpeak requires an internet connection to function as it uses cloud-based AI models. We're exploring offline capabilities for future versions to improve accessibility.</p>
+                                <p>Currently, SignSpeak needs an internet connection for the camera recognition features since they use web-based tools. Most of the learning content like videos and images work offline once loaded, but the interactive camera features require being online.</p>
                             </div>
                         </div>
 
@@ -161,7 +161,27 @@
                                 <span class="faq-toggle">+</span>
                             </div>
                             <div class="faq-answer">
-                                <p>We welcome contributions! You can help by reporting bugs, suggesting features, improving documentation, or contributing code through our GitHub repository. We also appreciate feedback from ASL educators and deaf community members.</p>
+                                <p>Thanks for your interest! You can help by reporting bugs or suggesting improvements through our GitHub repository. As this is a student project, we also appreciate feedback from anyone in the ASL or deaf community who can help us learn and improve.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>Is this a professional ASL learning platform?</h4>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>No, SignSpeak is a student capstone project created for learning purposes. While we hope it's helpful for basic ASL practice, it shouldn't replace proper instruction from qualified ASL teachers or formal courses.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>What if I find errors or have suggestions?</h4>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Please let us know! You can email us or create an issue on our GitHub repository. As students, we're always learning and appreciate constructive feedback to help us improve the project.</p>
                             </div>
                         </div>
                     </div>
@@ -196,7 +216,7 @@
         </section>
     </main>
     <footer>
-        <p>Developed with  as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
+        <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
     </footer>
     <script>
         document.querySelector('.menu-toggle').addEventListener('click', function() {
@@ -243,7 +263,7 @@
             const submitBtn = this.querySelector('.submit-btn');
             const originalText = submitBtn.innerHTML;
             
-            submitBtn.innerHTML = '<span class="btn-icon">?</span>Sending...';
+            submitBtn.innerHTML = '<span class="btn-icon">📧</span>Sending...';
             submitBtn.disabled = true;
             
             setTimeout(() => {
