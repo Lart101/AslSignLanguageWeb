@@ -54,68 +54,182 @@
         </div>
     </header>
     <main>
-        <section class="content-section">
-            <h2>Contact Us</h2>
+        <section class="content-section contact-page">
+            <div class="hero-section">
+                <h2>Contact Us</h2>
+                <p class="hero-subtitle">We're here to help you on your ASL learning journey</p>
+            </div>
+            
             <div class="contact-content">
-                <p>We'd love to hear from you! Whether you have questions, feedback, or suggestions for improving Signademy, please don't hesitate to reach out.</p>
+                <div class="intro-section">
+                    <p class="intro-text">We'd love to hear from you! Whether you have questions, feedback, or suggestions for improving Signademy, please don't hesitate to reach out. Our team is committed to providing excellent support and continuously improving your learning experience.</p>
+                </div>
                 
                 <div class="contact-methods">
-                    <div class="contact-method">
-                        <h3>📧 Email Support</h3>
-                        <p>For general inquiries, technical support, or partnership opportunities:</p>
-                        <a href="mailto:support@signademy.edu" class="contact-link">support@signademy.edu</a>
-                    </div>
+                    <h3>💬 Get in Touch</h3>
+                    <div class="contact-grid">
+                        <div class="contact-method">
+                            <div class="contact-icon">📧</div>
+                            <h4>Email Support</h4>
+                            <p>For general inquiries, technical support, or partnership opportunities</p>
+                            <a href="mailto:support@signademy.edu" class="contact-link">support@signademy.edu</a>
+                            <span class="response-time">Response within 24-48 hours</span>
+                        </div>
 
-                    <div class="contact-method">
-                        <h3>🐛 Bug Reports</h3>
-                        <p>Found a bug or technical issue? Help us improve by reporting it:</p>
-                        <a href="https://github.com/Lart101/AslSignLanguageWeb/issues" class="contact-link" target="_blank">GitHub Issues</a>
-                    </div>
+                        <div class="contact-method">
+                            <div class="contact-icon">🐛</div>
+                            <h4>Bug Reports</h4>
+                            <p>Found a bug or technical issue? Help us improve by reporting it</p>
+                            <a href="https://github.com/Lart101/AslSignLanguageWeb/issues" class="contact-link" target="_blank">GitHub Issues</a>
+                            <span class="response-time">Response within 1-3 business days</span>
+                        </div>
 
-                    <div class="contact-method">
-                        <h3>💡 Feature Requests</h3>
-                        <p>Have an idea for a new feature or improvement?</p>
-                        <a href="https://github.com/Lart101/AslSignLanguageWeb/discussions" class="contact-link" target="_blank">GitHub Discussions</a>
-                    </div>
+                        <div class="contact-method">
+                            <div class="contact-icon">💡</div>
+                            <h4>Feature Requests</h4>
+                            <p>Have an idea for a new feature or improvement?</p>
+                            <a href="https://github.com/Lart101/AslSignLanguageWeb/discussions" class="contact-link" target="_blank">GitHub Discussions</a>
+                            <span class="response-time">Weekly review cycle</span>
+                        </div>
 
-                    <div class="contact-method">
-                        <h3>🤝 Partnerships</h3>
-                        <p>Interested in collaborating with Signademy?</p>
-                        <a href="mailto:partnerships@signademy.edu" class="contact-link">partnerships@signademy.edu</a>
+                        <div class="contact-method">
+                            <div class="contact-icon">🤝</div>
+                            <h4>Partnerships</h4>
+                            <p>Interested in collaborating with Signademy?</p>
+                            <a href="mailto:partnerships@signademy.edu" class="contact-link">partnerships@signademy.edu</a>
+                            <span class="response-time">Response within 3-5 business days</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-contact-section">
+                    <h3>⚡ Quick Contact Form</h3>
+                    <div class="contact-form">
+                        <form id="quick-contact-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contact-name">Your Name</label>
+                                    <input type="text" id="contact-name" name="name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-email">Your Email</label>
+                                    <input type="email" id="contact-email" name="email" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-subject">Subject</label>
+                                <select id="contact-subject" name="subject" required>
+                                    <option value="">Select a topic...</option>
+                                    <option value="general">General Inquiry</option>
+                                    <option value="technical">Technical Support</option>
+                                    <option value="feature">Feature Request</option>
+                                    <option value="bug">Bug Report</option>
+                                    <option value="partnership">Partnership</option>
+                                    <option value="feedback">Feedback</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-message">Your Message</label>
+                                <textarea id="contact-message" name="message" rows="6" placeholder="Tell us how we can help you..." required></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">
+                                <span class="btn-icon">📨</span>
+                                Send Message
+                            </button>
+                        </form>
+                        <p class="form-note">Note: This is a demo form. For actual support, please use the email addresses above.</p>
                     </div>
                 </div>
 
                 <div class="faq-section">
-                    <h3>Frequently Asked Questions</h3>
-                    <div class="faq-item">
-                        <h4>Is Signademy really free to use?</h4>
-                        <p>Yes! Signademy is completely free as it was developed as an educational capstone project. Our goal is to make ASL learning accessible to everyone.</p>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <h4>What devices and browsers are supported?</h4>
-                        <p>Signademy works on most modern browsers (Chrome, Firefox, Safari, Edge) and devices with camera access for the webcam features. Mobile devices are supported for most features.</p>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <h4>How accurate is the sign recognition?</h4>
-                        <p>Our AI-powered recognition system is trained on thousands of ASL gestures and provides good accuracy for basic signs. However, it's still in development and may not be perfect for all users or lighting conditions.</p>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <h4>Can I use Signademy for commercial purposes?</h4>
-                        <p>Please review our open-source license on GitHub. While the platform is free to use, commercial usage may have different terms depending on the specific components used.</p>
+                    <h3>❓ Frequently Asked Questions</h3>
+                    <div class="faq-container">
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>Is Signademy really free to use?</h4>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes! Signademy is completely free as it was developed as an educational capstone project. Our goal is to make ASL learning accessible to everyone, regardless of financial circumstances.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>What devices and browsers are supported?</h4>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Signademy works on most modern browsers (Chrome, Firefox, Safari, Edge) and devices with camera access for the webcam features. Mobile devices are supported for most features, though webcam functionality works best on desktop/laptop computers.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>How accurate is the sign recognition?</h4>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Our AI-powered recognition system is trained on thousands of ASL gestures and provides good accuracy for basic signs. However, it's still in development and may not be perfect for all users or lighting conditions. We recommend using it as a learning aid alongside traditional ASL instruction.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>Can I use Signademy for commercial purposes?</h4>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Please review our open-source license on GitHub. While the platform is free to use for educational and personal purposes, commercial usage may have different terms depending on the specific components used. Contact us for partnership opportunities.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>Do you offer offline functionality?</h4>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Currently, Signademy requires an internet connection to function as it uses cloud-based AI models. We're exploring offline capabilities for future versions to improve accessibility.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>How can I contribute to the project?</h4>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>We welcome contributions! You can help by reporting bugs, suggesting features, improving documentation, or contributing code through our GitHub repository. We also appreciate feedback from ASL educators and deaf community members.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="response-time">
-                    <h3>⏱️ Response Times</h3>
-                    <ul>
-                        <li><strong>Email inquiries:</strong> 24-48 hours</li>
-                        <li><strong>Bug reports:</strong> 1-3 business days</li>
-                        <li><strong>Feature requests:</strong> Weekly review cycle</li>
-                        <li><strong>Partnership inquiries:</strong> 3-5 business days</li>
-                    </ul>
+                <div class="support-section">
+                    <h3>🎯 Our Commitment to You</h3>
+                    <div class="commitment-grid">
+                        <div class="commitment-card">
+                            <div class="commitment-icon">⚡</div>
+                            <h4>Fast Response</h4>
+                            <p>We aim to respond to all inquiries within 24-48 hours during business days</p>
+                        </div>
+                        <div class="commitment-card">
+                            <div class="commitment-icon">🎓</div>
+                            <h4>Educational Focus</h4>
+                            <p>Our priority is supporting your learning journey with helpful, educational responses</p>
+                        </div>
+                        <div class="commitment-card">
+                            <div class="commitment-icon">🌍</div>
+                            <h4>Accessibility First</h4>
+                            <p>We're committed to making ASL learning accessible to everyone, everywhere</p>
+                        </div>
+                        <div class="commitment-card">
+                            <div class="commitment-icon">💬</div>
+                            <h4>Community Driven</h4>
+                            <p>Your feedback drives our improvements and new feature development</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -127,6 +241,56 @@
         document.querySelector('.menu-toggle').addEventListener('click', function() {
             this.classList.toggle('active');
             document.querySelector('nav').classList.toggle('active');
+        });
+
+        // FAQ toggle functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const faqItem = question.parentElement;
+                const isActive = faqItem.classList.contains('active');
+                
+                // Close all FAQ items
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Open clicked item if it wasn't already active
+                if (!isActive) {
+                    faqItem.classList.add('active');
+                }
+            });
+        });
+
+        // Contact form functionality
+        document.getElementById('quick-contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const name = formData.get('name');
+            const email = formData.get('email');
+            const subject = formData.get('subject');
+            const message = formData.get('message');
+            
+            // Simple validation
+            if (!name || !email || !subject || !message) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            
+            // Simulate form submission
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<span class="btn-icon">⏳</span>Sending...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                alert(`Thank you, ${name}! Your message has been received. We'll get back to you at ${email} soon.\n\nNote: This is a demo form. For actual support, please use the email addresses provided above.`);
+                this.reset();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
         });
     </script>
 </body>
