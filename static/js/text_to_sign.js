@@ -62,7 +62,7 @@ function translateText() {
                 container.className = 'sign-container';
                 
                 const img = document.createElement('img');
-                img.src = `static/sign_language_images/alphabet_${upperChar}.jpg`;
+                img.src = `static/sign_language_images/alphabet/alphabet_${upperChar}.jpg`;
                 img.alt = `Sign for letter ${char}`;
                 img.style.width = 'auto'; // Allow image to size naturally
                 img.style.height = 'auto'; // Allow image to size naturally
@@ -373,7 +373,7 @@ function setupCombinedVideoPlayer(letters) {
         
         videoSequence.push({
             letter: letter,
-            src: `${baseUrl}static/sign_language_gif/${letter}.mp4`
+            src: `${baseUrl}static/sign_language_videos/alphabet/${letter}.mp4`
         });
     }
     

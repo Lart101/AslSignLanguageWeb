@@ -4,7 +4,7 @@ export const MODEL_URLS = {
     // Alphabet Learning (A-Z)
     alphabet: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/letters.task",
     
-    // Numbers Learning (0-10)
+    // Numbers Learning (0-9)
     numbers: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage//Asl14000imagePART3.task",
     
     // Colors Learning
