@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What is Signademy? - Signademy</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="static/css/index.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Signademy</h1>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <nav>
+                <div class="nav-item">
+                    <a href="index.html">Home</a>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="dropdown-toggle">About Signademy</a>
+                    <div class="dropdown-menu">
+                        <a href="mission.html">Mission & Vision</a>
+                        <a href="about.html">What is Signademy?</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="dropdown-toggle">Learn</a>
+                    <div class="dropdown-menu">
+                        <a href="alphabet.html">Letters (A–Z)</a>
+                        <a href="basic-words.html">Basic Words</a>
+                        <a href="numbers.html">Numbers (0–10)</a>
+                        <a href="colors.html">Colors</a>
+                        <a href="phrases.html">Common Phrases</a>
+                        <a href="family.html">Family & People</a>
+                        <a href="food.html">Food & Drinks</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="dropdown-toggle">Tools</a>
+                    <div class="dropdown-menu">
+                        <a href="image_to_sign.html">Image → Sign</a>
+                        <a href="text_to_sign.html">Text → Sign</a>
+                        <a href="webcam.html">Webcam → Sign</a>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="contact.html">Contact Us</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="content-section">
+            <h2>What is Signademy?</h2>
+            <div class="about-content">
+                <p>Signademy is an innovative web-based platform designed to make American Sign Language (ASL) learning accessible, interactive, and engaging for everyone. Our platform combines cutting-edge technology with proven educational methods to provide a comprehensive ASL learning experience.</p>
+                
+                <h3>Our Platform Features</h3>
+                <ul>
+                    <li><strong>Interactive Learning Modules:</strong> Step-by-step lessons covering everything from basic alphabet to complex phrases</li>
+                    <li><strong>Real-time Recognition:</strong> Advanced AI-powered webcam technology that provides instant feedback on your signing</li>
+                    <li><strong>Multi-modal Learning:</strong> Visual, audio, and kinesthetic learning approaches to suit different learning styles</li>
+                    <li><strong>Progress Tracking:</strong> Monitor your improvement and celebrate milestones in your ASL journey</li>
+                </ul>
+
+                <h3>Technology Behind Signademy</h3>
+                <p>Our platform is powered by Google's MediaPipe technology, providing state-of-the-art hand tracking and gesture recognition capabilities. This ensures accurate, real-time feedback as you practice your signing skills.</p>
+
+                <h3>Who We Serve</h3>
+                <ul>
+                    <li>Students learning ASL for academic purposes</li>
+                    <li>Parents of deaf or hard-of-hearing children</li>
+                    <li>Healthcare professionals working with deaf communities</li>
+                    <li>Anyone interested in expanding their communication skills</li>
+                    <li>Deaf and hard-of-hearing individuals teaching others</li>
+                </ul>
+
+                <div class="cta-section">
+                    <h3>Ready to Start Learning?</h3>
+                    <p>Begin your ASL journey today with our interactive tools and comprehensive learning modules.</p>
+                    <div class="cta-buttons">
+                        <a href="alphabet.html" class="cta-primary">Start with Alphabet</a>
+                        <a href="webcam.html" class="cta-secondary">Try Recognition Tool</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
+    </footer>
+    <script>
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.querySelector('nav').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

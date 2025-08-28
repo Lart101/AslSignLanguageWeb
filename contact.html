@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Signademy</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="static/css/index.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Signademy</h1>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <nav>
+                <div class="nav-item">
+                    <a href="index.html">Home</a>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="dropdown-toggle">About Signademy</a>
+                    <div class="dropdown-menu">
+                        <a href="mission.html">Mission & Vision</a>
+                        <a href="about.html">What is Signademy?</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="dropdown-toggle">Learn</a>
+                    <div class="dropdown-menu">
+                        <a href="alphabet.html">Letters (A–Z)</a>
+                        <a href="basic-words.html">Basic Words</a>
+                        <a href="numbers.html">Numbers (0–10)</a>
+                        <a href="colors.html">Colors</a>
+                        <a href="phrases.html">Common Phrases</a>
+                        <a href="family.html">Family & People</a>
+                        <a href="food.html">Food & Drinks</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="dropdown-toggle">Tools</a>
+                    <div class="dropdown-menu">
+                        <a href="image_to_sign.html">Image → Sign</a>
+                        <a href="text_to_sign.html">Text → Sign</a>
+                        <a href="webcam.html">Webcam → Sign</a>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="contact.html">Contact Us</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="content-section">
+            <h2>Contact Us</h2>
+            <div class="contact-content">
+                <p>We'd love to hear from you! Whether you have questions, feedback, or suggestions for improving Signademy, please don't hesitate to reach out.</p>
+                
+                <div class="contact-methods">
+                    <div class="contact-method">
+                        <h3>📧 Email Support</h3>
+                        <p>For general inquiries, technical support, or partnership opportunities:</p>
+                        <a href="mailto:support@signademy.edu" class="contact-link">support@signademy.edu</a>
+                    </div>
+
+                    <div class="contact-method">
+                        <h3>🐛 Bug Reports</h3>
+                        <p>Found a bug or technical issue? Help us improve by reporting it:</p>
+                        <a href="https://github.com/Lart101/AslSignLanguageWeb/issues" class="contact-link" target="_blank">GitHub Issues</a>
+                    </div>
+
+                    <div class="contact-method">
+                        <h3>💡 Feature Requests</h3>
+                        <p>Have an idea for a new feature or improvement?</p>
+                        <a href="https://github.com/Lart101/AslSignLanguageWeb/discussions" class="contact-link" target="_blank">GitHub Discussions</a>
+                    </div>
+
+                    <div class="contact-method">
+                        <h3>🤝 Partnerships</h3>
+                        <p>Interested in collaborating with Signademy?</p>
+                        <a href="mailto:partnerships@signademy.edu" class="contact-link">partnerships@signademy.edu</a>
+                    </div>
+                </div>
+
+                <div class="faq-section">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="faq-item">
+                        <h4>Is Signademy really free to use?</h4>
+                        <p>Yes! Signademy is completely free as it was developed as an educational capstone project. Our goal is to make ASL learning accessible to everyone.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>What devices and browsers are supported?</h4>
+                        <p>Signademy works on most modern browsers (Chrome, Firefox, Safari, Edge) and devices with camera access for the webcam features. Mobile devices are supported for most features.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>How accurate is the sign recognition?</h4>
+                        <p>Our AI-powered recognition system is trained on thousands of ASL gestures and provides good accuracy for basic signs. However, it's still in development and may not be perfect for all users or lighting conditions.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>Can I use Signademy for commercial purposes?</h4>
+                        <p>Please review our open-source license on GitHub. While the platform is free to use, commercial usage may have different terms depending on the specific components used.</p>
+                    </div>
+                </div>
+
+                <div class="response-time">
+                    <h3>⏱️ Response Times</h3>
+                    <ul>
+                        <li><strong>Email inquiries:</strong> 24-48 hours</li>
+                        <li><strong>Bug reports:</strong> 1-3 business days</li>
+                        <li><strong>Feature requests:</strong> Weekly review cycle</li>
+                        <li><strong>Partnership inquiries:</strong> 3-5 business days</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
+    </footer>
+    <script>
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.querySelector('nav').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
