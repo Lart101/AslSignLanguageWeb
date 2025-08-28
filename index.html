@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Signademy - Modern Sign Language Learning</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="static/css/index.css?v=20250829">
 </head>
 <body>
     <header>
@@ -225,6 +228,37 @@
             this.classList.toggle('active');
             document.querySelector('nav').classList.toggle('active');
         });
+
+        // Service Worker and Cache Cleanup
+        // This will unregister any existing service workers and clear caches
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister().then(function() {
+                        console.log('Service Worker unregistered successfully');
+                    });
+                }
+            }).catch(function(error) {
+                console.log('Service Worker unregistration failed:', error);
+            });
+        }
+
+        // Clear all caches
+        if ('caches' in window) {
+            caches.keys().then(function(cacheNames) {
+                return Promise.all(
+                    cacheNames.map(function(cacheName) {
+                        console.log('Deleting cache:', cacheName);
+                        return caches.delete(cacheName);
+                    })
+                );
+            }).then(function() {
+                console.log('All caches cleared successfully');
+            }).catch(function(error) {
+                console.log('Cache clearing failed:', error);
+            });
+        }
     </script>
 </body>
 </html>
+
