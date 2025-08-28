@@ -1,24 +1,27 @@
-import { GESTURE_MODEL_URL } from './config.js';
+import { GESTURE_MODEL_URL, loadModelWithProgress } from './config.js';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
 let gestureRecognizer;
 let runningMode = "IMAGE";
+let modelLoading = false;
 
-// Initialize the GestureRecognizer
+// Initialize the GestureRecognizer with progress
 const createGestureRecognizer = async () => {
-   try {
-       const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
-       gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
-           baseOptions: {
-               modelAssetPath: GESTURE_MODEL_URL,
-               delegate: "GPU"
-           },
-           runningMode: runningMode
-       });
-       console.log("Gesture recognizer created successfully");
-   } catch (error) {
-       console.error("Error creating gesture recognizer:", error);
-   }
+    if (modelLoading) return;
+    
+    try {
+        modelLoading = true;
+        gestureRecognizer = await loadModelWithProgress(GESTURE_MODEL_URL, {
+            runningMode: runningMode,
+            delegate: "GPU"
+        });
+        modelLoading = false;
+        console.log("Gesture recognizer created successfully");
+    } catch (error) {
+        modelLoading = false;
+        console.error("Error creating gesture recognizer:", error);
+        alert('Failed to load AI model. Please refresh the page and try again.');
+    }
 };
 createGestureRecognizer();
 
@@ -43,6 +46,17 @@ document.getElementById('image-upload').addEventListener('change', (e) => {
 // Image Upload and Processing
 document.getElementById('upload-form').addEventListener('submit', async (e) => {
    e.preventDefault();
+   
+   if (modelLoading) {
+       alert("Please wait for the AI model to finish loading...");
+       return;
+   }
+   
+   if (!gestureRecognizer) {
+       alert("AI model is not loaded yet. Please wait and try again.");
+       return;
+   }
+   
    const fileInput = document.getElementById('image-upload');
    const file = fileInput.files[0];
    

@@ -1,23 +1,31 @@
-import { GESTURE_MODEL_URL } from './config.js';
+import { GESTURE_MODEL_URL, loadModelWithProgress } from './config.js';
 
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
 let gestureRecognizer;
 let runningMode = "IMAGE";
 let webcamRunning = false;
+let modelLoading = false;
 const videoHeight = "480px";
 const videoWidth = "640px";
 
-// Initialize the GestureRecognizer
+// Initialize the GestureRecognizer with progress
 const createGestureRecognizer = async () => {
-    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
-    gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
-        baseOptions: {
-            modelAssetPath:  GESTURE_MODEL_URL,
+    if (modelLoading) return;
+    
+    try {
+        modelLoading = true;
+        gestureRecognizer = await loadModelWithProgress(GESTURE_MODEL_URL, {
+            runningMode: runningMode,
             delegate: "GPU"
-        },
-        runningMode: runningMode
-    });
+        });
+        modelLoading = false;
+        console.log('Model loaded successfully!');
+    } catch (error) {
+        modelLoading = false;
+        console.error('Failed to load model:', error);
+        alert('Failed to load AI model. Please refresh the page and try again.');
+    }
 };
 createGestureRecognizer();
 
@@ -40,8 +48,13 @@ if (hasGetUserMedia()) {
 }
 
 async function enableCam() {
+    if (modelLoading) {
+        alert("Please wait for the AI model to finish loading...");
+        return;
+    }
+    
     if (!gestureRecognizer) {
-        alert("Please wait for gestureRecognizer to load");
+        alert("AI model is not loaded yet. Please wait and try again.");
         return;
     }
 
