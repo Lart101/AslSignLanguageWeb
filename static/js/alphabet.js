@@ -229,3 +229,30 @@ function createSoundToggle() {
 
 // Call the function to create the sound toggle button
 createSoundToggle();
+
+// Function to handle text length in letter cards
+function adjustCardTextSizing() {
+    document.querySelectorAll('.letter-card .letter').forEach(letterElement => {
+        const text = letterElement.textContent.trim();
+        const card = letterElement.closest('.letter-card');
+        
+        // Remove any existing text-length classes
+        card.classList.remove('long-text', 'very-long-text');
+        
+        // Add appropriate class based on text length
+        if (text.length > 15) {
+            card.classList.add('very-long-text');
+        } else if (text.length > 8) {
+            card.classList.add('long-text');
+        }
+    });
+}
+
+// Run the text sizing adjustment when DOM is loaded
+document.addEventListener('DOMContentLoaded', adjustCardTextSizing);
+
+// Also run it after any dynamic content changes
+if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(adjustCardTextSizing);
+    observer.observe(document.body, { childList: true, subtree: true });
+}
