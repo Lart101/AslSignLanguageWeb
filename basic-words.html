@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Basic Words - Signademy</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="static/css/alphabet.css">
 </head>
 <body>
     <header>
@@ -54,145 +54,128 @@
         </div>
     </header>
     <main>
-        <section class="content-section">
-            <h2>Basic Words in ASL</h2>
-            <p>Learn essential everyday words in American Sign Language. These fundamental signs will help you start communicating in basic situations.</p>
-            
-            <div class="word-categories">
-                <div class="category-section">
-                    <h3>👋 Greetings & Politeness</h3>
-                    <div class="words-grid">
-                        <div class="word-card">
-                            <div class="word-title">Hello</div>
-                            <div class="word-description">Open hand, wave fingers</div>
-                            <div class="practice-note">👆 Practice: Wave your open hand</div>
-                        </div>
-                        <div class="word-card">
-                            <div class="word-title">Thank You</div>
-                            <div class="word-description">Touch chin, move hand forward</div>
-                            <div class="practice-note">👆 Practice: Chin to forward motion</div>
-                        </div>
-                        <div class="word-card">
-                            <div class="word-title">Please</div>
-                            <div class="word-description">Open hand on chest, circular motion</div>
-                            <div class="practice-note">👆 Practice: Circle on chest</div>
-                        </div>
-                        <div class="word-card">
-                            <div class="word-title">Sorry</div>
-                            <div class="word-description">Fist on chest, circular motion</div>
-                            <div class="practice-note">👆 Practice: Gentle fist circles</div>
-                        </div>
-                    </div>
+        <div class="instructions">
+            <h2>Learn American Sign Language Basic Words</h2>
+            <p>Practice essential ASL words with real-time feedback using a camera. 
+               Select a word to practice the corresponding hand sign.</p>
+        </div>
+        <div class="practice-container">
+            <div class="alphabet-section">
+                <div class="quick-alphabet">
+                    <a href="#word-hello" class="letter-quick-link">Hello</a>
+                    <a href="#word-thank" class="letter-quick-link">Thank You</a>
+                    <a href="#word-please" class="letter-quick-link">Please</a>
+                    <a href="#word-sorry" class="letter-quick-link">Sorry</a>
+                    <a href="#word-yes" class="letter-quick-link">Yes</a>
+                    <a href="#word-no" class="letter-quick-link">No</a>
+                    <a href="#word-help" class="letter-quick-link">Help</a>
+                    <a href="#word-stop" class="letter-quick-link">Stop</a>
+                    <a href="#word-go" class="letter-quick-link">Go</a>
+                    <a href="#word-me" class="letter-quick-link">Me</a>
+                    <a href="#word-you" class="letter-quick-link">You</a>
                 </div>
-
-                <div class="category-section">
-                    <h3>👤 Basic Pronouns</h3>
-                    <div class="words-grid">
-                        <div class="word-card">
-                            <div class="word-title">I / Me</div>
-                            <div class="word-description">Point to yourself</div>
-                            <div class="practice-note">👆 Practice: Index finger to chest</div>
+                <div class="alphabet-grid">
+                    <div id="word-hello" class="letter-card" data-letter="HELLO">
+                        <div class="letter">Hello</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Hello" width="120">
                         </div>
-                        <div class="word-card">
-                            <div class="word-title">You</div>
-                            <div class="word-description">Point to the person</div>
-                            <div class="practice-note">👆 Practice: Index finger forward</div>
-                        </div>
-                        <div class="word-card">
-                            <div class="word-title">We</div>
-                            <div class="word-description">Index finger, sweep from self to others</div>
-                            <div class="practice-note">👆 Practice: Inclusive pointing motion</div>
-                        </div>
-                        <div class="word-card">
-                            <div class="word-title">They</div>
-                            <div class="word-description">Point to group or sweep to side</div>
-                            <div class="practice-note">👆 Practice: Pointing to multiple people</div>
-                        </div>
+                        <p>Open hand, wave fingers</p>
                     </div>
-                </div>
-
-                <div class="category-section">
-                    <h3>✅ Yes/No & Questions</h3>
-                    <div class="words-grid">
-                        <div class="word-card">
-                            <div class="word-title">Yes</div>
-                            <div class="word-description">Fist nods up and down</div>
-                            <div class="practice-note">👆 Practice: Nodding fist motion</div>
+                    <div id="word-thank" class="letter-card" data-letter="THANK">
+                        <div class="letter">Thank You</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Thank You" width="120">
                         </div>
-                        <div class="word-card">
-                            <div class="word-title">No</div>
-                            <div class="word-description">Index and middle finger snap shut</div>
-                            <div class="practice-note">👆 Practice: Two fingers closing</div>
-                        </div>
-                        <div class="word-card">
-                            <div class="word-title">What</div>
-                            <div class="word-description">Shake index finger side to side</div>
-                            <div class="practice-note">👆 Practice: Question finger shake</div>
-                        </div>
-                        <div class="word-card">
-                            <div class="word-title">Where</div>
-                            <div class="word-description">Shake index finger up/down</div>
-                            <div class="practice-note">👆 Practice: Questioning up/down motion</div>
-                        </div>
+                        <p>Touch chin, move hand forward</p>
                     </div>
-                </div>
-
-                <div class="category-section">
-                    <h3>🕐 Time & Actions</h3>
-                    <div class="words-grid">
-                        <div class="word-card">
-                            <div class="word-title">Now</div>
-                            <div class="word-description">Both hands drop down sharply</div>
-                            <div class="practice-note">👆 Practice: Quick downward motion</div>
+                    <div id="word-please" class="letter-card" data-letter="PLEASE">
+                        <div class="letter">Please</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Please" width="120">
                         </div>
-                        <div class="word-card">
-                            <div class="word-title">Go</div>
-                            <div class="word-description">Index fingers point and move forward</div>
-                            <div class="practice-note">👆 Practice: Forward pointing motion</div>
+                        <p>Open hand on chest, circular motion</p>
+                    </div>
+                    <div id="word-sorry" class="letter-card" data-letter="SORRY">
+                        <div class="letter">Sorry</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Sorry" width="120">
                         </div>
-                        <div class="word-card">
-                            <div class="word-title">Stop</div>
-                            <div class="word-description">Open hand hits other open palm</div>
-                            <div class="practice-note">👆 Practice: Hand hitting palm</div>
+                        <p>Fist on chest, circular motion</p>
+                    </div>
+                    <div id="word-yes" class="letter-card" data-letter="YES">
+                        <div class="letter">Yes</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Yes" width="120">
                         </div>
-                        <div class="word-card">
-                            <div class="word-title">Help</div>
-                            <div class="word-description">Fist on open palm, lift together</div>
-                            <div class="practice-note">👆 Practice: Supporting lift motion</div>
+                        <p>Fist nods up and down</p>
+                    </div>
+                    <div id="word-no" class="letter-card" data-letter="NO">
+                        <div class="letter">No</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for No" width="120">
                         </div>
+                        <p>Index and middle finger snap shut</p>
+                    </div>
+                    <div id="word-help" class="letter-card" data-letter="HELP">
+                        <div class="letter">Help</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Help" width="120">
+                        </div>
+                        <p>Fist on open palm, lift together</p>
+                    </div>
+                    <div id="word-stop" class="letter-card" data-letter="STOP">
+                        <div class="letter">Stop</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Stop" width="120">
+                        </div>
+                        <p>Open hand hits other open palm</p>
+                    </div>
+                    <div id="word-go" class="letter-card" data-letter="GO">
+                        <div class="letter">Go</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Go" width="120">
+                        </div>
+                        <p>Index fingers point and move forward</p>
+                    </div>
+                    <div id="word-me" class="letter-card" data-letter="ME">
+                        <div class="letter">Me</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Me" width="120">
+                        </div>
+                        <p>Point to yourself</p>
+                    </div>
+                    <div id="word-you" class="letter-card" data-letter="YOU">
+                        <div class="letter">You</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for You" width="120">
+                        </div>
+                        <p>Point to the person</p>
                     </div>
                 </div>
             </div>
-
-            <div class="practice-section">
-                <h3>💪 Practice Tips</h3>
-                <ul>
-                    <li><strong>Start Slow:</strong> Master each sign before moving to the next</li>
-                    <li><strong>Use Context:</strong> Practice signs in realistic conversation scenarios</li>
-                    <li><strong>Mirror Practice:</strong> Use a mirror to check your hand positioning</li>
-                    <li><strong>Combine Signs:</strong> Try simple combinations like "Hello, how are you?"</li>
-                    <li><strong>Daily Practice:</strong> Use these signs in daily life, even when alone</li>
-                </ul>
-            </div>
-
-            <div class="next-steps">
-                <h3>🚀 Ready for More?</h3>
-                <p>Once you're comfortable with these basic words, explore more specific categories:</p>
-                <div class="cta-buttons">
-                    <a href="numbers.html" class="cta-primary">Learn Numbers</a>
-                    <a href="colors.html" class="cta-secondary">Learn Colors</a>
+            <div class="webcam-section">
+                <h3>Practice Area</h3>
+                <p>Show your word sign to the camera</p>
+                <div class="video-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas class="output_canvas" id="output_canvas"></canvas>
                 </div>
+                <p id="gesture_output" class="output"></p>
+                <button id="webcamButton" class="control-btn">Enable Camera</button>
             </div>
-        </section>
+        </div>
     </main>
     <footer>
         <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
     </footer>
-    <script>
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            this.classList.toggle('active');
-            document.querySelector('nav').classList.toggle('active');
-        });
-    </script>
+    
+    <!-- Audio elements for sound effects -->
+    <audio id="selectSound" src="static/audio/select.mp3" preload="auto"></audio>
+    <audio id="correctSound" src="static/audio/correct.mp3" preload="auto"></audio>
+    <audio id="incorrectSound" src="static/audio/incorrect.mp3" preload="auto"></audio>
+    <audio id="cameraSound" src="static/audio/camera.mp3" preload="auto"></audio>
+
+    <script type="module" src="static/js/alphabet.js"></script>
 </body>
 </html>

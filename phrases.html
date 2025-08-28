@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Common Phrases - Signademy</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="static/css/alphabet.css">
 </head>
 <body>
     <header>
@@ -54,200 +54,120 @@
         </div>
     </header>
     <main>
-        <section class="content-section">
-            <h2>Common Phrases in ASL</h2>
-            <p>Master essential phrases for everyday conversations. These combinations will help you communicate naturally in American Sign Language.</p>
-            
-            <div class="phrases-sections">
-                <div class="phrase-category">
-                    <h3>👋 Introductions & Greetings</h3>
-                    <div class="phrases-grid">
-                        <div class="phrase-card">
-                            <div class="phrase-text">"Nice to meet you"</div>
-                            <div class="phrase-breakdown">NICE + MEET + YOU</div>
-                            <div class="phrase-context">🤝 Perfect for first-time meetings</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"How are you?"</div>
-                            <div class="phrase-breakdown">HOW + YOU</div>
-                            <div class="phrase-context">❓ Common daily greeting</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"What's your name?"</div>
-                            <div class="phrase-breakdown">YOUR + NAME + WHAT</div>
-                            <div class="phrase-context">👤 Getting to know someone</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"My name is..."</div>
-                            <div class="phrase-breakdown">MY + NAME + [fingerspell name]</div>
-                            <div class="phrase-context">✍️ Introducing yourself</div>
-                        </div>
-                    </div>
+        <div class="instructions">
+            <h2>Learn American Sign Language Common Phrases</h2>
+            <p>Practice essential ASL phrases with real-time feedback using a camera. 
+               Select a phrase to practice the corresponding signs.</p>
+        </div>
+        <div class="practice-container">
+            <div class="alphabet-section">
+                <div class="quick-alphabet">
+                    <a href="#phrase-hello" class="letter-quick-link">Hello</a>
+                    <a href="#phrase-how" class="letter-quick-link">How are you?</a>
+                    <a href="#phrase-name" class="letter-quick-link">My name is</a>
+                    <a href="#phrase-nice" class="letter-quick-link">Nice to meet</a>
+                    <a href="#phrase-understand" class="letter-quick-link">I understand</a>
+                    <a href="#phrase-help" class="letter-quick-link">Can you help?</a>
+                    <a href="#phrase-sorry" class="letter-quick-link">I'm sorry</a>
+                    <a href="#phrase-thank" class="letter-quick-link">Thank you</a>
+                    <a href="#phrase-time" class="letter-quick-link">What time?</a>
+                    <a href="#phrase-later" class="letter-quick-link">See you later</a>
                 </div>
-
-                <div class="phrase-category">
-                    <h3>🗣️ Basic Communication</h3>
-                    <div class="phrases-grid">
-                        <div class="phrase-card">
-                            <div class="phrase-text">"I don't understand"</div>
-                            <div class="phrase-breakdown">I + DON'T + UNDERSTAND</div>
-                            <div class="phrase-context">❓ When you need clarification</div>
+                <div class="alphabet-grid">
+                    <div id="phrase-hello" class="letter-card" data-letter="HELLO">
+                        <div class="letter">Hello</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Hello" width="120">
                         </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"Please repeat"</div>
-                            <div class="phrase-breakdown">PLEASE + AGAIN</div>
-                            <div class="phrase-context">🔄 Asking for repetition</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"Can you help me?"</div>
-                            <div class="phrase-breakdown">CAN + YOU + HELP + ME</div>
-                            <div class="phrase-context">🆘 Requesting assistance</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"I'm learning ASL"</div>
-                            <div class="phrase-breakdown">I + LEARN + A-S-L</div>
-                            <div class="phrase-context">📚 Explaining your skill level</div>
-                        </div>
+                        <p>Open hand wave + friendly smile</p>
                     </div>
-                </div>
-
-                <div class="phrase-category">
-                    <h3>🕐 Time & Schedule</h3>
-                    <div class="phrases-grid">
-                        <div class="phrase-card">
-                            <div class="phrase-text">"What time is it?"</div>
-                            <div class="phrase-breakdown">TIME + WHAT</div>
-                            <div class="phrase-context">⏰ Asking for current time</div>
+                    <div id="phrase-how" class="letter-card" data-letter="HOW-ARE-YOU">
+                        <div class="letter">How are you?</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for How are you" width="120">
                         </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"See you later"</div>
-                            <div class="phrase-breakdown">SEE + YOU + LATER</div>
-                            <div class="phrase-context">👋 Casual goodbye</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"I'm busy"</div>
-                            <div class="phrase-breakdown">I + BUSY</div>
-                            <div class="phrase-context">📅 Explaining unavailability</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"Let's meet tomorrow"</div>
-                            <div class="phrase-breakdown">LET'S + MEET + TOMORROW</div>
-                            <div class="phrase-context">📅 Making future plans</div>
-                        </div>
+                        <p>HOW + YOU with questioning expression</p>
                     </div>
-                </div>
-
-                <div class="phrase-category">
-                    <h3>💭 Feelings & Opinions</h3>
-                    <div class="phrases-grid">
-                        <div class="phrase-card">
-                            <div class="phrase-text">"I like it"</div>
-                            <div class="phrase-breakdown">I + LIKE + IT</div>
-                            <div class="phrase-context">👍 Expressing preference</div>
+                    <div id="phrase-name" class="letter-card" data-letter="MY-NAME">
+                        <div class="letter">My name is</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for My name is" width="120">
                         </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"I'm tired"</div>
-                            <div class="phrase-breakdown">I + TIRED</div>
-                            <div class="phrase-context">😴 Describing physical state</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"I'm hungry"</div>
-                            <div class="phrase-breakdown">I + HUNGRY</div>
-                            <div class="phrase-context">🍽️ Expressing need for food</div>
-                        </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"That's interesting"</div>
-                            <div class="phrase-breakdown">THAT + INTERESTING</div>
-                            <div class="phrase-context">🤔 Showing engagement</div>
-                        </div>
+                        <p>MY + NAME + fingerspell your name</p>
                     </div>
-                </div>
-
-                <div class="phrase-category">
-                    <h3>🏠 Daily Activities</h3>
-                    <div class="phrases-grid">
-                        <div class="phrase-card">
-                            <div class="phrase-text">"I'm going home"</div>
-                            <div class="phrase-breakdown">I + GO + HOME</div>
-                            <div class="phrase-context">🏠 Leaving for the day</div>
+                    <div id="phrase-nice" class="letter-card" data-letter="NICE-MEET">
+                        <div class="letter">Nice to meet you</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Nice to meet you" width="120">
                         </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"Where are you going?"</div>
-                            <div class="phrase-breakdown">WHERE + YOU + GO</div>
-                            <div class="phrase-context">📍 Asking about destination</div>
+                        <p>NICE + MEET + YOU</p>
+                    </div>
+                    <div id="phrase-understand" class="letter-card" data-letter="UNDERSTAND">
+                        <div class="letter">I understand</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for I understand" width="120">
                         </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"I need to work"</div>
-                            <div class="phrase-breakdown">I + NEED + WORK</div>
-                            <div class="phrase-context">💼 Explaining obligations</div>
+                        <p>I + UNDERSTAND with confident nod</p>
+                    </div>
+                    <div id="phrase-help" class="letter-card" data-letter="CAN-HELP">
+                        <div class="letter">Can you help me?</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Can you help me" width="120">
                         </div>
-                        <div class="phrase-card">
-                            <div class="phrase-text">"Let's eat"</div>
-                            <div class="phrase-breakdown">LET'S + EAT</div>
-                            <div class="phrase-context">🍽️ Suggesting a meal</div>
+                        <p>CAN + YOU + HELP + ME</p>
+                    </div>
+                    <div id="phrase-sorry" class="letter-card" data-letter="SORRY">
+                        <div class="letter">I'm sorry</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for I'm sorry" width="120">
                         </div>
+                        <p>SORRY with sincere expression</p>
+                    </div>
+                    <div id="phrase-thank" class="letter-card" data-letter="THANK-YOU">
+                        <div class="letter">Thank you</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Thank you" width="120">
+                        </div>
+                        <p>Touch chin, move hand forward</p>
+                    </div>
+                    <div id="phrase-time" class="letter-card" data-letter="WHAT-TIME">
+                        <div class="letter">What time is it?</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for What time is it" width="120">
+                        </div>
+                        <p>TIME + WHAT with questioning look</p>
+                    </div>
+                    <div id="phrase-later" class="letter-card" data-letter="SEE-LATER">
+                        <div class="letter">See you later</div>
+                        <div class="sign-image">
+                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for See you later" width="120">
+                        </div>
+                        <p>SEE + YOU + LATER</p>
                     </div>
                 </div>
             </div>
-
-            <div class="conversation-tips">
-                <h3>💬 Conversation Tips</h3>
-                <div class="tips-grid">
-                    <div class="tip-card">
-                        <h4>🎭 Facial Expressions</h4>
-                        <p>ASL relies heavily on facial expressions to convey tone, questions, and emotions. Practice matching your face to your message.</p>
-                    </div>
-                    <div class="tip-card">
-                        <h4>📏 Signing Space</h4>
-                        <p>Keep your signs within a comfortable "signing space" - roughly from your waist to the top of your head.</p>
-                    </div>
-                    <div class="tip-card">
-                        <h4>👀 Eye Contact</h4>
-                        <p>Maintain appropriate eye contact when signing. Look at the person's face, not their hands.</p>
-                    </div>
-                    <div class="tip-card">
-                        <h4>⏸️ Natural Pauses</h4>
-                        <p>Use natural pauses between phrases, just like in spoken conversation. Don't rush through signs.</p>
-                    </div>
+            <div class="webcam-section">
+                <h3>Practice Area</h3>
+                <p>Show your phrase signs to the camera</p>
+                <div class="video-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas class="output_canvas" id="output_canvas"></canvas>
                 </div>
+                <p id="gesture_output" class="output"></p>
+                <button id="webcamButton" class="control-btn">Enable Camera</button>
             </div>
-
-            <div class="practice-scenarios">
-                <h3>🎯 Practice Scenarios</h3>
-                <div class="scenario-list">
-                    <div class="scenario-item">
-                        <h4>🏪 At a Store</h4>
-                        <p>"Excuse me, can you help me? I'm looking for..." + "Thank you very much!"</p>
-                    </div>
-                    <div class="scenario-item">
-                        <h4>☕ Meeting a Friend</h4>
-                        <p>"Hi! How are you?" + "What time should we meet?" + "See you later!"</p>
-                    </div>
-                    <div class="scenario-item">
-                        <h4>🎉 At a Party</h4>
-                        <p>"Nice to meet you!" + "What's your name?" + "I'm learning ASL."</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="next-steps">
-                <h3>🚀 Continue Building Conversations</h3>
-                <p>Great progress! Ready to learn more specific vocabulary categories?</p>
-                <div class="cta-buttons">
-                    <a href="family.html" class="cta-primary">Learn Family & People</a>
-                    <a href="food.html" class="cta-secondary">Learn Food & Drinks</a>
-                </div>
-            </div>
-        </section>
+        </div>
     </main>
     <footer>
         <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
     </footer>
-    <script>
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            this.classList.toggle('active');
-            document.querySelector('nav').classList.toggle('active');
-        });
-    </script>
+    
+    <!-- Audio elements for sound effects -->
+    <audio id="selectSound" src="static/audio/select.mp3" preload="auto"></audio>
+    <audio id="correctSound" src="static/audio/correct.mp3" preload="auto"></audio>
+    <audio id="incorrectSound" src="static/audio/incorrect.mp3" preload="auto"></audio>
+    <audio id="cameraSound" src="static/audio/camera.mp3" preload="auto"></audio>
+
+    <script type="module" src="static/js/alphabet.js"></script>
 </body>
 </html>
