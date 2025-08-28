@@ -4,19 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SignSpeak - Modern Sign Language Learning</title>
-    
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#4CAF50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ASL Web">
-    <link rel="apple-touch-icon" href="static/image/icon-192.png">
-    
-    <!-- SEO and Description -->
-    <meta name="description" content="Learn American Sign Language with interactive features powered by MediaPipe technology">
-    <meta name="keywords" content="ASL, American Sign Language, learning, education, sign language">
-    
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="static/css/index.css">
 </head>
@@ -35,9 +22,6 @@
                 <a href="image_to_sign.html">Image to Sign</a>
                 <a href="webcam.html">Webcam</a>
                 <a href="alphabet.html">Learn Alphabet</a>
-                <button id="navInstallButton" class="nav-install-btn">
-                    📱 Install App
-                </button>
             </nav>
         </div>
     </header>
@@ -208,20 +192,11 @@
     <footer>
         <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
     </footer>
-    <script src="static/js/pwa-install.js"></script>
     <script>
-        // Register Service Worker for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(registration => {
-                        console.log('Service Worker registered successfully:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('Service Worker registration failed:', error);
-                    });
-            });
-        }
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.querySelector('nav').classList.toggle('active');
+        });
     </script>
 </body>
 </html>
