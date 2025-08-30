@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="dropdown-menu">
                             <a href="alphabet.html">Letters (A–Z)</a>
                             <a href="basic-words.html">Basic Words</a>
-                            <a href="numbers.html">Numbers (0–10)</a>
+                            <a href="numbers.html">Numbers (0–9)</a>
                             <a href="colors.html">Colors</a>
                             <a href="phrases.html">Common Phrases</a>
                             <a href="family.html">Family & People</a>
@@ -74,16 +74,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (toggle && menu) {
                 toggle.addEventListener('click', function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
                     
-                    // Close other dropdowns
+                    const isCurrentlyActive = dropdown.classList.contains('active');
+                    
+                    // Always close all dropdowns first
                     dropdowns.forEach(otherDropdown => {
-                        if (otherDropdown !== dropdown) {
-                            otherDropdown.classList.remove('active');
-                        }
+                        otherDropdown.classList.remove('active');
                     });
                     
-                    // Toggle current dropdown
-                    dropdown.classList.toggle('active');
+                    // If this dropdown wasn't active, open it
+                    if (!isCurrentlyActive) {
+                        dropdown.classList.add('active');
+                    }
                 });
             }
         });
@@ -91,6 +94,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Close dropdowns when clicking outside
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.dropdown')) {
+                dropdowns.forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                });
+            }
+        });
+        
+        // Close dropdowns when pressing Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
                 dropdowns.forEach(dropdown => {
                     dropdown.classList.remove('active');
                 });
@@ -104,9 +116,58 @@ document.addEventListener('DOMContentLoaded', function() {
         const nav = document.querySelector('nav');
         
         if (menuToggle && nav) {
-            menuToggle.addEventListener('click', function() {
+            menuToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const wasActive = nav.classList.contains('mobile-active');
+                
                 nav.classList.toggle('mobile-active');
                 menuToggle.classList.toggle('active');
+                
+                // If closing the mobile menu, also close all dropdowns
+                if (wasActive) {
+                    document.querySelectorAll('.dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('active');
+                    });
+                }
+            });
+            
+            // Close mobile menu when clicking on a non-dropdown link
+            nav.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A' && !e.target.classList.contains('dropdown-toggle')) {
+                    nav.classList.remove('mobile-active');
+                    menuToggle.classList.remove('active');
+                    
+                    // Also close any open dropdowns
+                    document.querySelectorAll('.dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('active');
+                    });
+                }
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('header') && nav.classList.contains('mobile-active')) {
+                    nav.classList.remove('mobile-active');
+                    menuToggle.classList.remove('active');
+                    
+                    // Also close any open dropdowns
+                    document.querySelectorAll('.dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('active');
+                    });
+                }
+            });
+            
+            // Handle window resize - close mobile menu on desktop
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    nav.classList.remove('mobile-active');
+                    menuToggle.classList.remove('active');
+                    
+                    // Also close any open dropdowns
+                    document.querySelectorAll('.dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('active');
+                    });
+                }
             });
         }
     }

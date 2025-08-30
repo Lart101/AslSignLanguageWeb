@@ -2809,6 +2809,106 @@ footer a:hover {
         font-size: 2rem;
     }
 
+    /* Contact page specific responsive improvements */
+    .contact-page .hero-section {
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .contact-page .hero-section h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .contact-page .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .contact-content {
+        padding: 0;
+    }
+
+    .intro-section {
+        margin-bottom: 2rem;
+    }
+
+    .intro-text {
+        font-size: 1rem;
+        line-height: 1.6;
+        text-align: center;
+    }
+
+    .contact-methods h3 {
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .contact-method {
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
+
+    .contact-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .contact-method h4 {
+        font-size: 1.3rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .contact-method p {
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .contact-link {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+    }
+
+    /* FAQ responsive improvements */
+    .faq-section {
+        margin-top: 2rem;
+    }
+
+    .faq-section h3 {
+        font-size: 1.8rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .faq-item {
+        margin-bottom: 1rem;
+    }
+
+    .faq-question {
+        padding: 1rem;
+    }
+
+    .faq-question h4 {
+        font-size: 1.1rem;
+        line-height: 1.4;
+    }
+
+    .faq-content {
+        padding: 1rem;
+    }
+
+    .faq-content p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
     .word-grid, .color-grid, .phrase-grid, .family-grid, .food-grid {
         grid-template-columns: 1fr;
     }
@@ -2846,5 +2946,57 @@ footer a:hover {
         width: 100%;
         max-width: 300px;
         text-align: center;
+    }
+}
+
+/* Extra responsive breakpoints */
+@media (max-width: 480px) {
+    .content-section {
+        margin-top: 4.5rem;
+        padding: 1rem;
+    }
+
+    .contact-page .hero-section h2 {
+        font-size: 2rem;
+    }
+
+    .contact-page .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .contact-method {
+        padding: 1.5rem 1rem;
+    }
+
+    .contact-icon {
+        font-size: 2rem;
+    }
+
+    .faq-question {
+        padding: 0.75rem;
+    }
+
+    .faq-question h4 {
+        font-size: 1rem;
+    }
+
+    .faq-content {
+        padding: 0.75rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .content-section {
+        margin-top: 6rem;
+        padding: 2rem;
+    }
+
+    .contact-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+
+    .contact-method {
+        padding: 2rem;
     }
 }
