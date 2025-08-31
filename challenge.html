@@ -151,7 +151,7 @@
                 <div class="demonstration-column">
                     <div class="webcam-section">
                         <div class="video-container">
-                            <video id="webcam" autoplay playsinline></video>
+                            <video id="webcam" autoplay playsinline muted></video>
                             <canvas class="output_canvas" id="output_canvas"></canvas>
                         </div>
                         <p id="gesture_output" class="output"></p>
@@ -167,7 +167,7 @@
             <div class="reveal-popup">
                 <div class="reveal-video">
                     <h3>Correct Sign:</h3>
-                    <video id="reveal-video" controls>
+                    <video id="reveal-video" controls muted>
                         <source src="" type="video/mp4">
                     </video>
                     <p class="reveal-message">This round scores 0 points</p>
@@ -210,15 +210,6 @@
 
         <!-- Model Selection -->
         <div id="model-selection-container" class="model-selection-section"></div>
-        
-        <!-- Preloading Indicator -->
-        <div id="preload-indicator" class="preload-indicator hidden">
-            <div class="preload-message">
-                <span class="preload-icon">⏳</span>
-                <span class="preload-text">Preloading videos...</span>
-                <span id="preload-progress">(0/0)</span>
-            </div>
-        </div>
     </main>
 
     <footer>

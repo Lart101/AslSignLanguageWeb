@@ -64,8 +64,55 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePage();
     setupEventListeners();
     createGestureRecognizer();
-    preloadChallengeVideos(); // Start preloading videos immediately
+    
+    // Start comprehensive silent preloading immediately
+    startComprehensivePreloading();
 });
+
+async function startComprehensivePreloading() {
+    console.log('Starting comprehensive silent preloading for better UX...');
+    
+    // Preload current model videos immediately
+    preloadChallengeVideos();
+    
+    // Preload other model categories in background
+    setTimeout(() => {
+        preloadOtherModelCategories();
+    }, 2000); // Delay to avoid overwhelming initial load
+}
+
+function preloadOtherModelCategories() {
+    const currentCategory = getCurrentModelCategory();
+    const allCategories = Object.keys(CHALLENGE_WORDS);
+    
+    // Preload other categories in background
+    allCategories.forEach((category, index) => {
+        if (category !== currentCategory) {
+            setTimeout(() => {
+                console.log(`Background preloading: ${category}`);
+                const words = CHALLENGE_WORDS[category] || [];
+                
+                // Add to queue with lower priority
+                words.forEach(word => {
+                    const videoPath = getVideoPath(word, category);
+                    if (!preloadedVideos.has(videoPath)) {
+                        videoPreloadQueue.push({
+                            word: word,
+                            category: category,
+                            url: videoPath,
+                            priority: false
+                        });
+                    }
+                });
+                
+                // Continue preloading if not already running
+                if (!isPreloading && videoPreloadQueue.length > 0) {
+                    preloadNextVideo();
+                }
+            }, index * 3000); // Stagger loading to avoid overwhelming browser
+        }
+    });
+}
 
 function initializePage() {
     // Initialize model selector
@@ -73,10 +120,51 @@ function initializePage() {
         console.log('Model changed to:', selectedModel);
         // Reinitialize gesture recognizer with new model
         createGestureRecognizer(selectedModel);
-        // Restart preloading for new model
-        clearVideoCache();
-        preloadChallengeVideos();
+        
+        // Smart preloading: prioritize new model but keep existing cache
+        prioritizeModelPreloading(selectedModel);
     }, 'alphabet');
+    
+    // Ensure all video elements are muted
+    muteAllVideos();
+}
+
+function prioritizeModelPreloading(selectedModel) {
+    const newCategory = selectedModel;
+    const words = CHALLENGE_WORDS[newCategory] || [];
+    
+    console.log(`Prioritizing preloading for: ${newCategory}`);
+    
+    // Add new model videos to front of queue
+    const priorityVideos = words.map(word => ({
+        word: word,
+        category: newCategory,
+        url: getVideoPath(word, newCategory),
+        priority: true
+    }));
+    
+    // Filter out already cached videos
+    const uncachedVideos = priorityVideos.filter(item => !preloadedVideos.has(item.url));
+    
+    // Add to front of queue
+    videoPreloadQueue.unshift(...uncachedVideos);
+    
+    // Start preloading if not already running
+    if (!isPreloading && videoPreloadQueue.length > 0) {
+        preloadNextVideo();
+    }
+    
+    console.log(`Added ${uncachedVideos.length} videos to priority queue`);
+}
+
+function muteAllVideos() {
+    // Mute all existing video elements
+    const allVideos = document.querySelectorAll('video');
+    allVideos.forEach(video => {
+        video.muted = true;
+        video.defaultMuted = true; // Ensure videos stay muted even after src changes
+    });
+    console.log(`Muted ${allVideos.length} video elements`);
 }
 
 function setupEventListeners() {
@@ -135,9 +223,9 @@ async function createGestureRecognizer(modelCategory = 'alphabet') {
     }
 }
 
-// Video Preloading System
+// Video Preloading System - Silent Background Loading
 async function preloadChallengeVideos() {
-    console.log('Starting video preloading...');
+    console.log('Starting silent video preloading...');
     
     // Get current model category
     const modelCategory = getCurrentModelCategory();
@@ -145,50 +233,30 @@ async function preloadChallengeVideos() {
     // Get all words for the current category
     const words = CHALLENGE_WORDS[modelCategory] || [];
     
-    // Create preload queue
-    videoPreloadQueue = words.map(word => ({
-        word: word,
-        category: modelCategory,
-        url: getVideoPath(word, modelCategory)
-    }));
+    // Prioritize first 10 videos for faster initial loading on GitHub Pages
+    const priorityWords = words.slice(0, 10);
+    const remainingWords = words.slice(10);
     
-    // Show preload indicator
-    showPreloadIndicator(videoPreloadQueue.length);
+    // Create preload queue with priority loading
+    videoPreloadQueue = [
+        ...priorityWords.map(word => ({
+            word: word,
+            category: modelCategory,
+            url: getVideoPath(word, modelCategory),
+            priority: true
+        })),
+        ...remainingWords.map(word => ({
+            word: word,
+            category: modelCategory,
+            url: getVideoPath(word, modelCategory),
+            priority: false
+        }))
+    ];
     
-    // Start preloading process
+    console.log(`Queued ${videoPreloadQueue.length} videos for silent preloading`);
+    
+    // Start silent preloading process
     preloadNextVideo();
-}
-
-function showPreloadIndicator(total) {
-    const indicator = document.getElementById('preload-indicator');
-    const progress = document.getElementById('preload-progress');
-    const loaded = preloadedVideos.size;
-    
-    progress.textContent = `(${loaded}/${total})`;
-    indicator.classList.remove('hidden');
-}
-
-function hidePreloadIndicator() {
-    const indicator = document.getElementById('preload-indicator');
-    indicator.classList.add('hidden');
-}
-
-function updatePreloadProgress() {
-    const indicator = document.getElementById('preload-indicator');
-    const progress = document.getElementById('preload-progress');
-    
-    if (!indicator.classList.contains('hidden')) {
-        const total = preloadedVideos.size + videoPreloadQueue.length;
-        const loaded = preloadedVideos.size;
-        progress.textContent = `(${loaded}/${total})`;
-        
-        // Hide indicator when all videos are loaded
-        if (videoPreloadQueue.length === 0) {
-            setTimeout(() => {
-                hidePreloadIndicator();
-            }, 2000); // Keep visible for 2 seconds after completion
-        }
-    }
 }
 
 function preloadNextVideo() {
@@ -201,29 +269,33 @@ function preloadNextVideo() {
     const video = document.createElement('video');
     video.preload = 'auto';
     video.muted = true;
+    video.crossOrigin = 'anonymous'; // Better compatibility for GitHub Pages
+    
+    // Set up loading timeout for GitHub Pages
+    const loadTimeout = setTimeout(() => {
+        console.warn(`Preload timeout for: ${videoData.word} (${videoData.category})`);
+        isPreloading = false;
+        setTimeout(() => preloadNextVideo(), 100);
+    }, 10000); // 10 second timeout
     
     video.addEventListener('canplaythrough', () => {
+        clearTimeout(loadTimeout);
         // Video is fully loaded
         preloadedVideos.set(videoData.url, video);
         console.log(`Preloaded: ${videoData.word} (${videoData.category})`);
         
         isPreloading = false;
         
-        // Update progress indicator
-        updatePreloadProgress();
-        
         // Continue with next video after a small delay to avoid overwhelming the browser
         setTimeout(() => {
             preloadNextVideo();
-        }, 100);
+        }, 50); // Faster loading for GitHub Pages
     });
     
     video.addEventListener('error', (e) => {
+        clearTimeout(loadTimeout);
         console.warn(`Failed to preload video: ${videoData.word} (${videoData.category})`);
         isPreloading = false;
-        
-        // Update progress indicator even for failed loads
-        updatePreloadProgress();
         
         // Continue with next video even if this one failed
         setTimeout(() => {
@@ -237,7 +309,23 @@ function preloadNextVideo() {
 }
 
 function getPreloadedVideo(videoPath) {
-    return preloadedVideos.get(videoPath);
+    const cached = preloadedVideos.get(videoPath);
+    if (cached) {
+        return cached;
+    }
+    
+    // If video isn't preloaded, try to load it immediately for GitHub Pages
+    console.log(`Video not preloaded, loading immediately: ${videoPath}`);
+    const video = document.createElement('video');
+    video.src = videoPath;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.preload = 'auto';
+    video.crossOrigin = 'anonymous';
+    
+    // Cache it for future use
+    preloadedVideos.set(videoPath, video);
+    return video;
 }
 
 function clearVideoCache() {
@@ -516,6 +604,10 @@ function showSignMatchQuestion() {
     const videoA = document.getElementById('video-a');
     const videoB = document.getElementById('video-b');
     
+    // Ensure videos are muted
+    videoA.muted = true;
+    videoB.muted = true;
+    
     // Randomly assign correct/wrong videos
     const isACorrect = Math.random() < 0.5;
     const correctVideoPath = getVideoPath(correctWord, modelCategory);
@@ -526,13 +618,29 @@ function showSignMatchQuestion() {
     const preloadedWrong = getPreloadedVideo(wrongVideoPath);
     
     if (preloadedCorrect) {
-        videoA.src = isACorrect ? preloadedCorrect.src : (preloadedWrong ? preloadedWrong.src : wrongVideoPath);
-        videoB.src = isACorrect ? (preloadedWrong ? preloadedWrong.src : wrongVideoPath) : preloadedCorrect.src;
+        // Use preloaded videos with proper source assignment
+        const videoASrc = isACorrect ? preloadedCorrect.src : (preloadedWrong ? preloadedWrong.src : wrongVideoPath);
+        const videoBSrc = isACorrect ? (preloadedWrong ? preloadedWrong.src : wrongVideoPath) : preloadedCorrect.src;
+        
+        videoA.src = videoASrc;
+        videoB.src = videoBSrc;
+        
+        // Ensure videos are ready to play
+        videoA.load();
+        videoB.load();
+        
         console.log(`Using preloaded videos for sign-match: ${correctWord} vs ${wrongWord}`);
     } else {
-        // Fallback to normal loading
+        // Fallback to normal loading with optimization
         videoA.src = isACorrect ? correctVideoPath : wrongVideoPath;
         videoB.src = isACorrect ? wrongVideoPath : correctVideoPath;
+        
+        // Add loading optimization for GitHub Pages
+        videoA.preload = 'auto';
+        videoB.preload = 'auto';
+        videoA.load();
+        videoB.load();
+        
         console.log(`Loading videos normally for sign-match: ${correctWord} vs ${wrongWord}`);
     }
     
@@ -702,18 +810,29 @@ function useRevealPower() {
     const videoPath = getVideoPath(currentWord, modelCategory);
     const revealVideo = document.getElementById('reveal-video');
     
+    // Ensure reveal video is muted
+    revealVideo.muted = true;
+    
     // Use preloaded video if available, otherwise load normally
     const preloadedVideo = getPreloadedVideo(videoPath);
     if (preloadedVideo) {
-        // Clone the preloaded video for use
+        // Use the preloaded video source
         revealVideo.src = preloadedVideo.src;
+        revealVideo.currentTime = 0; // Reset to beginning
         revealVideo.load(); // Force reload to ensure it works
         console.log(`Using preloaded video for: ${currentWord}`);
     } else {
-        // Fallback to normal loading
+        // Fallback to normal loading with optimization
         revealVideo.src = videoPath;
+        revealVideo.preload = 'auto';
+        revealVideo.load();
         console.log(`Loading video normally for: ${currentWord}`);
     }
+    
+    // Ensure the video plays from the beginning when modal opens
+    revealVideo.addEventListener('loadeddata', () => {
+        revealVideo.currentTime = 0;
+    }, { once: true });
     
     // Update UI to reflect reveal power is used
     updateGameUI();
