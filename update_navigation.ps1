@@ -11,7 +11,6 @@ $files = @(
     "food.html",
     "image_to_sign.html",
     "numbers.html",
-    "phrases.html",
     "text_to_sign.html",
     "webcam.html"
 )

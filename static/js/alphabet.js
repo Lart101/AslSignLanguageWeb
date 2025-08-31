@@ -1,4 +1,4 @@
-import { GESTURE_MODEL_URL, loadModelWithProgress } from './config.js';
+import { getGestureModelUrl, loadModelWithProgress, normalizeModelOutput, getDisplayNameFromDataLetter } from './config.js';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
 let gestureRecognizer;
@@ -24,7 +24,7 @@ const createGestureRecognizer = async () => {
     
     try {
         modelLoading = true;
-        gestureRecognizer = await loadModelWithProgress(GESTURE_MODEL_URL, {
+        gestureRecognizer = await loadModelWithProgress(getGestureModelUrl(), {
             runningMode: runningMode,
             delegate: "GPU"
         });
@@ -164,8 +164,11 @@ async function predictWebcam() {
 
     if (results.gestures.length > 0) {
         gestureOutput.style.display = "block";
-        const categoryName = results.gestures[0][0].categoryName;
+        const rawCategoryName = results.gestures[0][0].categoryName;
         const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2);
+        
+        // Normalize the model output to match our expected format
+        const categoryName = normalizeModelOutput(rawCategoryName);
         
         // Only play sounds when the detected gesture changes
         const gestureChanged = lastDetectedGesture !== categoryName;
@@ -174,14 +177,17 @@ async function predictWebcam() {
         if (selectedLetter) {
             if (categoryName.toUpperCase() === selectedLetter.toUpperCase()) {
                 gestureOutput.className = 'output success';
-                gestureOutput.innerText = `Correct! You're showing the letter ${selectedLetter}`;
+                const displayName = getDisplayNameFromDataLetter(selectedLetter);
+                gestureOutput.innerText = `Correct! You're showing the sign for ${displayName}`;
                 
                 if (gestureChanged) {
                     playSound(correctSound);
                 }
             } else {
                 gestureOutput.className = 'output error';
-                gestureOutput.innerText = `Keep practicing! You showed ${categoryName}, but we're looking for ${selectedLetter}`;
+                const expectedDisplayName = getDisplayNameFromDataLetter(selectedLetter);
+                const detectedDisplayName = getDisplayNameFromDataLetter(categoryName);
+                gestureOutput.innerText = `Keep practicing! You showed ${detectedDisplayName}, but we're looking for ${expectedDisplayName}`;
                 
                 if (gestureChanged) {
                     playSound(incorrectSound);
@@ -189,7 +195,8 @@ async function predictWebcam() {
             }
         } else {
             gestureOutput.className = 'output neutral';
-            gestureOutput.innerText = `Detected letter: ${categoryName}\nConfidence: ${categoryScore}%`;
+            const detectedDisplayName = getDisplayNameFromDataLetter(categoryName);
+            gestureOutput.innerText = `Detected: ${detectedDisplayName}\nConfidence: ${categoryScore}%`;
         }
     } else {
         gestureOutput.style.display = "none";

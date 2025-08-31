@@ -22,10 +22,6 @@ This directory contains video demonstrations for ASL signs organized by learning
 - Videos for essential vocabulary
 - Files: hello.mp4, thank_you.mp4, please.mp4, sorry.mp4, etc.
 
-### `phrases/`
-- Videos for common phrase combinations
-- Files: how_are_you.mp4, nice_to_meet_you.mp4, excuse_me.mp4, etc.
-
 ### `family/`
 - Videos for family member signs
 - Files: mother.mp4, father.mp4, sister.mp4, brother.mp4, etc.

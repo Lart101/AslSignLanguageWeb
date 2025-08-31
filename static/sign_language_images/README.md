@@ -19,10 +19,6 @@ This directory contains image demonstrations for ASL signs organized by learning
 - Images for essential vocabulary
 - Files: hello.jpg, thank_you.jpg, please.jpg, sorry.jpg, etc.
 
-### `phrases/`
-- Images for common phrase combinations
-- Files: how_are_you.jpg, nice_to_meet_you.jpg, excuse_me.jpg, etc.
-
 ### `family/`
 - Images for family member signs
 - Files: mother.jpg, father.jpg, sister.jpg, brother.jpg, etc.

@@ -1,4 +1,4 @@
-import { GESTURE_MODEL_URL, loadModelWithProgress } from './config.js';
+import { getGestureModelUrl, loadModelWithProgress, createModelSelector, getModelUrl } from './config.js';
 
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
@@ -6,19 +6,24 @@ let gestureRecognizer;
 let runningMode = "IMAGE";
 let webcamRunning = false;
 let modelLoading = false;
+let currentModel = 'alphabet'; // Track currently selected model
 const videoHeight = "480px";
 const videoWidth = "640px";
 
 // Initialize the GestureRecognizer with progress
-const createGestureRecognizer = async () => {
+const createGestureRecognizer = async (modelCategory = null) => {
     if (modelLoading) return;
     
     try {
         modelLoading = true;
-        gestureRecognizer = await loadModelWithProgress(GESTURE_MODEL_URL, {
+        const modelUrl = modelCategory ? getModelUrl(modelCategory) : getGestureModelUrl();
+        gestureRecognizer = await loadModelWithProgress(modelUrl, {
             runningMode: runningMode,
             delegate: "GPU"
         });
+        if (modelCategory) {
+            currentModel = modelCategory;
+        }
         modelLoading = false;
         console.log('Model loaded successfully!');
     } catch (error) {
@@ -27,7 +32,6 @@ const createGestureRecognizer = async () => {
         alert('Failed to load AI model. Please refresh the page and try again.');
     }
 };
-createGestureRecognizer();
 
 const video = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
@@ -141,6 +145,39 @@ async function predictWebcam() {
         window.requestAnimationFrame(predictWebcam);
     }
 }
+
+// Initialize model selector
+function initializeModelSelector() {
+    const onModelChange = async (newModel) => {
+        console.log(`Switching to model: ${newModel}`);
+        
+        // Show loading indicator
+        gestureOutput.style.display = "block";
+        gestureOutput.innerText = "Loading new model...";
+        
+        try {
+            // Load new model
+            await createGestureRecognizer(newModel);
+            gestureOutput.innerText = `Model switched to: ${newModel}. Ready for detection.`;
+            
+            // Clear after a few seconds
+            setTimeout(() => {
+                gestureOutput.style.display = "none";
+            }, 3000);
+        } catch (error) {
+            console.error('Failed to switch model:', error);
+            gestureOutput.innerText = "Failed to load new model. Please try again.";
+        }
+    };
+    
+    createModelSelector('model-selection-container', onModelChange, currentModel);
+}
+
+// Initialize everything when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    createGestureRecognizer();
+    initializeModelSelector();
+});
 
 document.querySelector('.menu-toggle').addEventListener('click', function() {
     this.classList.toggle('active');

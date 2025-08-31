@@ -325,4 +325,84 @@
                 height: auto;
             }
         }
+
+        /* Model Selector Styles */
+        .model-selection-section {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .model-selector-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .model-selector-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .model-icon {
+            font-size: 1.2rem;
+        }
+
+        .model-selector {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            color: var(--text-color);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .model-selector:hover {
+            border-color: var(--primary-color);
+        }
+
+        .model-selector:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .model-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background-color: #f1f5f9;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .info-icon {
+            font-size: 1rem;
+            margin-top: 0.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .model-selection-section {
+                margin: 1rem 0;
+                padding: 1rem;
+            }
+            
+            .model-selector-label {
+                font-size: 1rem;
+            }
+            
+            .model-selector {
+                font-size: 0.9rem;
+            }
+        }
     

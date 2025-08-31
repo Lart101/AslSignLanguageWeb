@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             <a href="basic-words.html">Basic Words</a>
                             <a href="numbers.html">Numbers (0–9)</a>
                             <a href="colors.html">Colors</a>
-                            <a href="phrases.html">Common Phrases</a>
                             <a href="family.html">Family & People</a>
                             <a href="food.html">Food & Drinks</a>
                         </div>
