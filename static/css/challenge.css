@@ -897,3 +897,43 @@ footer a {
 footer a:hover {
     text-decoration: underline;
 }
+
+/* Preload Indicator */
+.preload-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid var(--primary-color);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.preload-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.preload-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.preload-text {
+    font-weight: 500;
+}
+
+#preload-progress {
+    color: var(--primary-color);
+    font-weight: 600;
+}

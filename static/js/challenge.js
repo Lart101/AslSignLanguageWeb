@@ -54,11 +54,17 @@ let gameTimer = null;
 let currentRoundTimer = null;
 let timeLeft = 10;
 
+// Video preloading system
+let preloadedVideos = new Map(); // Cache for preloaded videos
+let videoPreloadQueue = []; // Queue of videos to preload
+let isPreloading = false;
+
 // Initialize the challenge page
 document.addEventListener('DOMContentLoaded', function() {
     initializePage();
     setupEventListeners();
     createGestureRecognizer();
+    preloadChallengeVideos(); // Start preloading videos immediately
 });
 
 function initializePage() {
@@ -67,6 +73,9 @@ function initializePage() {
         console.log('Model changed to:', selectedModel);
         // Reinitialize gesture recognizer with new model
         createGestureRecognizer(selectedModel);
+        // Restart preloading for new model
+        clearVideoCache();
+        preloadChallengeVideos();
     }, 'alphabet');
 }
 
@@ -126,10 +135,150 @@ async function createGestureRecognizer(modelCategory = 'alphabet') {
     }
 }
 
+// Video Preloading System
+async function preloadChallengeVideos() {
+    console.log('Starting video preloading...');
+    
+    // Get current model category
+    const modelCategory = getCurrentModelCategory();
+    
+    // Get all words for the current category
+    const words = CHALLENGE_WORDS[modelCategory] || [];
+    
+    // Create preload queue
+    videoPreloadQueue = words.map(word => ({
+        word: word,
+        category: modelCategory,
+        url: getVideoPath(word, modelCategory)
+    }));
+    
+    // Show preload indicator
+    showPreloadIndicator(videoPreloadQueue.length);
+    
+    // Start preloading process
+    preloadNextVideo();
+}
+
+function showPreloadIndicator(total) {
+    const indicator = document.getElementById('preload-indicator');
+    const progress = document.getElementById('preload-progress');
+    const loaded = preloadedVideos.size;
+    
+    progress.textContent = `(${loaded}/${total})`;
+    indicator.classList.remove('hidden');
+}
+
+function hidePreloadIndicator() {
+    const indicator = document.getElementById('preload-indicator');
+    indicator.classList.add('hidden');
+}
+
+function updatePreloadProgress() {
+    const indicator = document.getElementById('preload-indicator');
+    const progress = document.getElementById('preload-progress');
+    
+    if (!indicator.classList.contains('hidden')) {
+        const total = preloadedVideos.size + videoPreloadQueue.length;
+        const loaded = preloadedVideos.size;
+        progress.textContent = `(${loaded}/${total})`;
+        
+        // Hide indicator when all videos are loaded
+        if (videoPreloadQueue.length === 0) {
+            setTimeout(() => {
+                hidePreloadIndicator();
+            }, 2000); // Keep visible for 2 seconds after completion
+        }
+    }
+}
+
+function preloadNextVideo() {
+    if (isPreloading || videoPreloadQueue.length === 0) return;
+    
+    isPreloading = true;
+    const videoData = videoPreloadQueue.shift();
+    
+    // Create video element for preloading
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.muted = true;
+    
+    video.addEventListener('canplaythrough', () => {
+        // Video is fully loaded
+        preloadedVideos.set(videoData.url, video);
+        console.log(`Preloaded: ${videoData.word} (${videoData.category})`);
+        
+        isPreloading = false;
+        
+        // Update progress indicator
+        updatePreloadProgress();
+        
+        // Continue with next video after a small delay to avoid overwhelming the browser
+        setTimeout(() => {
+            preloadNextVideo();
+        }, 100);
+    });
+    
+    video.addEventListener('error', (e) => {
+        console.warn(`Failed to preload video: ${videoData.word} (${videoData.category})`);
+        isPreloading = false;
+        
+        // Update progress indicator even for failed loads
+        updatePreloadProgress();
+        
+        // Continue with next video even if this one failed
+        setTimeout(() => {
+            preloadNextVideo();
+        }, 100);
+    });
+    
+    // Start loading
+    video.src = videoData.url;
+    video.load();
+}
+
+function getPreloadedVideo(videoPath) {
+    return preloadedVideos.get(videoPath);
+}
+
+function clearVideoCache() {
+    // Clear existing cache and queue
+    preloadedVideos.clear();
+    videoPreloadQueue = [];
+    isPreloading = false;
+    console.log('Video cache cleared');
+}
+
+function preloadGameModeVideos(mode) {
+    // Preload videos specific to the current game mode and model
+    const modelCategory = getCurrentModelCategory();
+    const words = CHALLENGE_WORDS[modelCategory] || [];
+    
+    // Prioritize loading videos for current game session
+    words.forEach(word => {
+        const videoPath = getVideoPath(word, modelCategory);
+        if (!preloadedVideos.has(videoPath)) {
+            // Add to high priority queue (beginning of array)
+            videoPreloadQueue.unshift({
+                word: word,
+                category: modelCategory,
+                url: videoPath
+            });
+        }
+    });
+    
+    // Start preloading if not already running
+    if (!isPreloading) {
+        preloadNextVideo();
+    }
+}
+
 // Start a game mode
 function startGame(mode) {
     currentMode = mode;
     resetGameState();
+    
+    // Preload videos for current game mode
+    preloadGameModeVideos(mode);
     
     // Set up mode-specific settings
     switch (mode) {
@@ -372,8 +521,20 @@ function showSignMatchQuestion() {
     const correctVideoPath = getVideoPath(correctWord, modelCategory);
     const wrongVideoPath = getVideoPath(wrongWord, modelCategory);
     
-    videoA.src = isACorrect ? correctVideoPath : wrongVideoPath;
-    videoB.src = isACorrect ? wrongVideoPath : correctVideoPath;
+    // Use preloaded videos if available
+    const preloadedCorrect = getPreloadedVideo(correctVideoPath);
+    const preloadedWrong = getPreloadedVideo(wrongVideoPath);
+    
+    if (preloadedCorrect) {
+        videoA.src = isACorrect ? preloadedCorrect.src : (preloadedWrong ? preloadedWrong.src : wrongVideoPath);
+        videoB.src = isACorrect ? (preloadedWrong ? preloadedWrong.src : wrongVideoPath) : preloadedCorrect.src;
+        console.log(`Using preloaded videos for sign-match: ${correctWord} vs ${wrongWord}`);
+    } else {
+        // Fallback to normal loading
+        videoA.src = isACorrect ? correctVideoPath : wrongVideoPath;
+        videoB.src = isACorrect ? wrongVideoPath : correctVideoPath;
+        console.log(`Loading videos normally for sign-match: ${correctWord} vs ${wrongWord}`);
+    }
     
     // Store correct answer
     videoA.dataset.isCorrect = isACorrect;
@@ -538,8 +699,21 @@ function useRevealPower() {
     }
     
     const modelCategory = getCurrentModelCategory();
+    const videoPath = getVideoPath(currentWord, modelCategory);
     const revealVideo = document.getElementById('reveal-video');
-    revealVideo.src = getVideoPath(currentWord, modelCategory);
+    
+    // Use preloaded video if available, otherwise load normally
+    const preloadedVideo = getPreloadedVideo(videoPath);
+    if (preloadedVideo) {
+        // Clone the preloaded video for use
+        revealVideo.src = preloadedVideo.src;
+        revealVideo.load(); // Force reload to ensure it works
+        console.log(`Using preloaded video for: ${currentWord}`);
+    } else {
+        // Fallback to normal loading
+        revealVideo.src = videoPath;
+        console.log(`Loading video normally for: ${currentWord}`);
+    }
     
     // Update UI to reflect reveal power is used
     updateGameUI();
