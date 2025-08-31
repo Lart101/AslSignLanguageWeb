@@ -19,7 +19,7 @@ export const MODEL_URLS = {
     family: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/family.task",
     
     // Food & Drinks Learning
-    food: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage//Asl14000imagePART3.task"
+    food: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/Food.task"
 };
 
 // Legacy export for backward compatibility - now uses automatic detection
