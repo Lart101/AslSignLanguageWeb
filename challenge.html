@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Challenge Modes - SignSpeak</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="static/css/navigation.css">
+    <link rel="stylesheet" href="static/css/challenge.css?v=20250831">
+</head>
+<body>
+    <header>
+    </header>
+    <main>
+        <div class="instructions">
+            <h2>🎯 ASL Challenge Modes</h2>
+            <p>Test your ASL skills with these exciting challenge modes! Choose from timed challenges, endless survival mode, or video matching games.</p>
+        </div>
+
+        <!-- Mode Selection Screen -->
+        <div class="practice-container">
+            <div id="mode-selection" class="mode-selection">
+                <div class="challenge-modes">
+                <div class="mode-card" data-mode="flash-sign">
+                    <div class="mode-icon">🔴</div>
+                    <h2>Flash Sign Challenge</h2>
+                    <div class="mode-details">
+                        <p><strong>10 Questions</strong> • <strong>10 seconds per sign</strong></p>
+                        <p>See a word, perform the sign quickly!</p>
+                        <div class="mode-features">
+                            <span class="feature">✨ 1 Reveal Power</span>
+                            <span class="feature">⏭️ Skip Option</span>
+                        </div>
+                    </div>
+                    <button class="start-mode-btn">Start Challenge</button>
+                </div>
+
+                <div class="mode-card" data-mode="sign-match">
+                    <div class="mode-icon">🟡</div>
+                    <h2>Sign Match</h2>
+                    <div class="mode-details">
+                        <p><strong>10 Questions</strong> • <strong>No Time Limit</strong></p>
+                        <p>Pick the correct sign from two videos, then perform it!</p>
+                        <div class="mode-features">
+                            <span class="feature">✨ 1 Reveal Power</span>
+                            <span class="feature">⏭️ Skip Option</span>
+                        </div>
+                    </div>
+                    <button class="start-mode-btn">Start Challenge</button>
+                </div>
+
+                <div class="mode-card" data-mode="endless">
+                    <div class="mode-icon">🔵</div>
+                    <h2>Endless Flash Sign</h2>
+                    <div class="mode-details">
+                        <p><strong>Unlimited</strong> • <strong>3 Lives</strong> • <strong>10 sec/sign</strong></p>
+                        <p>Survive as long as you can! 3 questions per model category.</p>
+                        <div class="mode-features">
+                            <span class="feature">✨ 1 Reveal Power</span>
+                            <span class="feature">🔀 Shuffled Models</span>
+                        </div>
+                    </div>
+                    <button class="start-mode-btn">Start Challenge</button>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="game-screen hidden">
+            <!-- Game Header -->
+            <div class="game-header">
+                <div class="game-info">
+                    <div class="score-display">
+                        <span class="label">Score:</span>
+                        <span id="current-score">0</span>
+                    </div>
+                    <div class="question-counter">
+                        <span class="label">Question:</span>
+                        <span id="question-number">1</span>/<span id="total-questions">10</span>
+                    </div>
+                    <div id="lives-display" class="lives-display hidden">
+                        <span class="label">Lives:</span>
+                        <span id="lives-count">3</span>
+                        <div class="hearts">
+                            <span class="heart">❤️</span>
+                            <span class="heart">❤️</span>
+                            <span class="heart">❤️</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-controls">
+                    <button id="reveal-power-btn" class="reveal-power-btn">
+                        ✨ Reveal Power <span class="power-count">(1)</span>
+                    </button>
+                    <button id="skip-question-btn" class="skip-btn">
+                        ⏭️ Skip Question
+                    </button>
+                    <button id="quit-game-btn" class="quit-btn">Quit Game</button>
+                </div>
+            </div>
+
+            <!-- Challenge Content -->
+            <div class="challenge-content">
+                <!-- Left Column: Question Area -->
+                <div class="question-column">
+                    <!-- Flash Sign & Endless Mode Content -->
+                    <div id="flash-sign-content" class="challenge-mode-content">
+                        <div class="word-prompt">
+                            <h2 id="challenge-word">HELLO</h2>
+                            <p class="instruction">Perform this sign!</p>
+                        </div>
+                        <div class="timer-display">
+                            <div class="timer-circle">
+                                <span id="timer-text">10</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sign Match Mode Content -->
+                    <div id="sign-match-content" class="challenge-mode-content hidden">
+                        <div class="match-instruction">
+                            <h3>Which video shows the correct sign for:</h3>
+                            <h2 id="match-word">HELLO</h2>
+                        </div>
+                        <div class="video-options">
+                            <div class="video-option" data-option="A">
+                                <video id="video-a" loop muted>
+                                    <source src="" type="video/mp4">
+                                </video>
+                                <button class="select-video-btn" data-video="A">Choose A</button>
+                            </div>
+                            <div class="video-option" data-option="B">
+                                <video id="video-b" loop muted>
+                                    <source src="" type="video/mp4">
+                                </video>
+                                <button class="select-video-btn" data-video="B">Choose B</button>
+                            </div>
+                        </div>
+                        <div id="video-selection-result" class="selection-result hidden">
+                            <p id="selection-message">Great! Now perform the sign:</p>
+                            <h3 id="perform-word">HELLO</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Demonstration Area (Webcam) -->
+                <div class="demonstration-column">
+                    <div class="webcam-section">
+                        <div class="video-container">
+                            <video id="webcam" autoplay playsinline></video>
+                            <canvas class="output_canvas" id="output_canvas"></canvas>
+                        </div>
+                        <p id="gesture_output" class="output"></p>
+                        <button id="webcamButton" class="control-btn">Enable Camera</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reveal Power Modal/Popup -->
+        <div id="reveal-content" class="reveal-modal hidden">
+            <div class="reveal-overlay"></div>
+            <div class="reveal-popup">
+                <div class="reveal-video">
+                    <h3>Correct Sign:</h3>
+                    <video id="reveal-video" controls>
+                        <source src="" type="video/mp4">
+                    </video>
+                    <p class="reveal-message">This round scores 0 points</p>
+                    <button id="continue-after-reveal" class="continue-btn">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="results-screen hidden">
+            <div class="results-content">
+                <h2 id="results-title">Challenge Complete!</h2>
+                <div class="final-score">
+                    <span class="score-label">Final Score:</span>
+                    <span id="final-score">0</span>/<span id="final-total">10</span>
+                </div>
+                <div class="score-breakdown">
+                    <div class="stat">
+                        <span class="stat-label">Correct:</span>
+                        <span id="correct-count">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Wrong:</span>
+                        <span id="wrong-count">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Reveals:</span>
+                        <span id="reveal-used">Available</span>
+                    </div>
+                </div>
+                <div class="performance-message">
+                    <p id="performance-text">Great job!</p>
+                </div>
+                <div class="results-actions">
+                    <button id="play-again-btn" class="play-again-btn">Play Again</button>
+                    <button id="back-to-modes-btn" class="back-btn">Back to Modes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Selection -->
+        <div id="model-selection-container" class="model-selection-section"></div>
+    </main>
+
+    <footer>
+        <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
+    </footer>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="selectSound" src="static/audio/select.mp3" preload="auto"></audio>
+    <audio id="correctSound" src="static/audio/correct.mp3" preload="auto"></audio>
+    <audio id="incorrectSound" src="static/audio/incorrect.mp3" preload="auto"></audio>
+    <audio id="cameraSound" src="static/audio/camera.mp3" preload="auto"></audio>
+
+    <script type="module" src="static/js/challenge.js?v=20250831"></script>
+    <script src="static/js/navigation.js"></script>
+</body>
+</html>

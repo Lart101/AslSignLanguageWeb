@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     <div class="nav-item">
+                        <a href="challenge.html">🎯 Challenge</a>
+                    </div>
+                    <div class="nav-item">
                         <a href="contact.html">Contact Us</a>
                     </div>
                 </nav>
