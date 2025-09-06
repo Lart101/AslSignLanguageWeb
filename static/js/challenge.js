@@ -1344,10 +1344,21 @@ async function enableCam() {
 async function predictWebcam() {
     if (!gameState.isGameActive || !webcamRunning) return;
     
-    canvasElement.style.width = video.videoWidth + "px";
-    canvasElement.style.height = video.videoHeight + "px";
-    canvasElement.width = video.videoWidth;
-    canvasElement.height = video.videoHeight;
+    // Use responsive canvas sizing to match the video display
+    canvasElement.style.width = '100%';
+    canvasElement.style.height = '100%';
+    
+    // Make sure the canvas internal dimensions match the video's actual dimensions
+    if (video.videoWidth > 0 && video.videoHeight > 0) {
+        canvasElement.width = video.videoWidth;
+        canvasElement.height = video.videoHeight;
+    } else {
+        console.warn('Video dimensions not available yet');
+        if (webcamRunning) {
+            window.requestAnimationFrame(predictWebcam);
+        }
+        return;
+    }
 
     if (runningMode === "IMAGE") {
         runningMode = "VIDEO";
