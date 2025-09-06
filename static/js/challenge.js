@@ -283,16 +283,24 @@ function preloadNextVideo() {
     
     video.addEventListener('canplaythrough', () => {
         clearTimeout(loadTimeout);
-        // Video is fully loaded
+        // Video is fully loaded and ready to play
         preloadedVideos.set(videoData.url, video);
-        console.log(`Preloaded: ${videoData.word} (${videoData.category})`);
+        console.log(`✅ Fully preloaded: ${videoData.word} (${videoData.category})`);
         
         isPreloading = false;
         
-        // Continue with next video after a small delay to avoid overwhelming the browser
+        // Continue with next video after a small delay
         setTimeout(() => {
             preloadNextVideo();
-        }, 50); // Faster loading for GitHub Pages
+        }, 100);
+    });
+    
+    video.addEventListener('loadeddata', () => {
+        // Fallback: Even if not fully loaded, cache it for faster loading
+        if (!preloadedVideos.has(videoData.url)) {
+            preloadedVideos.set(videoData.url, video);
+            console.log(`📊 Partially preloaded: ${videoData.word} (${videoData.category})`);
+        }
     });
     
     video.addEventListener('error', (e) => {
@@ -314,11 +322,14 @@ function preloadNextVideo() {
 function getPreloadedVideo(videoPath) {
     const cached = preloadedVideos.get(videoPath);
     if (cached) {
-        return cached;
+        // Return a cloned video element to avoid conflicts
+        const clonedVideo = cached.cloneNode(true);
+        clonedVideo.currentTime = 0;
+        return clonedVideo;
     }
     
-    // If video isn't preloaded, try to load it immediately for GitHub Pages
-    console.log(`Video not preloaded, loading immediately: ${videoPath}`);
+    // If video isn't preloaded, create a new video element
+    console.log(`Video not preloaded, creating new element: ${videoPath}`);
     const video = document.createElement('video');
     video.src = videoPath;
     video.muted = true;
@@ -326,8 +337,6 @@ function getPreloadedVideo(videoPath) {
     video.preload = 'auto';
     video.crossOrigin = 'anonymous';
     
-    // Cache it for future use
-    preloadedVideos.set(videoPath, video);
     return video;
 }
 
@@ -489,7 +498,8 @@ async function preloadAllVideosForChallenge(mode) {
                             preloadedVideos.set(videoPath, video);
                             loadedVideos++;
                             const progress = (loadedVideos / totalVideos) * 100;
-                            updateProgress(progress, 'Loading videos...', `${word} loaded`, `${loadedVideos} / ${totalVideos} videos`);
+                            console.log(`✅ Successfully preloaded: ${word} (${loadedVideos}/${totalVideos})`);
+                            updateProgress(progress, 'Loading videos...', `${word} ✅`, `${loadedVideos} / ${totalVideos} videos`);
                             resolveVideo();
                         });
                         
@@ -751,53 +761,51 @@ function showSignMatchQuestion() {
     const wrongVideoPath = getVideoPath(wrongWord, modelCategory);
     
     // Use preloaded videos if available
-    const preloadedCorrect = getPreloadedVideo(correctVideoPath);
-    const preloadedWrong = getPreloadedVideo(wrongVideoPath);
+    const correctPreloaded = preloadedVideos.has(correctVideoPath);
+    const wrongPreloaded = preloadedVideos.has(wrongVideoPath);
     
-    if (preloadedCorrect) {
-        // Use preloaded videos with proper source assignment
-        const videoASrc = isACorrect ? preloadedCorrect.src : (preloadedWrong ? preloadedWrong.src : wrongVideoPath);
-        const videoBSrc = isACorrect ? (preloadedWrong ? preloadedWrong.src : wrongVideoPath) : preloadedCorrect.src;
+    if (correctPreloaded && wrongPreloaded) {
+        // Both videos are preloaded - use them directly
+        const videoASrc = isACorrect ? correctVideoPath : wrongVideoPath;
+        const videoBSrc = isACorrect ? wrongVideoPath : correctVideoPath;
         
         videoA.src = videoASrc;
         videoB.src = videoBSrc;
         
-        // Ensure videos are ready to play
-        videoA.load();
-        videoB.load();
+        // Don't call load() since videos are preloaded
+        console.log(`Using fully preloaded videos for sign-match: ${correctWord} vs ${wrongWord}`);
         
-        console.log(`Using preloaded videos for sign-match: ${correctWord} vs ${wrongWord}`);
+        // Videos should be ready immediately, try to play
+        setTimeout(() => {
+            videoA.play().catch(e => console.log('Video A autoplay failed:', e));
+            videoB.play().catch(e => console.log('Video B autoplay failed:', e));
+        }, 100);
     } else {
-        // Fallback to normal loading with optimization
+        // Some or all videos aren't preloaded - load normally
         videoA.src = isACorrect ? correctVideoPath : wrongVideoPath;
         videoB.src = isACorrect ? wrongVideoPath : correctVideoPath;
         
-        // Add loading optimization for GitHub Pages
         videoA.preload = 'auto';
         videoB.preload = 'auto';
         videoA.load();
         videoB.load();
         
-        console.log(`Loading videos normally for sign-match: ${correctWord} vs ${wrongWord}`);
+        console.log(`Loading videos normally for sign-match: ${correctWord} vs ${wrongWord} (Correct preloaded: ${correctPreloaded}, Wrong preloaded: ${wrongPreloaded})`);
+        
+        // Auto-play videos when they load
+        videoA.addEventListener('loadeddata', () => {
+            videoA.play().catch(e => console.log('Video A autoplay failed:', e));
+        }, { once: true });
+        
+        videoB.addEventListener('loadeddata', () => {
+            videoB.play().catch(e => console.log('Video B autoplay failed:', e));
+        }, { once: true });
     }
     
     // Store correct answer
     videoA.dataset.isCorrect = isACorrect;
     videoB.dataset.isCorrect = !isACorrect;
-    
-    // Auto-play videos when they load
-    videoA.addEventListener('loadeddata', () => {
-        videoA.play().catch(e => console.log('Video A autoplay failed:', e));
-    });
-    
-    videoB.addEventListener('loadeddata', () => {
-        videoB.play().catch(e => console.log('Video B autoplay failed:', e));
-    });
-    
-    // Force reload to trigger loadeddata event
-    videoA.load();
-    videoB.load();
-    
+
     // Reset video selection
     document.querySelectorAll('.video-option').forEach(option => {
         option.classList.remove('selected');
@@ -1060,16 +1068,23 @@ function useRevealPower() {
     // Ensure reveal video is muted
     revealVideo.muted = true;
     
-    // Use preloaded video if available, otherwise load normally
+    // Use preloaded video if available
     const preloadedVideo = getPreloadedVideo(videoPath);
-    if (preloadedVideo) {
-        // Use the preloaded video source
+    if (preloadedVideos.has(videoPath)) {
+        // Copy the preloaded video properties to the reveal video
         revealVideo.src = preloadedVideo.src;
-        revealVideo.currentTime = 0; // Reset to beginning
-        revealVideo.load(); // Force reload to ensure it works
-        console.log(`Using preloaded video for: ${currentWord}`);
+        revealVideo.currentTime = 0;
+        
+        // If the preloaded video is already loaded, we can play immediately
+        if (preloadedVideo.readyState >= 3) { // HAVE_FUTURE_DATA
+            console.log(`Using fully preloaded video for: ${currentWord}`);
+            // Video is ready to play
+        } else {
+            // Wait for the video to load
+            revealVideo.load();
+        }
     } else {
-        // Fallback to normal loading with optimization
+        // Fallback to normal loading
         revealVideo.src = videoPath;
         revealVideo.preload = 'auto';
         revealVideo.load();

@@ -242,6 +242,26 @@
         <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
     </footer>
 
+    <!-- Sound Toggle Button -->
+    <button id="manual-sound-toggle" style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.9);
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 9999;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    " title="Toggle Sound">🔊</button>
+
     <!-- Audio elements for sound effects -->
     <audio id="selectSound" src="static/audio/select.mp3" preload="auto"></audio>
     <audio id="correctSound" src="static/audio/correct.mp3" preload="auto"></audio>
@@ -250,5 +270,46 @@
 
     <script type="module" src="static/js/challenge.js?v=20250831"></script>
     <script src="static/js/navigation.js"></script>
+    
+    <script>
+        // Manual sound toggle functionality for challenge page
+        document.addEventListener('DOMContentLoaded', function() {
+            const manualSoundToggle = document.getElementById('manual-sound-toggle');
+            let soundEnabled = localStorage.getItem('signademy_sound_enabled') !== 'false';
+            
+            function updateButton() {
+                manualSoundToggle.innerHTML = soundEnabled ? '🔊' : '🔇';
+                manualSoundToggle.title = soundEnabled ? 'Sound ON - Click to turn off' : 'Sound OFF - Click to turn on';
+                localStorage.setItem('signademy_sound_enabled', soundEnabled.toString());
+            }
+            
+            updateButton();
+            
+            manualSoundToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                soundEnabled = !soundEnabled;
+                updateButton();
+                
+                window.dispatchEvent(new CustomEvent('soundSettingChanged', {
+                    detail: { soundEnabled: soundEnabled }
+                }));
+                
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => { this.style.transform = 'scale(1)'; }, 100);
+            });
+            
+            manualSoundToggle.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(37, 99, 235, 1)';
+                this.style.transform = 'scale(1.05)';
+                this.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+            });
+            
+            manualSoundToggle.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(37, 99, 235, 0.9)';
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+            });
+        });
+    </script>
 </body>
 </html>
