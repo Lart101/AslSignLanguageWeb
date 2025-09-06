@@ -597,7 +597,9 @@ function resetGameState() {
         endlessQuestionQueue: [],
         questionsPerModel: 3,
         currentModelIndex: 0,
-        questionAnswered: false
+        questionAnswered: false,
+        videoSelectionMade: false, // New flag for sign-match mode
+        lastVideoSelectionCorrect: false
     };
     
     // Initialize endless mode question queue
@@ -713,6 +715,9 @@ function updateLivesDisplay() {
 function nextQuestion() {
     if (!gameState.isGameActive) return;
     
+    // Clear canvas and reset camera state for new question
+    clearCanvasAndResetCamera();
+    
     // Reset question answered flag for new question
     gameState.questionAnswered = false;
     
@@ -788,16 +793,45 @@ function showFlashSignQuestion() {
 function showSignMatchQuestion() {
     signMatchContent.classList.remove('hidden');
     
+    // Clear and reset canvas from previous question
+    clearCanvasAndResetCamera();
+    
+    // Reset video selection state for new question
+    gameState.videoSelectionMade = false;
+    gameState.lastVideoSelectionCorrect = false;
+    
     // Get random word and set up video options
     const modelCategory = getCurrentModelCategory();
-    const words = CHALLENGE_WORDS[modelCategory] || CHALLENGE_WORDS.alphabet;
+    let words = CHALLENGE_WORDS[modelCategory];
+    
+    // Fallback if category doesn't exist
+    if (!words) {
+        console.warn('⚠️ No words found for category:', modelCategory, 'falling back to alphabet');
+        words = CHALLENGE_WORDS.alphabet;
+    }
+    
+    // Add extra protection against undefined or empty arrays
+    if (!words || words.length === 0) {
+        console.error('🚨 No words found even after fallback! This is a critical error');
+        console.log('🚨 Using hardcoded alphabet fallback');
+        words = ['A', 'B', 'C', 'D', 'E'];
+    }
+    
     const correctWord = words[Math.floor(Math.random() * words.length)];
     let wrongWord;
     
     // Make sure wrong word is different from correct word
-    do {
-        wrongWord = words[Math.floor(Math.random() * words.length)];
-    } while (wrongWord === correctWord && words.length > 1);
+    // Add extra protection for single-word arrays
+    if (words.length <= 1) {
+        console.warn('⚠️ Only one word available, using fallback for wrong word');
+        // Use a word from alphabet as fallback wrong word
+        const fallbackWords = CHALLENGE_WORDS.alphabet || ['A', 'B', 'C'];
+        wrongWord = fallbackWords[Math.floor(Math.random() * fallbackWords.length)];
+    } else {
+        do {
+            wrongWord = words[Math.floor(Math.random() * words.length)];
+        } while (wrongWord === correctWord);
+    }
     
     document.getElementById('match-word').textContent = correctWord;
     
@@ -860,23 +894,35 @@ function showSignMatchQuestion() {
     videoA.dataset.isCorrect = isACorrect;
     videoB.dataset.isCorrect = !isACorrect;
 
-    // Reset video selection
+    // Reset video selection UI
     document.querySelectorAll('.video-option').forEach(option => {
         option.classList.remove('selected');
     });
     document.querySelectorAll('.select-video-btn').forEach(btn => {
         btn.disabled = false;
+        btn.textContent = btn.textContent.replace('Selected', 'Choose'); // Reset button text
     });
     document.getElementById('video-selection-result').classList.add('hidden');
     
-    // Ensure webcam section is visible for this question
+    // Initially DISABLE webcam section until correct video is selected
     const webcamSection = document.querySelector('.webcam-section');
+    const webcamButton = document.getElementById('webcamButton');
     if (webcamSection) {
         webcamSection.style.display = 'block';
+        webcamSection.style.opacity = '0.5'; // Visual indication it's disabled
+    }
+    if (webcamButton) {
+        webcamButton.disabled = true;
+        webcamButton.style.opacity = '0.5';
     }
     
     // Reset question answered state
     gameState.questionAnswered = false;
+    
+    // Set initial instruction message
+    gestureOutput.style.background = '#f8f9fa';
+    gestureOutput.style.color = '#333';
+    gestureOutput.textContent = `First select the correct video, then demonstrate the sign for "${correctWord}"`;
     
     // No timer for sign match mode - user takes their time to choose and perform
 }
@@ -933,7 +979,8 @@ function testVideoLoading() {
 
 function getCurrentModelCategory() {
     const selector = document.getElementById('model-selector');
-    return selector ? selector.value : 'alphabet';
+    const category = selector ? selector.value : 'alphabet';
+    return category;
 }
 
 function selectVideo(videoOption) {
@@ -946,13 +993,17 @@ function selectVideo(videoOption) {
     });
     selectedVideo.classList.add('selected');
     
-    // Disable buttons
+    // Disable ALL buttons after any selection is made
     document.querySelectorAll('.select-video-btn').forEach(btn => {
         btn.disabled = true;
+        btn.textContent = btn.textContent.replace('Choose', 'Selected');
     });
     
+    // Clear and reset canvas to remove any previous landmarks
+    clearCanvasAndResetCamera();
+    
     if (isCorrect) {
-        // Correct selection - show message and continue to sign performance
+        // Correct selection - show message and ENABLE demonstration
         const resultDiv = document.getElementById('video-selection-result');
         const message = document.getElementById('selection-message');
         
@@ -965,6 +1016,27 @@ function selectVideo(videoOption) {
         
         // Store video selection result for scoring
         gameState.lastVideoSelectionCorrect = isCorrect;
+        gameState.videoSelectionMade = true;
+        
+        // Reset gesture output for sign demonstration
+        gestureOutput.style.background = '#f8f9fa';
+        gestureOutput.style.color = '#333';
+        gestureOutput.textContent = `Now demonstrate the sign for "${word}"`;
+        
+        // ENABLE the webcam section for demonstration
+        const webcamSection = document.querySelector('.webcam-section');
+        if (webcamSection) {
+            webcamSection.style.display = 'block';
+            webcamSection.style.opacity = '1';
+        }
+        
+        // Enable the webcam button if it's disabled
+        const webcamButton = document.getElementById('webcamButton');
+        if (webcamButton) {
+            webcamButton.disabled = false;
+            webcamButton.style.opacity = '1';
+        }
+        
     } else {
         // Wrong selection - immediately mark as wrong and move to next question
         gameState.wrongAnswers++;
@@ -978,14 +1050,18 @@ function selectVideo(videoOption) {
         message.style.color = '#dc3545';
         resultDiv.classList.remove('hidden');
         
-        // Hide webcam controls since we're skipping sign performance
+        // DISABLE webcam controls since we're skipping sign performance
         const webcamSection = document.querySelector('.webcam-section');
         if (webcamSection) {
             webcamSection.style.display = 'none';
         }
         
+        // Play incorrect sound
+        globalSoundManager.playSoundByName('incorrect');
+        
         // Show next question button or auto-advance after short delay
         setTimeout(() => {
+            clearCanvasAndResetCamera(); // Clear canvas before next question
             nextQuestion();
         }, 1500); // 1.5 second delay to show the wrong message
     }
@@ -1199,10 +1275,15 @@ function handleWrongAnswer() {
 }
 
 // Function to show feedback in sign-match mode without ending the question
-function showSignMatchFeedback(detectedSign, expectedSign, isCorrect) {
+function showSignMatchFeedback(detectedSign, expectedSign, isCorrect, customMessage = null) {
     const gestureOutput = document.getElementById('gesture_output');
     
-    if (isCorrect) {
+    if (customMessage) {
+        // Show custom message (like "select video first")
+        gestureOutput.style.background = '#fff3cd';
+        gestureOutput.style.color = '#856404';
+        gestureOutput.textContent = customMessage;
+    } else if (isCorrect) {
         gestureOutput.style.background = '#d4edda';
         gestureOutput.style.color = '#155724';
         gestureOutput.textContent = `Perfect! You signed "${expectedSign}" correctly! ✓`;
@@ -1218,12 +1299,19 @@ function showSignMatchFeedback(detectedSign, expectedSign, isCorrect) {
     }
     
     // Auto-clear the feedback after a few seconds to avoid clutter
-    if (!isCorrect) {
+    if (!isCorrect && !customMessage) {
         setTimeout(() => {
             gestureOutput.style.background = '';
             gestureOutput.style.color = '';
             gestureOutput.textContent = `Show the sign for "${expectedSign}"`;
         }, 3000);
+    } else if (customMessage) {
+        // Clear custom messages after 4 seconds
+        setTimeout(() => {
+            gestureOutput.style.background = '';
+            gestureOutput.style.color = '';
+            gestureOutput.textContent = `First select the correct video, then demonstrate the sign for "${expectedSign}"`;
+        }, 4000);
     }
 }
 
@@ -1307,6 +1395,26 @@ async function predictWebcam() {
     }
 }
 
+// Helper function to clear canvas and reset camera landmarks
+function clearCanvasAndResetCamera() {
+    // Clear the canvas completely
+    if (canvasElement && canvasCtx) {
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        console.log('🧹 Canvas cleared and reset');
+    }
+    
+    // Reset any stored results to prevent residual landmarks
+    results = undefined;
+    lastVideoTime = -1;
+    
+    // Clear gesture output display
+    if (gestureOutput) {
+        gestureOutput.style.background = '#f8f9fa';
+        gestureOutput.style.color = '#333';
+        gestureOutput.textContent = '';
+    }
+}
+
 function checkAnswer(detectedSign) {
     // Skip processing if question already answered (e.g., wrong video selection in sign-match)
     if (gameState.questionAnswered) {
@@ -1317,6 +1425,13 @@ function checkAnswer(detectedSign) {
     
     if (currentMode === 'sign-match') {
         expectedSign = document.getElementById('match-word').textContent;
+        
+        // In sign-match mode, user MUST select a video first before demonstrating
+        if (!gameState.videoSelectionMade) {
+            // Show message that they need to select a video first
+            showSignMatchFeedback(null, expectedSign, false, 'Please select a video first before demonstrating the sign!');
+            return;
+        }
         
         // In sign-match mode, if they selected the correct video, they must keep trying 
         // until they perform the correct sign - don't move on for wrong detection
@@ -1391,6 +1506,9 @@ function backToModeSelection() {
     gameScreen.classList.add('hidden');
     resultsScreen.classList.add('hidden');
     modeSelection.classList.remove('hidden');
+    
+    // Clear canvas and reset camera state
+    clearCanvasAndResetCamera();
     
     // Stop webcam
     if (webcamRunning) {
