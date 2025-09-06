@@ -440,10 +440,16 @@ function showLoadingScreen() {
     
     console.log('Loading screen element:', loadingScreen);
     console.log('Mode selection element:', modeSelection);
+    console.log('Loading screen classes before:', loadingScreen ? loadingScreen.className : 'NOT FOUND');
     
     if (loadingScreen) {
         console.log('📺 Removing hidden class from loading screen');
         loadingScreen.classList.remove('hidden');
+        console.log('Loading screen classes after:', loadingScreen.className);
+        // Force display for debugging
+        loadingScreen.style.display = 'flex';
+        loadingScreen.style.zIndex = '9999';
+        console.log('Forced loading screen display');
     } else {
         console.error('❌ Loading screen element not found!');
     }
@@ -462,11 +468,21 @@ function hideLoadingScreen() {
 }
 
 function updateProgress(percentage, status, currentVideo, videoCount) {
+    console.log(`📊 updateProgress called: ${percentage}% - ${status} - ${currentVideo} - ${videoCount}`);
+    
     const progressFill = document.getElementById('progress-fill');
     const progressPercentage = document.getElementById('progress-percentage');
     const progressStatus = document.getElementById('progress-status');
     const currentVideoSpan = document.getElementById('current-video');
     const videoCountSpan = document.getElementById('video-count');
+    
+    console.log('Progress elements found:', {
+        progressFill: !!progressFill,
+        progressPercentage: !!progressPercentage,
+        progressStatus: !!progressStatus,
+        currentVideoSpan: !!currentVideoSpan,
+        videoCountSpan: !!videoCountSpan
+    });
     
     if (progressFill) progressFill.style.width = `${percentage}%`;
     if (progressPercentage) progressPercentage.textContent = `${Math.round(percentage)}%`;
