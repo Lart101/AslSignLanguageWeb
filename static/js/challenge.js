@@ -19,14 +19,15 @@ let gameState = {
     questionAnswered: false // Prevent multiple scoring per question
 };
 
-// Challenge word pools for different categories
+// Challenge word pools for different categories (only categories with actual video files)
 const CHALLENGE_WORDS = {
     alphabet: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
-    numbers: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-    colors: ['RED', 'BLUE', 'YELLOW', 'GREEN', 'ORANGE', 'PURPLE', 'BLACK', 'WHITE'],
-    basicWords: ['HELLO', 'THANK', 'PLEASE', 'YES', 'NO', 'GOODBYE'],
-    family: ['MOTHER', 'FATHER', 'BABY', 'BOY', 'GIRL'],
-    food: ['EAT', 'DRINK', 'WATER', 'APPLE', 'MILK', 'PIZZA']
+    numbers: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    // Commented out categories without video files:
+    // colors: ['RED', 'BLUE', 'YELLOW', 'GREEN', 'ORANGE', 'PURPLE', 'BLACK', 'WHITE'],
+    // basic_words: ['HELLO', 'THANK', 'PLEASE', 'YES', 'NO', 'GOODBYE'],
+    // family: ['MOTHER', 'FATHER', 'BABY', 'BOY', 'GIRL'],
+    // food: ['EAT', 'DRINK', 'WATER', 'APPLE', 'MILK', 'PIZZA']
 };
 
 // MediaPipe and webcam variables
@@ -61,6 +62,9 @@ let isPreloading = false;
 
 // Initialize the challenge page
 document.addEventListener('DOMContentLoaded', function() {
+    // Test video loading first
+    testVideoLoading();
+    
     initializePage();
     setupEventListeners();
     createGestureRecognizer();
@@ -674,8 +678,70 @@ function showSignMatchQuestion() {
 }
 
 function getVideoPath(word, category) {
-    // Construct video path based on category and word
-    return `static/sign_language_videos/${category}/${word.toLowerCase()}.mp4`;
+    // GitHub Pages compatibility: use relative paths from root
+    const basePath = window.location.hostname.includes('github.io') 
+        ? '/AslSignLanguageWeb/' // GitHub Pages path
+        : './'; // Local development path
+    
+    // Don't convert to lowercase - video files are uppercase (A.mp4, B.mp4, etc.)
+    const videoName = word.toUpperCase(); // Ensure uppercase to match file names
+    
+    const fullPath = `${basePath}static/sign_language_videos/${category}/${videoName}.mp4`;
+    
+    // Debug logging
+    console.log(`Video path generated: ${fullPath} (word: ${word}, category: ${category}, hostname: ${window.location.hostname})`);
+    
+    return fullPath;
+}
+
+// Helper function to create video with error handling
+function createVideoWithErrorHandling(src, word = 'unknown') {
+    const video = document.createElement('video');
+    video.src = src;
+    video.muted = true;
+    video.preload = 'auto';
+    video.playsInline = true;
+    video.crossOrigin = 'anonymous';
+    
+    video.addEventListener('loadstart', () => {
+        console.log(`✅ Video loading started: ${word} - ${src}`);
+    });
+    
+    video.addEventListener('canplay', () => {
+        console.log(`✅ Video ready to play: ${word} - ${src}`);
+    });
+    
+    video.addEventListener('error', (e) => {
+        console.error(`❌ Video loading failed: ${word} - ${src}`, e);
+        console.error('Error details:', {
+            error: e.error,
+            networkState: video.networkState,
+            readyState: video.readyState
+        });
+    });
+    
+    return video;
+}
+
+// Test function to verify video paths and loading
+function testVideoLoading() {
+    console.log('🧪 Testing video loading...');
+    console.log('Current hostname:', window.location.hostname);
+    console.log('Is GitHub Pages?:', window.location.hostname.includes('github.io'));
+    
+    // Test alphabet A
+    const testPathA = getVideoPath('A', 'alphabet');
+    console.log('Testing path for A:', testPathA);
+    
+    // Test numbers 1
+    const testPath1 = getVideoPath('1', 'numbers');
+    console.log('Testing path for 1:', testPath1);
+    
+    // Create test video elements to verify loading
+    const testVideoA = createVideoWithErrorHandling(testPathA, 'A');
+    const testVideo1 = createVideoWithErrorHandling(testPath1, '1');
+    
+    return { testVideoA, testVideo1 };
 }
 
 function getCurrentModelCategory() {
