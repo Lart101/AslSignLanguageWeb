@@ -518,6 +518,12 @@ function startGameAfterLoading(mode) {
     gameScreen.classList.remove('hidden');
     resultsScreen.classList.add('hidden');
     
+    // Hide model selection during game
+    const modelSelectionContainer = document.getElementById('model-selection-container');
+    if (modelSelectionContainer) {
+        modelSelectionContainer.classList.add('hidden');
+    }
+    
     // Update UI
     updateGameUI();
     
@@ -599,7 +605,8 @@ function resetGameState() {
         currentModelIndex: 0,
         questionAnswered: false,
         videoSelectionMade: false, // New flag for sign-match mode
-        lastVideoSelectionCorrect: false
+        lastVideoSelectionCorrect: false,
+        signMatchAttempts: 0 // Counter for sign demonstration attempts in sign-match mode
     };
     
     // Initialize endless mode question queue
@@ -720,6 +727,11 @@ function nextQuestion() {
     
     // Reset question answered flag for new question
     gameState.questionAnswered = false;
+    
+    // Reset sign-match specific states for new question
+    gameState.videoSelectionMade = false;
+    gameState.signMatchAttempts = 0;
+    gameState.lastVideoSelectionCorrect = false;
     
     gameState.currentQuestion++;
     
@@ -1235,6 +1247,9 @@ function handleCorrectAnswer() {
         gestureOutput.textContent = 'Correct! +1 point ✓';
     }
     
+    // Update the UI to reflect new score
+    updateGameUI();
+    
     clearInterval(currentRoundTimer);
     
     setTimeout(() => {
@@ -1270,6 +1285,11 @@ function handleWrongAnswer() {
     clearInterval(currentRoundTimer);
     
     setTimeout(() => {
+        // Check if game should end in endless mode after losing life
+        if (currentMode === 'endless' && gameState.lives <= 0) {
+            endGame();
+            return;
+        }
         nextQuestion();
     }, 1500);
 }
@@ -1444,13 +1464,38 @@ function checkAnswer(detectedSign) {
             return;
         }
         
-        // In sign-match mode, if they selected the correct video, they must keep trying 
-        // until they perform the correct sign - don't move on for wrong detection
+        // In sign-match mode, if they selected the correct video, they get ONE attempt at the sign
         if (detectedSign === expectedSign) {
             handleCorrectAnswer();
         } else {
-            // Show feedback but don't end the question - let them keep trying
-            showSignMatchFeedback(detectedSign, expectedSign, false);
+            // Initialize attempt counter if not set
+            if (!gameState.signMatchAttempts) {
+                gameState.signMatchAttempts = 0;
+            }
+            
+            gameState.signMatchAttempts++;
+            
+            // Allow up to 3 attempts for sign demonstration
+            if (gameState.signMatchAttempts >= 3) {
+                // After 3 failed attempts, count as wrong and move to next question
+                gameState.wrongAnswers++;
+                gameState.questionAnswered = true;
+                
+                gestureOutput.style.background = '#f8d7da';
+                gestureOutput.style.color = '#721c24';
+                gestureOutput.textContent = `Out of attempts! The correct sign was "${expectedSign}" ✗`;
+                
+                // Play incorrect sound
+                globalSoundManager.playSoundByName('incorrect');
+                
+                setTimeout(() => {
+                    nextQuestion();
+                }, 2000);
+            } else {
+                // Show feedback but let them try again (with attempt counter)
+                const attemptsLeft = 3 - gameState.signMatchAttempts;
+                showSignMatchFeedback(detectedSign, expectedSign, false, `Wrong sign! You have ${attemptsLeft} attempts left.`);
+            }
         }
     } else {
         // Other modes: normal logic
@@ -1517,6 +1562,12 @@ function backToModeSelection() {
     gameScreen.classList.add('hidden');
     resultsScreen.classList.add('hidden');
     modeSelection.classList.remove('hidden');
+    
+    // Show model selection again
+    const modelSelectionContainer = document.getElementById('model-selection-container');
+    if (modelSelectionContainer) {
+        modelSelectionContainer.classList.remove('hidden');
+    }
     
     // Clear canvas and reset camera state
     clearCanvasAndResetCamera();
