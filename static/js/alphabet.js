@@ -1,4 +1,4 @@
-import { getGestureModelUrl, loadModelWithProgress, normalizeModelOutput, getDisplayNameFromDataLetter } from './config.js';
+import { getGestureModelUrl, loadModelWithProgress, normalizeModelOutput, getDisplayNameFromDataLetter, globalSoundManager } from './config.js';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
 let gestureRecognizer;
@@ -14,9 +14,6 @@ const selectSound = document.getElementById('selectSound');
 const correctSound = document.getElementById('correctSound');
 const incorrectSound = document.getElementById('incorrectSound');
 const cameraSound = document.getElementById('cameraSound');
-
-// Sound settings
-let soundEnabled = true;
 
 // Initialize the GestureRecognizer with progress
 const createGestureRecognizer = async () => {
@@ -44,8 +41,10 @@ const canvasCtx = canvasElement.getContext("2d");
 const gestureOutput = document.getElementById("gesture_output");
 const enableWebcamButton = document.getElementById("webcamButton");
 
-// Function to play sound
+// Function to play sound using global sound manager
 function playSound(audioElement) {
+    // Check localStorage directly for manual toggle compatibility
+    const soundEnabled = localStorage.getItem('signademy_sound_enabled') !== 'false';
     if (soundEnabled && audioElement) {
         audioElement.currentTime = 0;
         audioElement.play().catch(error => {
@@ -224,32 +223,6 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
     document.querySelector('nav').classList.toggle('active');
 });
 
-// Add sound toggle button to the UI
-function createSoundToggle() {
-    const soundToggle = document.createElement('button');
-    soundToggle.id = 'soundToggle';
-    soundToggle.className = 'control-btn sound-toggle';
-    soundToggle.innerHTML = '🔊 Sound On';
-    soundToggle.style.marginLeft = '10px';
-    
-    soundToggle.addEventListener('click', () => {
-        soundEnabled = !soundEnabled;
-        if (soundEnabled) {
-            soundToggle.innerHTML = '🔊 Sound On';
-            playSound(selectSound); // Play a sound to confirm sound is on
-        } else {
-            soundToggle.innerHTML = '🔇 Sound Off';
-        }
-    });
-    
-    // Add the button next to the webcam button
-    const webcamButton = document.getElementById('webcamButton');
-    webcamButton.parentNode.insertBefore(soundToggle, webcamButton.nextSibling);
-}
-
-// Call the function to create the sound toggle button
-createSoundToggle();
-
 // Function to handle text length in letter cards
 function adjustCardTextSizing() {
     document.querySelectorAll('.letter-card .letter').forEach(letterElement => {
@@ -276,3 +249,11 @@ if (typeof MutationObserver !== 'undefined') {
     const observer = new MutationObserver(adjustCardTextSizing);
     observer.observe(document.body, { childList: true, subtree: true });
 }
+
+// Register audio elements with global sound manager
+document.addEventListener('DOMContentLoaded', () => {
+    globalSoundManager.registerAudioElement('select', selectSound);
+    globalSoundManager.registerAudioElement('correct', correctSound);
+    globalSoundManager.registerAudioElement('incorrect', incorrectSound);
+    globalSoundManager.registerAudioElement('camera', cameraSound);
+});

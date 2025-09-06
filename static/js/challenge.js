@@ -1,5 +1,5 @@
 // Challenge Game JavaScript
-import { createModelSelector, getModelUrl, loadModelWithProgress, MODEL_URLS, normalizeModelOutput } from './config.js';
+import { createModelSelector, getModelUrl, loadModelWithProgress, MODEL_URLS, normalizeModelOutput, globalSoundManager } from './config.js';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
 // Game State
@@ -1015,7 +1015,7 @@ function timeUp() {
         gestureOutput.textContent = 'Time\'s up! Lost a life ⏰💔';
         
         // Play incorrect sound
-        document.getElementById('incorrectSound').play().catch(e => console.log('Audio play failed'));
+        globalSoundManager.playSoundByName('incorrect');
         
         setTimeout(() => {
             nextQuestion();
@@ -1113,7 +1113,7 @@ function handleCorrectAnswer() {
     gameState.correctAnswers++;
     
     // Play correct sound
-    document.getElementById('correctSound').play().catch(e => console.log('Audio play failed'));
+    globalSoundManager.playSoundByName('correct');
     
     // Show feedback
     gestureOutput.style.background = '#d4edda';
@@ -1150,7 +1150,7 @@ function handleWrongAnswer() {
     }
     
     // Play incorrect sound
-    document.getElementById('incorrectSound').play().catch(e => console.log('Audio play failed'));
+    globalSoundManager.playSoundByName('incorrect');
     
     clearInterval(currentRoundTimer);
     

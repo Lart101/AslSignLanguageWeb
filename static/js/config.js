@@ -543,3 +543,204 @@ export async function loadModelWithProgress(modelUrl, options = {}) {
         throw error;
     }
 }
+
+// Global Sound Management System
+export class SoundManager {
+    constructor() {
+        this.soundEnabled = this.loadSoundSetting();
+        this.audioElements = new Map();
+        this.soundToggleButton = null;
+        this.initializeSoundManager();
+    }
+
+    // Load sound setting from localStorage
+    loadSoundSetting() {
+        const saved = localStorage.getItem('signademy_sound_enabled');
+        return saved === null ? true : saved === 'true'; // Default to true if not set
+    }
+
+    // Save sound setting to localStorage
+    saveSoundSetting() {
+        localStorage.setItem('signademy_sound_enabled', this.soundEnabled.toString());
+    }
+
+    // Set sound enabled/disabled state
+    setSoundEnabled(enabled) {
+        this.soundEnabled = enabled;
+        this.saveSoundSetting();
+        this.updateSoundToggleButton();
+        
+        // Dispatch custom event for other components to listen to
+        window.dispatchEvent(new CustomEvent('soundSettingChanged', {
+            detail: { soundEnabled: this.soundEnabled }
+        }));
+    }
+
+    // Get current sound state
+    isSoundEnabled() {
+        return this.soundEnabled;
+    }
+
+    // Register audio elements for management
+    registerAudioElement(name, audioElement) {
+        if (audioElement) {
+            this.audioElements.set(name, audioElement);
+        }
+    }
+
+    // Play sound if enabled
+    playSound(audioElement) {
+        if (this.soundEnabled && audioElement) {
+            audioElement.currentTime = 0;
+            audioElement.play().catch(error => {
+                console.warn('Error playing sound:', error);
+            });
+        }
+    }
+
+    // Play sound by name (if registered)
+    playSoundByName(name) {
+        const audioElement = this.audioElements.get(name);
+        this.playSound(audioElement);
+    }
+
+    // Initialize sound manager and create toggle button
+    initializeSoundManager() {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.createSoundToggleButton());
+        } else {
+            this.createSoundToggleButton();
+        }
+    }
+
+    // Create sound toggle button and add it to the navigation
+    createSoundToggleButton() {
+        // Only create the button if it doesn't already exist
+        if (document.getElementById('global-sound-toggle')) return;
+
+        const soundToggle = document.createElement('button');
+        soundToggle.id = 'global-sound-toggle';
+        soundToggle.className = 'sound-toggle-btn';
+        soundToggle.setAttribute('aria-label', 'Toggle sound');
+        soundToggle.setAttribute('title', this.soundEnabled ? 'Sound is ON - Click to turn off' : 'Sound is OFF - Click to turn on');
+        
+        // Apply inline styles to ensure visibility
+        soundToggle.style.cssText = `
+            position: fixed !important;
+            bottom: 20px !important;
+            left: 20px !important;
+            width: 50px !important;
+            height: 50px !important;
+            border: none !important;
+            border-radius: 50% !important;
+            background: rgba(37, 99, 235, 0.9) !important;
+            color: white !important;
+            font-size: 20px !important;
+            cursor: pointer !important;
+            z-index: 9999 !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+            transition: all 0.2s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            user-select: none !important;
+            opacity: 0.9 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        `;
+        
+        this.updateButtonContent(soundToggle);
+        
+        soundToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setSoundEnabled(!this.soundEnabled);
+        });
+
+        // Add hover effects
+        soundToggle.addEventListener('mouseenter', () => {
+            soundToggle.style.background = 'rgba(37, 99, 235, 1) !important';
+            soundToggle.style.transform = 'scale(1.05) !important';
+            soundToggle.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4) !important';
+            soundToggle.style.opacity = '1 !important';
+        });
+
+        soundToggle.addEventListener('mouseleave', () => {
+            soundToggle.style.background = 'rgba(37, 99, 235, 0.9) !important';
+            soundToggle.style.transform = 'scale(1) !important';
+            soundToggle.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3) !important';
+            soundToggle.style.opacity = '0.9 !important';
+        });
+
+        // Try to add to navigation first, fall back to body
+        this.addButtonToNavigation(soundToggle);
+        
+        this.soundToggleButton = soundToggle;
+        
+        console.log('Sound toggle button created and added to page');
+    }
+
+    // Update button content based on sound state
+    updateButtonContent(button) {
+        if (this.soundEnabled) {
+            button.innerHTML = '🔊';
+            button.setAttribute('title', 'Sound is ON - Click to turn off');
+        } else {
+            button.innerHTML = '🔇';
+            button.setAttribute('title', 'Sound is OFF - Click to turn on');
+        }
+    }
+
+    // Update the sound toggle button display
+    updateSoundToggleButton() {
+        if (this.soundToggleButton) {
+            this.updateButtonContent(this.soundToggleButton);
+        }
+    }
+
+    // Add button to navigation or appropriate location
+    addButtonToNavigation(button) {
+        // Always add to body to ensure it appears
+        document.body.appendChild(button);
+        console.log('Sound toggle button added to page');
+    }
+
+    // Auto-register common audio elements if they exist
+    autoRegisterAudioElements() {
+        const audioSelectors = {
+            select: '#selectSound',
+            correct: '#correctSound',
+            incorrect: '#incorrectSound',
+            camera: '#cameraSound'
+        };
+
+        Object.entries(audioSelectors).forEach(([name, selector]) => {
+            const element = document.querySelector(selector);
+            if (element) {
+                this.registerAudioElement(name, element);
+            }
+        });
+    }
+}
+
+// Create global sound manager instance
+export const globalSoundManager = new SoundManager();
+
+// Auto-register audio elements when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        globalSoundManager.autoRegisterAudioElements();
+    });
+} else {
+    globalSoundManager.autoRegisterAudioElements();
+}
+
+// Convenience functions for backward compatibility
+export function playSound(audioElement) {
+    return globalSoundManager.playSound(audioElement);
+}
+
+export function isSoundEnabled() {
+    return globalSoundManager.isSoundEnabled();
+}
