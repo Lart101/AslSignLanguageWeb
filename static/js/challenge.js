@@ -374,17 +374,22 @@ function preloadGameModeVideos(mode) {
 
 // Start a game mode
 function startGame(mode) {
+    console.log('🎮 Starting game with mode:', mode);
     currentMode = mode;
     resetGameState();
     
     // Show loading screen and preload all videos before starting
+    console.log('📺 Showing loading screen...');
     showLoadingScreen();
+    
+    console.log('🔄 Starting video preload process...');
     preloadAllVideosForChallenge(mode).then(() => {
+        console.log('✅ Video preloading completed successfully');
         // Hide loading screen and start the game
         hideLoadingScreen();
         startGameAfterLoading(mode);
     }).catch((error) => {
-        console.error('Failed to preload videos:', error);
+        console.error('❌ Failed to preload videos:', error);
         // Still start the game even if preloading fails
         hideLoadingScreen();
         startGameAfterLoading(mode);
@@ -420,11 +425,25 @@ function startGameAfterLoading(mode) {
 
 // Loading screen functions
 function showLoadingScreen() {
+    console.log('🔍 Showing loading screen - finding elements...');
     const loadingScreen = document.getElementById('loading-screen');
     const modeSelection = document.getElementById('mode-selection');
     
-    loadingScreen.classList.remove('hidden');
-    modeSelection.classList.add('hidden');
+    console.log('Loading screen element:', loadingScreen);
+    console.log('Mode selection element:', modeSelection);
+    
+    if (loadingScreen) {
+        console.log('📺 Removing hidden class from loading screen');
+        loadingScreen.classList.remove('hidden');
+    } else {
+        console.error('❌ Loading screen element not found!');
+    }
+    
+    if (modeSelection) {
+        console.log('🔽 Hiding mode selection');
+        modeSelection.classList.add('hidden');
+    }
+    
     updateProgress(0, 'Initializing...', 'Preparing...', '0 / 0 videos');
 }
 
@@ -449,15 +468,20 @@ function updateProgress(percentage, status, currentVideo, videoCount) {
 
 // Comprehensive video preloading with progress tracking
 async function preloadAllVideosForChallenge(mode) {
+    console.log('🎯 preloadAllVideosForChallenge called with mode:', mode);
     return new Promise(async (resolve, reject) => {
         try {
             // Get current model category
             const modelCategory = getCurrentModelCategory();
+            console.log('📂 Current model category:', modelCategory);
+            
             const words = CHALLENGE_WORDS[modelCategory] || CHALLENGE_WORDS.alphabet;
+            console.log('📝 Available words:', words.length, 'words');
             
             // For sign-match mode, we need pairs of videos, so preload all
             // For other modes, we can preload a subset for faster loading
             const videosToPreload = mode === 'sign-match' ? words : words.slice(0, 15);
+            console.log(`🎬 Will preload ${videosToPreload.length} videos for mode: ${mode}`);
             
             const totalVideos = videosToPreload.length;
             let loadedVideos = 0;
