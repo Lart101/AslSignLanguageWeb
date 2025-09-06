@@ -34,42 +34,42 @@
                     <div id="word-hello" class="letter-card" data-letter="HELLO">
                         <div class="letter">Hello</div>
                         <div class="sign-image">
-                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Hello" width="120">
+                            <video src="static/sign_language_videos/basic_words/Hello.mp4" width="120" autoplay muted loop playsinline></video>
                         </div>
                         <p>Open hand, wave fingers</p>
                     </div>
                     <div id="word-goodbye" class="letter-card" data-letter="GOODBYE">
                         <div class="letter">Goodbye</div>
                         <div class="sign-image">
-                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Goodbye" width="120">
+                            <video src="static/sign_language_videos/basic_words/Goodbye.mp4" width="120" autoplay muted loop playsinline></video>
                         </div>
                         <p>Open hand, fingers wave down</p>
                     </div>
                     <div id="word-thank" class="letter-card" data-letter="THANK">
                         <div class="letter">Thank You</div>
                         <div class="sign-image">
-                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Thank You" width="120">
+                            <video src="static/sign_language_videos/basic_words/Thankyou.mp4" width="120" autoplay muted loop playsinline></video>
                         </div>
                         <p>Touch chin, move hand forward</p>
                     </div>
                     <div id="word-please" class="letter-card" data-letter="PLEASE">
                         <div class="letter">Please</div>
                         <div class="sign-image">
-                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Please" width="120">
+                            <video src="static/sign_language_videos/basic_words/Please.mp4" width="120" autoplay muted loop playsinline></video>
                         </div>
                         <p>Open hand on chest, circular motion</p>
                     </div>
                     <div id="word-yes" class="letter-card" data-letter="YES">
                         <div class="letter">Yes</div>
                         <div class="sign-image">
-                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for Yes" width="120">
+                            <video src="static/sign_language_videos/basic_words/Yes.mp4" width="120" autoplay muted loop playsinline></video>
                         </div>
                         <p>Fist nods up and down</p>
                     </div>
                     <div id="word-no" class="letter-card" data-letter="NO">
                         <div class="letter">No</div>
                         <div class="sign-image">
-                            <img src="static/sign_language_images/placeholder.jpg" alt="Sign for No" width="120">
+                            <video src="static/sign_language_videos/basic_words/No.mp4" width="120" autoplay muted loop playsinline></video>
                         </div>
                         <p>Index and middle finger snap shut</p>
                     </div>
@@ -91,6 +91,26 @@
         <p>Developed with  as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
     </footer>
     
+    <!-- Sound Toggle Button -->
+    <button id="manual-sound-toggle" style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.9);
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 9999;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    " title="Toggle Sound">🔊</button>
+    
     <!-- Audio elements for sound effects -->
     <audio id="selectSound" src="static/audio/select.mp3" preload="auto"></audio>
     <audio id="correctSound" src="static/audio/correct.mp3" preload="auto"></audio>
@@ -98,7 +118,59 @@
     <audio id="cameraSound" src="static/audio/camera.mp3" preload="auto"></audio>
 
     <script type="module" src="static/js/alphabet.js?v=20250829"></script>
+    <script src="static/js/global-preloader.js"></script>
     <script src="static/js/navigation.js"></script>
+    
+    <script>
+        // Manual sound toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const manualSoundToggle = document.getElementById('manual-sound-toggle');
+            let soundEnabled = localStorage.getItem('signademy_sound_enabled') !== 'false'; // Default to true
+            
+            // Update button appearance
+            function updateButton() {
+                manualSoundToggle.innerHTML = soundEnabled ? '🔊' : '🔇';
+                manualSoundToggle.title = soundEnabled ? 'Sound ON - Click to turn off' : 'Sound OFF - Click to turn on';
+                localStorage.setItem('signademy_sound_enabled', soundEnabled.toString());
+            }
+            
+            // Initialize button
+            updateButton();
+            
+            // Add click handler
+            manualSoundToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                soundEnabled = !soundEnabled;
+                updateButton();
+                
+                // Dispatch event for other components
+                window.dispatchEvent(new CustomEvent('soundSettingChanged', {
+                    detail: { soundEnabled: soundEnabled }
+                }));
+                
+                // Visual feedback
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+                
+                console.log('Sound toggled:', soundEnabled ? 'ON' : 'OFF');
+            });
+            
+            // Add hover effects
+            manualSoundToggle.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(37, 99, 235, 1)';
+                this.style.transform = 'scale(1.05)';
+                this.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+            });
+            
+            manualSoundToggle.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(37, 99, 235, 0.9)';
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+            });
+        });
+    </script>
 </body>
 </html>
 

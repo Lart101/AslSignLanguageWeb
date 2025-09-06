@@ -903,7 +903,10 @@ function playAllVideos() {
     if (combinedVideo) {
         // Only trigger click if video is paused
         if (combinedVideo.paused) {
-            document.getElementById('combined-play-pause-btn').click();
+            const playPauseBtn = document.getElementById('combined-play-pause-btn');
+            if (playPauseBtn) {
+                playPauseBtn.click();
+            }
         }
     } else {
         const videos = document.querySelectorAll('#translated-videos video');
@@ -916,7 +919,10 @@ function pauseAllVideos() {
     if (combinedVideo) {
         // Only trigger click if video is playing
         if (!combinedVideo.paused) {
-            document.getElementById('combined-play-pause-btn').click();
+            const playPauseBtn = document.getElementById('combined-play-pause-btn');
+            if (playPauseBtn) {
+                playPauseBtn.click();
+            }
         }
     } else {
         const videos = document.querySelectorAll('#translated-videos video');
@@ -927,7 +933,10 @@ function pauseAllVideos() {
 function restartAllVideos() {
     const combinedVideo = document.getElementById('combined-video');
     if (combinedVideo) {
-        document.getElementById('combined-restart-btn').click();
+        const restartBtn = document.getElementById('combined-restart-btn');
+        if (restartBtn) {
+            restartBtn.click();
+        }
     } else {
         const videos = document.querySelectorAll('#translated-videos video');
         videos.forEach(video => {

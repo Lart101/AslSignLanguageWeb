@@ -344,3 +344,106 @@ nav a.active {
         font-size: 0.9rem;
     }
 }
+
+/* Global Sound Toggle Button Styles */
+#global-sound-toggle {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    width: 50px !important;
+    height: 50px !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background: rgba(37, 99, 235, 0.9) !important;
+    color: white !important;
+    font-size: 20px !important;
+    cursor: pointer !important;
+    z-index: 1001 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    opacity: 0.9 !important;
+}
+
+/* Tooltip for sound button */
+#global-sound-toggle::after {
+    content: attr(title);
+    position: absolute;
+    left: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1002;
+}
+
+#global-sound-toggle:hover::after {
+    opacity: 1;
+}
+
+#global-sound-toggle:hover {
+    background: rgba(37, 99, 235, 1) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+    opacity: 1 !important;
+}
+
+#global-sound-toggle:active {
+    transform: scale(0.95) !important;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    #global-sound-toggle {
+        bottom: 15px !important;
+        left: 15px !important;
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 18px !important;
+    }
+    
+    /* Hide tooltip on mobile */
+    #global-sound-toggle::after {
+        display: none !important;
+    }
+}
+
+/* High contrast and accessibility */
+@media (prefers-contrast: high) {
+    #global-sound-toggle {
+        background: #000 !important;
+        color: #fff !important;
+        border: 2px solid #fff !important;
+    }
+    
+    #global-sound-toggle:hover {
+        background: #333 !important;
+    }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    #global-sound-toggle {
+        transition: none !important;
+    }
+    
+    #global-sound-toggle:hover {
+        transform: none !important;
+    }
+    
+    #global-sound-toggle:active {
+        transform: none !important;
+    }
+}
