@@ -19,15 +19,14 @@ let gameState = {
     questionAnswered: false // Prevent multiple scoring per question
 };
 
-// Challenge word pools for different categories (only categories with actual video files)
+// Challenge word pools for different categories (updated with all available video files)
 const CHALLENGE_WORDS = {
     alphabet: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
-    numbers: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-    // Commented out categories without video files:
-    // colors: ['RED', 'BLUE', 'YELLOW', 'GREEN', 'ORANGE', 'PURPLE', 'BLACK', 'WHITE'],
-    // basic_words: ['HELLO', 'THANK', 'PLEASE', 'YES', 'NO', 'GOODBYE'],
-    // family: ['MOTHER', 'FATHER', 'BABY', 'BOY', 'GIRL'],
-    // food: ['EAT', 'DRINK', 'WATER', 'APPLE', 'MILK', 'PIZZA']
+    numbers: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+    colors: ['Black', 'Blue', 'Green', 'Orange', 'Purple', 'Red', 'White', 'Yellow'],
+    basicWords: ['Hello', 'Goodbye', 'Please', 'Thankyou', 'Yes', 'No'],
+    family: ['Mother', 'Father', 'Baby', 'Boy', 'Girl'],
+    food: ['Apple', 'Drink', 'Eat', 'Milk', 'Pizza', 'Water']
 };
 
 // MediaPipe and webcam variables
@@ -683,13 +682,32 @@ function getVideoPath(word, category) {
         ? '/AslSignLanguageWeb/' // GitHub Pages path
         : './'; // Local development path
     
-    // Don't convert to lowercase - video files are uppercase (A.mp4, B.mp4, etc.)
-    const videoName = word.toUpperCase(); // Ensure uppercase to match file names
+    // Map model categories to folder names (some have different naming conventions)
+    const folderMap = {
+        'basicWords': 'basic_words',  // Model category -> folder name
+        'alphabet': 'alphabet',
+        'numbers': 'numbers', 
+        'colors': 'colors',
+        'family': 'family',
+        'food': 'food'
+    };
     
-    const fullPath = `${basePath}static/sign_language_videos/${category}/${videoName}.mp4`;
+    const folderName = folderMap[category] || category;
+    
+    // Handle different naming conventions for different categories
+    let videoName;
+    if (category === 'alphabet' || category === 'numbers') {
+        // Alphabet and numbers use uppercase (A.mp4, B.mp4, 0.mp4, 1.mp4, etc.)
+        videoName = word.toUpperCase();
+    } else {
+        // Other categories use proper capitalization (Hello.mp4, Blue.mp4, etc.)
+        videoName = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }
+    
+    const fullPath = `${basePath}static/sign_language_videos/${folderName}/${videoName}.mp4`;
     
     // Debug logging
-    console.log(`Video path generated: ${fullPath} (word: ${word}, category: ${category}, hostname: ${window.location.hostname})`);
+    console.log(`Video path generated: ${fullPath} (word: ${word}, category: ${category}, folder: ${folderName}, hostname: ${window.location.hostname})`);
     
     return fullPath;
 }

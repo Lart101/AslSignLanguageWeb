@@ -382,11 +382,13 @@ main {
 .video-option video {
     width: 100%;
     max-width: 200px;
-    height: 150px;
-    object-fit: cover;
+    height: auto;
+    min-height: 150px;
+    object-fit: contain;
     border-radius: 8px;
     border: 3px solid transparent;
     transition: all 0.3s ease;
+    background-color: #f8f9fa;
 }
 
 .video-option.selected video {
@@ -664,10 +666,12 @@ main {
 .reveal-video video {
     width: 100%;
     max-width: 300px;
-    height: 225px;
-    object-fit: cover;
+    height: auto;
+    min-height: 225px;
+    object-fit: contain;
     border-radius: 8px;
     margin: 1rem 0;
+    background-color: #f8f9fa;
 }
 
 .reveal-message {
@@ -789,6 +793,15 @@ main {
 }
 
 /* Model Selection */
+.model-selection-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
 .model-selection-section {
     max-width: 800px;
     margin: 2rem auto;
