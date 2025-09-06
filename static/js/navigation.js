@@ -1,10 +1,10 @@
-// Centralized Navigation Component for SignSpeak
+// Centralized Navigation Component for Signademy
 document.addEventListener('DOMContentLoaded', function() {
     // Function to create the navigation HTML
     function createNavigation() {
         return `
             <div class="header-content">
-                <h1>SignSpeak</h1>
+                <h1>Signademy</h1>
                 <div class="menu-toggle">
                     <span></span>
                     <span></span>
@@ -15,10 +15,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <a href="index.html">Home</a>
                     </div>
                     <div class="nav-item dropdown">
-                        <a href="#" class="dropdown-toggle">About SignSpeak</a>
+                        <a href="#" class="dropdown-toggle">About Signademy</a>
                         <div class="dropdown-menu">
                             <a href="mission.html">Mission & Vision</a>
-                            <a href="about.html">What is SignSpeak?</a>
+                            <a href="about.html">What is Signademy?</a>
                         </div>
                     </div>
                     <div class="nav-item dropdown">

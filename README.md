@@ -1,11 +1,11 @@
-# SignSpeak - ASL Sign Language Web Application
+# Signademy - ASL Sign Language Web Application
 
 ⚠️ **DISCLAIMER: This project is created for educational purposes only as part of a capstone project. It is not intended for commercial use.**
 
-**SignSpeak** is an interactive web application for learning and practicing American Sign Language (ASL). The application includes features for alphabet learning, text-to-sign conversion, and real-time sign language recognition through webcam.
+**Signademy** is an interactive web application for learning and practicing American Sign Language (ASL). The application includes features for alphabet learning, text-to-sign conversion, and real-time sign language recognition through webcam.
 
 ## Live Demo
-Visit the live website: [SignSpeak](https://lart101.github.io/AslSignLanguageWeb/)
+Visit the live website: [Signademy](https://lart101.github.io/AslSignLanguageWeb/)
 
 ## Features
 - ASL Alphabet Learning
