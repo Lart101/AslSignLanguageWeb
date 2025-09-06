@@ -171,11 +171,20 @@ function muteAllVideos() {
 }
 
 function setupEventListeners() {
+    console.log('🔧 Setting up event listeners...');
+    
     // Mode selection buttons
-    document.querySelectorAll('.start-mode-btn').forEach(btn => {
+    const startModeBtns = document.querySelectorAll('.start-mode-btn');
+    console.log('🎯 Found', startModeBtns.length, 'start mode buttons:', startModeBtns);
+    
+    startModeBtns.forEach(btn => {
+        console.log('🎯 Found start mode button:', btn);
         btn.addEventListener('click', (e) => {
+            console.log('🖱️ Start mode button clicked!', e.target);
             const modeCard = e.target.closest('.mode-card');
+            console.log('🃏 Mode card:', modeCard);
             const mode = modeCard.dataset.mode;
+            console.log('🎮 Mode detected:', mode);
             startGame(mode);
         });
     });
