@@ -500,3 +500,8 @@ footer a:hover {
     word-break: break-word;
     hyphens: auto;
 }
+
+/* Add subtle indication that videos are clickable */
+.sign-image {
+    position: relative;
+}
