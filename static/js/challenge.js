@@ -1130,10 +1130,16 @@ function handleCorrectAnswer() {
     // Play correct sound
     globalSoundManager.playSoundByName('correct');
     
-    // Show feedback
-    gestureOutput.style.background = '#d4edda';
-    gestureOutput.style.color = '#155724';
-    gestureOutput.textContent = 'Correct! +1 point ✓';
+    if (currentMode === 'sign-match') {
+        // Use the sign-match specific feedback
+        const expectedSign = document.getElementById('match-word').textContent;
+        showSignMatchFeedback(expectedSign, expectedSign, true);
+    } else {
+        // Show regular feedback for other modes
+        gestureOutput.style.background = '#d4edda';
+        gestureOutput.style.color = '#155724';
+        gestureOutput.textContent = 'Correct! +1 point ✓';
+    }
     
     clearInterval(currentRoundTimer);
     
@@ -1172,6 +1178,35 @@ function handleWrongAnswer() {
     setTimeout(() => {
         nextQuestion();
     }, 1500);
+}
+
+// Function to show feedback in sign-match mode without ending the question
+function showSignMatchFeedback(detectedSign, expectedSign, isCorrect) {
+    const gestureOutput = document.getElementById('gesture_output');
+    
+    if (isCorrect) {
+        gestureOutput.style.background = '#d4edda';
+        gestureOutput.style.color = '#155724';
+        gestureOutput.textContent = `Perfect! You signed "${expectedSign}" correctly! ✓`;
+    } else {
+        gestureOutput.style.background = '#fff3cd';
+        gestureOutput.style.color = '#856404';
+        
+        if (detectedSign) {
+            gestureOutput.textContent = `Keep trying! You signed "${detectedSign}" but we need "${expectedSign}"`;
+        } else {
+            gestureOutput.textContent = `Keep trying! Show the sign for "${expectedSign}"`;
+        }
+    }
+    
+    // Auto-clear the feedback after a few seconds to avoid clutter
+    if (!isCorrect) {
+        setTimeout(() => {
+            gestureOutput.style.background = '';
+            gestureOutput.style.color = '';
+            gestureOutput.textContent = `Show the sign for "${expectedSign}"`;
+        }, 3000);
+    }
 }
 
 // Webcam and gesture recognition functions
@@ -1264,16 +1299,24 @@ function checkAnswer(detectedSign) {
     
     if (currentMode === 'sign-match') {
         expectedSign = document.getElementById('match-word').textContent;
-        // For sign match, video selection must be correct to reach this point
-        // Wrong video selections are handled immediately in selectVideo()
+        
+        // In sign-match mode, if they selected the correct video, they must keep trying 
+        // until they perform the correct sign - don't move on for wrong detection
+        if (detectedSign === expectedSign) {
+            handleCorrectAnswer();
+        } else {
+            // Show feedback but don't end the question - let them keep trying
+            showSignMatchFeedback(detectedSign, expectedSign, false);
+        }
     } else {
+        // Other modes: normal logic
         expectedSign = document.getElementById('challenge-word').textContent;
-    }
-    
-    if (detectedSign === expectedSign) {
-        handleCorrectAnswer();
-    } else {
-        handleWrongAnswer();
+        
+        if (detectedSign === expectedSign) {
+            handleCorrectAnswer();
+        } else {
+            handleWrongAnswer();
+        }
     }
 }
 
