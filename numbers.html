@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,10 +6,11 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Numbers (0–9) - Signademy</title>
+    <title>Numbers (0�9) - Signademy</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="static/css/navigation.css">
     <link rel="stylesheet" href="static/css/alphabet.css?v=20250829">
+    <link rel="stylesheet" href="static/css/card-video-controller.css">
 </head>
 <body>
         <header>
@@ -38,70 +39,70 @@
                     <div id="number-0" class="letter-card" data-letter="0">
                         <div class="letter">0</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/0.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/0.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Make an O shape with thumb and fingers</p>
                     </div>
                     <div id="number-1" class="letter-card" data-letter="1">
                         <div class="letter">1</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/1.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/1.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Point index finger up</p>
                     </div>
                     <div id="number-2" class="letter-card" data-letter="2">
                         <div class="letter">2</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/2.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/2.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Index and middle finger up, V shape</p>
                     </div>
                     <div id="number-3" class="letter-card" data-letter="3">
                         <div class="letter">3</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/3.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/3.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Thumb, index, and middle finger up</p>
                     </div>
                     <div id="number-4" class="letter-card" data-letter="4">
                         <div class="letter">4</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/4.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/4.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Four fingers up, thumb tucked</p>
                     </div>
                     <div id="number-5" class="letter-card" data-letter="5">
                         <div class="letter">5</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/5.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/5.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>All five fingers spread wide open</p>
                     </div>
                     <div id="number-6" class="letter-card" data-letter="6">
                         <div class="letter">6</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/6.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/6.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Thumb and pinky touch, other fingers up</p>
                     </div>
                     <div id="number-7" class="letter-card" data-letter="7">
                         <div class="letter">7</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/7.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/7.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Thumb and ring finger touch, others up</p>
                     </div>
                     <div id="number-8" class="letter-card" data-letter="8">
                         <div class="letter">8</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/8.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/8.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Thumb and middle finger touch, others up</p>
                     </div>
                     <div id="number-9" class="letter-card" data-letter="9">
                         <div class="letter">9</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/numbers/9.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/numbers/9.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Thumb and index finger touch, others up</p>
                     </div>
@@ -111,7 +112,7 @@
                 <h3>Practice Area</h3>
                 <p>Show your number sign to the camera</p>
                 <div class="video-container">
-                    <video id="webcam" autoplay playsinline></video>
+                    <video id="webcam" autoplay playsinline muted></video>
                     <canvas class="output_canvas" id="output_canvas"></canvas>
                 </div>
                 <p id="gesture_output" class="output"></p>
@@ -129,6 +130,7 @@
     <audio id="incorrectSound" src="static/audio/incorrect.mp3" preload="auto"></audio>
     <audio id="cameraSound" src="static/audio/camera.mp3" preload="auto"></audio>
 
+    <script src="static/js/card-video-controller.js"></script>
     <script type="module" src="static/js/alphabet.js?v=20250829"></script>
     <script src="static/js/navigation.js"></script>
 </body>

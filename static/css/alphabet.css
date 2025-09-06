@@ -313,6 +313,8 @@ main {
     -moz-transform: rotateY(180deg);
     border-radius: var(--border-radius);
     background-color: #f1f5f9;
+    position: relative;
+    z-index: 1;
 }
 
 .output_canvas {
@@ -324,6 +326,8 @@ main {
     transform: rotateY(180deg);
     -webkit-transform: rotateY(180deg);
     -moz-transform: rotateY(180deg);
+    pointer-events: none;
+    z-index: 10;
 }
 
 .output {

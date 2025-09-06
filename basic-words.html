@@ -1,9 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-    <script type="module" src="static\js\alphabet.js?v=20250829"></script>
-    <script src="static/js/navigation.js"></script>th, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -11,6 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="static/css/navigation.css">
     <link rel="stylesheet" href="static/css/alphabet.css?v=20250829">
+    <link rel="stylesheet" href="static/css/card-video-controller.css">
 </head>
 <body>
         <header>
@@ -35,42 +35,42 @@
                     <div id="word-hello" class="letter-card" data-letter="HELLO">
                         <div class="letter">Hello</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/basic_words/Hello.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/basic_words/Hello.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Open hand, wave fingers</p>
                     </div>
                     <div id="word-goodbye" class="letter-card" data-letter="GOODBYE">
                         <div class="letter">Goodbye</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/basic_words/Goodbye.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/basic_words/Goodbye.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Open hand, fingers wave down</p>
                     </div>
                     <div id="word-thank" class="letter-card" data-letter="THANK">
                         <div class="letter">Thank You</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/basic_words/Thankyou.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/basic_words/Thankyou.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Touch chin, move hand forward</p>
                     </div>
                     <div id="word-please" class="letter-card" data-letter="PLEASE">
                         <div class="letter">Please</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/basic_words/Please.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/basic_words/Please.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Open hand on chest, circular motion</p>
                     </div>
                     <div id="word-yes" class="letter-card" data-letter="YES">
                         <div class="letter">Yes</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/basic_words/Yes.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/basic_words/Yes.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Fist nods up and down</p>
                     </div>
                     <div id="word-no" class="letter-card" data-letter="NO">
                         <div class="letter">No</div>
                         <div class="sign-image">
-                            <video src="static/sign_language_videos/basic_words/No.mp4" width="120" autoplay muted loop playsinline></video>
+                            <video src="static/sign_language_videos/basic_words/No.mp4" width="120" muted loop playsinline></video>
                         </div>
                         <p>Index and middle finger snap shut</p>
                     </div>
@@ -80,7 +80,7 @@
                 <h3>Practice Area</h3>
                 <p>Show your word sign to the camera</p>
                 <div class="video-container">
-                    <video id="webcam" autoplay playsinline></video>
+                    <video id="webcam" autoplay playsinline muted></video>
                     <canvas class="output_canvas" id="output_canvas"></canvas>
                 </div>
                 <p id="gesture_output" class="output"></p>
@@ -110,7 +110,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-    " title="Toggle Sound">🔊</button>
+    " title="Toggle Sound">??</button>
     
     <!-- Audio elements for sound effects -->
     <audio id="selectSound" src="static/audio/select.mp3" preload="auto"></audio>
@@ -118,6 +118,7 @@
     <audio id="incorrectSound" src="static/audio/incorrect.mp3" preload="auto"></audio>
     <audio id="cameraSound" src="static/audio/camera.mp3" preload="auto"></audio>
 
+    <script src="static/js/card-video-controller.js"></script>
     <script type="module" src="static/js/alphabet.js?v=20250829"></script>
     <script src="static/js/navigation.js"></script>
     
@@ -129,7 +130,7 @@
             
             // Update button appearance
             function updateButton() {
-                manualSoundToggle.innerHTML = soundEnabled ? '🔊' : '🔇';
+                manualSoundToggle.innerHTML = soundEnabled ? '??' : '??';
                 manualSoundToggle.title = soundEnabled ? 'Sound ON - Click to turn off' : 'Sound OFF - Click to turn on';
                 localStorage.setItem('signademy_sound_enabled', soundEnabled.toString());
             }

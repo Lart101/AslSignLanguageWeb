@@ -77,6 +77,10 @@ if (hasGetUserMedia()) {
 }
 
 async function enableCam() {
+    console.log('enableCam called, webcamRunning:', webcamRunning);
+    console.log('video element:', video);
+    console.log('enableWebcamButton:', enableWebcamButton);
+    
     if (modelLoading) {
         alert("Please wait for the AI model to finish loading...");
         return;
@@ -93,27 +97,57 @@ async function enableCam() {
         webcamRunning = false;
         enableWebcamButton.innerText = "Enable Camera";
         // Stop the webcam
-        const stream = video.srcObject;
-        const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
-        video.srcObject = null;
+        if (video.srcObject) {
+            const stream = video.srcObject;
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+            video.srcObject = null;
+        }
+        console.log('Camera disabled');
     } else {
         webcamRunning = true;
         enableWebcamButton.innerText = "Disable Camera";
         // Start the webcam
         try {
+            console.log('Requesting camera access...');
             const constraints = {
                 video: {
                     width: 640,
-                    height: 480
+                    height: 480,
+                    facingMode: 'user'
                 }
             };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            console.log('Camera stream obtained:', stream);
             video.srcObject = stream;
-            video.addEventListener("loadeddata", predictWebcam);
+            console.log('Video srcObject set');
+            
+            // Add event listeners for video loading
+            video.addEventListener("loadeddata", () => {
+                console.log('Video loadeddata event fired');
+                predictWebcam();
+            });
+            
+            video.addEventListener("loadedmetadata", () => {
+                console.log('Video metadata loaded');
+            });
+            
+            video.addEventListener("canplay", () => {
+                console.log('Video can play');
+            });
+            
+            // Try to play the video explicitly
+            video.play().then(() => {
+                console.log('Video playing successfully');
+            }).catch(error => {
+                console.warn('Error playing video:', error);
+            });
+            
         } catch (err) {
             console.error("Error accessing webcam:", err);
-            alert("Error accessing webcam. Please make sure you have granted camera permissions.");
+            webcamRunning = false;
+            enableWebcamButton.innerText = "Enable Camera";
+            alert("Error accessing webcam. Please make sure you have granted camera permissions and try again. Error: " + err.message);
         }
     }
 }
@@ -123,13 +157,24 @@ let results = undefined;
 let lastDetectedGesture = null;
 
 async function predictWebcam() {
+    console.log('predictWebcam called, video dimensions:', video.videoWidth, 'x', video.videoHeight);
+    
     // Remove fixed dimensions and make it responsive
     canvasElement.style.width = '100%';
     canvasElement.style.height = '100%';
     
     // Make sure the canvas is setup with the video's actual dimensions
-    canvasElement.width = video.videoWidth;
-    canvasElement.height = video.videoHeight;
+    if (video.videoWidth > 0 && video.videoHeight > 0) {
+        canvasElement.width = video.videoWidth;
+        canvasElement.height = video.videoHeight;
+        console.log('Canvas dimensions set to:', canvasElement.width, 'x', canvasElement.height);
+    } else {
+        console.warn('Video dimensions not available yet');
+        if (webcamRunning) {
+            window.requestAnimationFrame(predictWebcam);
+        }
+        return;
+    }
 
     if (runningMode === "IMAGE") {
         runningMode = "VIDEO";
