@@ -61,13 +61,10 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     createGestureRecognizer();
     
-    // Global preloader handles video preloading, so we only start the silent background preloader
-    console.log('🌐 Using global video preloader - skipping duplicate challenge preloading');
-    
     // Only start comprehensive background preloading for additional categories
     setTimeout(() => {
         startComprehensivePreloading();
-    }, 3000); // Delay to let global preloader finish priority loading
+    }, 3000); // Delay for initial page setup
 });
 
 async function startImmediatePreloading() {
@@ -437,15 +434,6 @@ function preloadNextVideo() {
 }
 
 function getPreloadedVideo(videoPath) {
-    // First try to get from global cache
-    if (window.getGlobalPreloadedVideo) {
-        const globalVideo = window.getGlobalPreloadedVideo(videoPath);
-        if (globalVideo) {
-            console.log(`🌐 Using globally preloaded video: ${videoPath}`);
-            return globalVideo;
-        }
-    }
-    
     // Fall back to local cache
     const cached = preloadedVideos.get(videoPath);
     if (cached) {
@@ -506,15 +494,7 @@ function startGame(mode) {
     currentMode = mode;
     resetGameState();
     
-    // Use global preloader (videos should be ready or preloading in background)
-    if (typeof startGlobalVideoPreloading !== 'undefined') {
-        console.log('🌐 Using global preloader for video loading');
-        startGlobalVideoPreloading();
-    } else {
-        console.warn('⚠️ Global preloader not available');
-    }
-
-    // Start game immediately (global preloader runs in background)
+    // Start game immediately
     startGameAfterLoading(mode);
 }
 
