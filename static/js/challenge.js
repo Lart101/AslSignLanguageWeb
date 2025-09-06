@@ -2,6 +2,9 @@
 import { createModelSelector, getModelUrl, loadModelWithProgress, MODEL_URLS, normalizeModelOutput, globalSoundManager } from './config.js';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
+// Import shared challenge data and video utilities
+import { CHALLENGE_WORDS, getVideoPath } from './asl-data.js';
+
 // Game State
 let currentMode = null;
 let gameState = {
@@ -17,16 +20,6 @@ let gameState = {
     questionsPerModel: 3,
     currentModelIndex: 0,
     questionAnswered: false // Prevent multiple scoring per question
-};
-
-// Challenge word pools for different categories (updated with all available video files)
-const CHALLENGE_WORDS = {
-    alphabet: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
-    numbers: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-    colors: ['Black', 'Blue', 'Green', 'Orange', 'Purple', 'Red', 'White', 'Yellow'],
-    basicWords: ['Hello', 'Goodbye', 'Please', 'Thankyou', 'Yes', 'No'],
-    family: ['Mother', 'Father', 'Baby', 'Boy', 'Girl'],
-    food: ['Apple', 'Drink', 'Eat', 'Milk', 'Pizza', 'Water']
 };
 
 // MediaPipe and webcam variables
@@ -68,9 +61,112 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     createGestureRecognizer();
     
-    // Start comprehensive silent preloading immediately
-    startComprehensivePreloading();
+    // Global preloader handles video preloading, so we only start the silent background preloader
+    console.log('🌐 Using global video preloader - skipping duplicate challenge preloading');
+    
+    // Only start comprehensive background preloading for additional categories
+    setTimeout(() => {
+        startComprehensivePreloading();
+    }, 3000); // Delay to let global preloader finish priority loading
 });
+
+async function startImmediatePreloading() {
+    console.log('⚡ Starting immediate silent video preloading...');
+    
+    // Get current model category
+    const modelCategory = getCurrentModelCategory();
+    const words = CHALLENGE_WORDS[modelCategory] || CHALLENGE_WORDS.alphabet;
+    
+    console.log(`📦 Silently preloading ${words.length} videos from ${modelCategory} category...`);
+    
+    // Start preloading all videos for the current category immediately
+    // This runs completely in background without any UI indicators
+    try {
+        await preloadAllVideosInBackground(modelCategory, words);
+        console.log('✅ Silent immediate preloading completed successfully');
+    } catch (error) {
+        console.warn('⚠️ Silent immediate preloading had some issues:', error);
+    }
+}
+
+async function preloadAllVideosInBackground(category, words) {
+    return new Promise(async (resolve) => {
+        try {
+            console.log(`🎬 Background preloading ${words.length} videos from ${category}...`);
+            
+            let loadedCount = 0;
+            const totalVideos = words.length;
+            
+            // Preload videos in parallel but limit concurrent requests to avoid overwhelming GitHub Pages
+            const batchSize = 3; // Load 3 videos at a time
+            for (let i = 0; i < words.length; i += batchSize) {
+                const batch = words.slice(i, i + batchSize);
+                
+                const batchPromises = batch.map(async (word) => {
+                    try {
+                        const videoPath = getVideoPath(word, category);
+                        
+                        // Skip if already cached
+                        if (preloadedVideos.has(videoPath)) {
+                            loadedCount++;
+                            return;
+                        }
+                        
+                        const video = document.createElement('video');
+                        video.preload = 'auto';
+                        video.muted = true;
+                        video.playsInline = true;
+                        video.crossOrigin = 'anonymous';
+                        
+                        await new Promise((resolveVideo) => {
+                            const timeout = setTimeout(() => {
+                                console.log(`⏰ Background timeout: ${word}`);
+                                resolveVideo(); // Don't block on timeouts
+                            }, 15000); // 15 second timeout for background loading
+                            
+                            video.addEventListener('loadeddata', () => {
+                                clearTimeout(timeout);
+                                preloadedVideos.set(videoPath, video);
+                                loadedCount++;
+                                console.log(`🟢 Background loaded: ${word} (${loadedCount}/${totalVideos})`);
+                                resolveVideo();
+                            }, { once: true });
+                            
+                            video.addEventListener('error', () => {
+                                clearTimeout(timeout);
+                                loadedCount++;
+                                console.log(`🔴 Background failed: ${word} (${loadedCount}/${totalVideos})`);
+                                resolveVideo();
+                            }, { once: true });
+                            
+                            video.src = videoPath;
+                            video.load();
+                        });
+                        
+                    } catch (error) {
+                        loadedCount++;
+                        console.warn(`Background preload error for ${word}:`, error);
+                    }
+                });
+                
+                // Wait for current batch to complete before starting next batch
+                await Promise.all(batchPromises);
+                
+                // Small delay between batches to avoid overwhelming the server
+                if (i + batchSize < words.length) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+            
+            console.log(`✅ Background preloading completed: ${loadedCount}/${totalVideos} videos loaded`);
+            resolve();
+            
+        } catch (error) {
+            console.error('Background preloading error:', error);
+            resolve(); // Don't fail, just continue
+        }
+    });
+}
 
 async function startComprehensivePreloading() {
     console.log('Starting comprehensive silent preloading for better UX...');
@@ -189,19 +285,29 @@ function setupEventListeners() {
         });
     });
 
-    // Game control buttons
-    document.getElementById('reveal-power-btn').addEventListener('click', useRevealPower);
-    document.getElementById('quit-game-btn').addEventListener('click', quitGame);
-    document.getElementById('continue-after-reveal').addEventListener('click', continueAfterReveal);
-    document.getElementById('skip-question-btn').addEventListener('click', skipQuestion);
+    // Game control buttons (with null checks)
+    const revealPowerBtn = document.getElementById('reveal-power-btn');
+    const quitGameBtn = document.getElementById('quit-game-btn');
+    const continueAfterRevealBtn = document.getElementById('continue-after-reveal');
+    const skipQuestionBtn = document.getElementById('skip-question-btn');
+    
+    if (revealPowerBtn) revealPowerBtn.addEventListener('click', useRevealPower);
+    if (quitGameBtn) quitGameBtn.addEventListener('click', quitGame);
+    if (continueAfterRevealBtn) continueAfterRevealBtn.addEventListener('click', continueAfterReveal);
+    if (skipQuestionBtn) skipQuestionBtn.addEventListener('click', skipQuestion);
 
-    // Results screen buttons
-    document.getElementById('play-again-btn').addEventListener('click', () => {
-        if (currentMode) {
-            startGame(currentMode);
-        }
-    });
-    document.getElementById('back-to-modes-btn').addEventListener('click', backToModeSelection);
+    // Results screen buttons (with null checks)
+    const playAgainBtn = document.getElementById('play-again-btn');
+    const backToModesBtn = document.getElementById('back-to-modes-btn');
+    
+    if (playAgainBtn) {
+        playAgainBtn.addEventListener('click', () => {
+            if (currentMode) {
+                startGame(currentMode);
+            }
+        });
+    }
+    if (backToModesBtn) backToModesBtn.addEventListener('click', backToModeSelection);
 
     // Video selection buttons (for sign match mode)
     document.querySelectorAll('.select-video-btn').forEach(btn => {
@@ -210,8 +316,10 @@ function setupEventListeners() {
         });
     });
 
-    // Webcam button
-    enableWebcamButton.addEventListener('click', enableCam);
+    // Webcam button (with null check)
+    if (enableWebcamButton) {
+        enableWebcamButton.addEventListener('click', enableCam);
+    }
 }
 
 // Create gesture recognizer
@@ -329,16 +437,27 @@ function preloadNextVideo() {
 }
 
 function getPreloadedVideo(videoPath) {
+    // First try to get from global cache
+    if (window.getGlobalPreloadedVideo) {
+        const globalVideo = window.getGlobalPreloadedVideo(videoPath);
+        if (globalVideo) {
+            console.log(`🌐 Using globally preloaded video: ${videoPath}`);
+            return globalVideo;
+        }
+    }
+    
+    // Fall back to local cache
     const cached = preloadedVideos.get(videoPath);
     if (cached) {
         // Return a cloned video element to avoid conflicts
         const clonedVideo = cached.cloneNode(true);
         clonedVideo.currentTime = 0;
+        console.log(`🏠 Using locally preloaded video: ${videoPath}`);
         return clonedVideo;
     }
     
     // If video isn't preloaded, create a new video element
-    console.log(`Video not preloaded, creating new element: ${videoPath}`);
+    console.log(`⚠️ Video not found in any cache, creating new element: ${videoPath}`);
     const video = document.createElement('video');
     video.src = videoPath;
     video.muted = true;
@@ -387,22 +506,16 @@ function startGame(mode) {
     currentMode = mode;
     resetGameState();
     
-    // Show loading screen and preload all videos before starting
-    console.log('📺 Showing loading screen...');
-    showLoadingScreen();
-    
-    console.log('🔄 Starting video preload process...');
-    preloadAllVideosForChallenge(mode).then(() => {
-        console.log('✅ Video preloading completed successfully');
-        // Hide loading screen and start the game
-        hideLoadingScreen();
-        startGameAfterLoading(mode);
-    }).catch((error) => {
-        console.error('❌ Failed to preload videos:', error);
-        // Still start the game even if preloading fails
-        hideLoadingScreen();
-        startGameAfterLoading(mode);
-    });
+    // Use global preloader (videos should be ready or preloading in background)
+    if (typeof startGlobalVideoPreloading !== 'undefined') {
+        console.log('🌐 Using global preloader for video loading');
+        startGlobalVideoPreloading();
+    } else {
+        console.warn('⚠️ Global preloader not available');
+    }
+
+    // Start game immediately (global preloader runs in background)
+    startGameAfterLoading(mode);
 }
 
 function startGameAfterLoading(mode) {
@@ -491,105 +604,6 @@ function updateProgress(percentage, status, currentVideo, videoCount) {
     if (videoCountSpan) videoCountSpan.textContent = videoCount;
 }
 
-// Comprehensive video preloading with progress tracking
-async function preloadAllVideosForChallenge(mode) {
-    console.log('🎯 preloadAllVideosForChallenge called with mode:', mode);
-    return new Promise(async (resolve, reject) => {
-        try {
-            // Get current model category
-            const modelCategory = getCurrentModelCategory();
-            console.log('📂 Current model category:', modelCategory);
-            
-            const words = CHALLENGE_WORDS[modelCategory] || CHALLENGE_WORDS.alphabet;
-            console.log('📝 Available words:', words.length, 'words');
-            
-            // For sign-match mode, we need pairs of videos, so preload all
-            // For other modes, we can preload a subset for faster loading
-            const videosToPreload = mode === 'sign-match' ? words : words.slice(0, 15);
-            console.log(`🎬 Will preload ${videosToPreload.length} videos for mode: ${mode}`);
-            
-            const totalVideos = videosToPreload.length;
-            let loadedVideos = 0;
-            
-            updateProgress(0, 'Loading videos...', 'Starting...', `0 / ${totalVideos} videos`);
-            
-            // Preload videos with progress tracking
-            const loadPromises = videosToPreload.map(async (word, index) => {
-                try {
-                    const videoPath = getVideoPath(word, modelCategory);
-                    
-                    // Skip if already cached
-                    if (preloadedVideos.has(videoPath)) {
-                        loadedVideos++;
-                        const progress = (loadedVideos / totalVideos) * 100;
-                        updateProgress(progress, 'Loading videos...', `${word} (cached)`, `${loadedVideos} / ${totalVideos} videos`);
-                        return;
-                    }
-                    
-                    // Update current video being loaded
-                    updateProgress((loadedVideos / totalVideos) * 100, 'Loading videos...', word, `${loadedVideos} / ${totalVideos} videos`);
-                    
-                    const video = document.createElement('video');
-                    video.preload = 'auto';
-                    video.muted = true;
-                    video.playsInline = true;
-                    video.crossOrigin = 'anonymous';
-                    
-                    // Wait for video to load
-                    await new Promise((resolveVideo, rejectVideo) => {
-                        const timeout = setTimeout(() => {
-                            console.warn(`Timeout loading ${word} video`);
-                            resolveVideo(); // Don't fail the entire loading for one video
-                        }, 8000); // 8 second timeout per video
-                        
-                        video.addEventListener('loadeddata', () => {
-                            clearTimeout(timeout);
-                            preloadedVideos.set(videoPath, video);
-                            loadedVideos++;
-                            const progress = (loadedVideos / totalVideos) * 100;
-                            console.log(`✅ Successfully preloaded: ${word} (${loadedVideos}/${totalVideos})`);
-                            updateProgress(progress, 'Loading videos...', `${word} ✅`, `${loadedVideos} / ${totalVideos} videos`);
-                            resolveVideo();
-                        });
-                        
-                        video.addEventListener('error', (error) => {
-                            clearTimeout(timeout);
-                            console.error(`Failed to load ${word} video:`, error);
-                            loadedVideos++;
-                            const progress = (loadedVideos / totalVideos) * 100;
-                            updateProgress(progress, 'Loading videos...', `${word} failed`, `${loadedVideos} / ${totalVideos} videos`);
-                            resolveVideo(); // Don't fail the entire loading for one video
-                        });
-                        
-                        video.src = videoPath;
-                    });
-                    
-                } catch (error) {
-                    console.error(`Error preloading ${word}:`, error);
-                    loadedVideos++;
-                    const progress = (loadedVideos / totalVideos) * 100;
-                    updateProgress(progress, 'Loading videos...', `${word} error`, `${loadedVideos} / ${totalVideos} videos`);
-                }
-            });
-            
-            // Wait for all videos to load (or timeout)
-            await Promise.all(loadPromises);
-            
-            // Final progress update
-            updateProgress(100, 'Complete!', 'All videos loaded', `${loadedVideos} / ${totalVideos} videos`);
-            
-            // Short delay to show completion
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            resolve();
-            
-        } catch (error) {
-            console.error('Error in preloadAllVideosForChallenge:', error);
-            reject(error);
-        }
-    });
-}
-
 function resetGameState() {
     gameState = {
         score: 0,
@@ -641,9 +655,13 @@ function initializeEndlessQueue() {
 }
 
 function updateGameUI() {
-    document.getElementById('current-score').textContent = gameState.score;
-    document.getElementById('question-number').textContent = gameState.currentQuestion;
-    document.getElementById('total-questions').textContent = currentMode === 'endless' ? '∞' : gameState.totalQuestions;
+    const currentScoreEl = document.getElementById('current-score');
+    const questionNumberEl = document.getElementById('question-number');
+    const totalQuestionsEl = document.getElementById('total-questions');
+    
+    if (currentScoreEl) currentScoreEl.textContent = gameState.score;
+    if (questionNumberEl) questionNumberEl.textContent = gameState.currentQuestion;
+    if (totalQuestionsEl) totalQuestionsEl.textContent = currentMode === 'endless' ? '∞' : gameState.totalQuestions;
     
     // Show/hide lives for endless mode
     const livesDisplay = document.getElementById('lives-display');
@@ -697,7 +715,11 @@ function skipQuestion() {
 }
 
 function updateLivesDisplay() {
-    document.getElementById('lives-count').textContent = gameState.lives;
+    const livesCountEl = document.getElementById('lives-count');
+    if (livesCountEl) {
+        livesCountEl.textContent = gameState.lives;
+    }
+    
     const hearts = document.querySelectorAll('.heart');
     hearts.forEach((heart, index) => {
         if (index < gameState.lives) {
@@ -774,7 +796,10 @@ function showFlashSignQuestion() {
         randomWord = words[Math.floor(Math.random() * words.length)];
     }
     
-    document.getElementById('challenge-word').textContent = randomWord;
+    const challengeWordEl = document.getElementById('challenge-word');
+    if (challengeWordEl) {
+        challengeWordEl.textContent = randomWord;
+    }
     
     // Start timer for flash sign and endless modes
     startRoundTimer();
@@ -874,42 +899,6 @@ function showSignMatchQuestion() {
     gameState.questionAnswered = false;
     
     // No timer for sign match mode - user takes their time to choose and perform
-}
-
-function getVideoPath(word, category) {
-    // GitHub Pages compatibility: use relative paths from root
-    const basePath = window.location.hostname.includes('github.io') 
-        ? '/AslSignLanguageWeb/' // GitHub Pages path
-        : './'; // Local development path
-    
-    // Map model categories to folder names (some have different naming conventions)
-    const folderMap = {
-        'basicWords': 'basic_words',  // Model category -> folder name
-        'alphabet': 'alphabet',
-        'numbers': 'numbers', 
-        'colors': 'colors',
-        'family': 'family',
-        'food': 'food'
-    };
-    
-    const folderName = folderMap[category] || category;
-    
-    // Handle different naming conventions for different categories
-    let videoName;
-    if (category === 'alphabet' || category === 'numbers') {
-        // Alphabet and numbers use uppercase (A.mp4, B.mp4, 0.mp4, 1.mp4, etc.)
-        videoName = word.toUpperCase();
-    } else {
-        // Other categories use proper capitalization (Hello.mp4, Blue.mp4, etc.)
-        videoName = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    }
-    
-    const fullPath = `${basePath}static/sign_language_videos/${folderName}/${videoName}.mp4`;
-    
-    // Debug logging
-    console.log(`Video path generated: ${fullPath} (word: ${word}, category: ${category}, folder: ${folderName}, hostname: ${window.location.hostname})`);
-    
-    return fullPath;
 }
 
 // Helper function to create video with error handling
@@ -1377,29 +1366,36 @@ function endGame() {
     gameScreen.classList.add('hidden');
     resultsScreen.classList.remove('hidden');
     
-    // Update results
-    document.getElementById('final-score').textContent = gameState.score;
-    document.getElementById('final-total').textContent = currentMode === 'endless' ? gameState.currentQuestion - 1 : gameState.totalQuestions;
-    document.getElementById('correct-count').textContent = gameState.correctAnswers;
-    document.getElementById('wrong-count').textContent = gameState.wrongAnswers;
-    document.getElementById('reveal-used').textContent = gameState.revealPowerUsed ? 'Yes' : 'No';
+    // Update results (with null checks)
+    const finalScoreEl = document.getElementById('final-score');
+    const finalTotalEl = document.getElementById('final-total');
+    const correctCountEl = document.getElementById('correct-count');
+    const wrongCountEl = document.getElementById('wrong-count');
+    const revealUsedEl = document.getElementById('reveal-used');
+    
+    if (finalScoreEl) finalScoreEl.textContent = gameState.score;
+    if (finalTotalEl) finalTotalEl.textContent = currentMode === 'endless' ? gameState.currentQuestion - 1 : gameState.totalQuestions;
+    if (correctCountEl) correctCountEl.textContent = gameState.correctAnswers;
+    if (wrongCountEl) wrongCountEl.textContent = gameState.wrongAnswers;
+    if (revealUsedEl) revealUsedEl.textContent = gameState.revealPowerUsed ? 'Yes' : 'No';
     
     // Performance message
     const percentage = (gameState.score / (currentMode === 'endless' ? gameState.currentQuestion - 1 : gameState.totalQuestions)) * 100;
     const performanceText = document.getElementById('performance-text');
+    const resultsTitleEl = document.getElementById('results-title');
     
-    if (percentage >= 90) {
-        performanceText.textContent = '🎉 Outstanding performance! You\'re an ASL master!';
-        document.getElementById('results-title').textContent = 'Excellent Work!';
-    } else if (percentage >= 70) {
-        performanceText.textContent = '👏 Great job! Keep practicing to improve further!';
-        document.getElementById('results-title').textContent = 'Well Done!';
-    } else if (percentage >= 50) {
-        performanceText.textContent = '👍 Good effort! Practice more to boost your skills!';
-        document.getElementById('results-title').textContent = 'Keep Going!';
-    } else {
-        performanceText.textContent = '💪 Don\'t give up! Every expert was once a beginner!';
-        document.getElementById('results-title').textContent = 'Keep Practicing!';
+    if (percentage >= 90 && resultsTitleEl) {
+        if (performanceText) performanceText.textContent = '🎉 Outstanding performance! You\'re an ASL master!';
+        resultsTitleEl.textContent = 'Excellent Work!';
+    } else if (percentage >= 70 && resultsTitleEl) {
+        if (performanceText) performanceText.textContent = '👏 Great job! Keep practicing to improve further!';
+        resultsTitleEl.textContent = 'Well Done!';
+    } else if (percentage >= 50 && resultsTitleEl) {
+        if (performanceText) performanceText.textContent = '👍 Good effort! Practice more to boost your skills!';
+        resultsTitleEl.textContent = 'Keep Going!';
+    } else if (resultsTitleEl) {
+        if (performanceText) performanceText.textContent = '💪 Don\'t give up! Every expert was once a beginner!';
+        resultsTitleEl.textContent = 'Keep Practicing!';
     }
 }
 
@@ -1424,8 +1420,15 @@ function backToModeSelection() {
     }
 }
 
-// Navigation menu toggle
-document.querySelector('.menu-toggle').addEventListener('click', function() {
-    this.classList.toggle('active');
-    document.querySelector('nav').classList.toggle('active');
-});
+// Navigation menu toggle - with null safety
+const menuToggle = document.querySelector('.menu-toggle');
+const nav = document.querySelector('nav');
+
+if (menuToggle && nav) {
+    menuToggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+        nav.classList.toggle('active');
+    });
+} else {
+    console.log('Menu toggle or nav element not found - skipping menu functionality');
+}
