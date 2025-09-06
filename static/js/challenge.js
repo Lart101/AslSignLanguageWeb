@@ -368,9 +368,21 @@ function startGame(mode) {
     currentMode = mode;
     resetGameState();
     
-    // Preload videos for current game mode
-    preloadGameModeVideos(mode);
-    
+    // Show loading screen and preload all videos before starting
+    showLoadingScreen();
+    preloadAllVideosForChallenge(mode).then(() => {
+        // Hide loading screen and start the game
+        hideLoadingScreen();
+        startGameAfterLoading(mode);
+    }).catch((error) => {
+        console.error('Failed to preload videos:', error);
+        // Still start the game even if preloading fails
+        hideLoadingScreen();
+        startGameAfterLoading(mode);
+    });
+}
+
+function startGameAfterLoading(mode) {
     // Set up mode-specific settings
     switch (mode) {
         case 'flash-sign':
@@ -395,6 +407,128 @@ function startGame(mode) {
     
     // Start first question
     nextQuestion();
+}
+
+// Loading screen functions
+function showLoadingScreen() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const modeSelection = document.getElementById('mode-selection');
+    
+    loadingScreen.classList.remove('hidden');
+    modeSelection.classList.add('hidden');
+    updateProgress(0, 'Initializing...', 'Preparing...', '0 / 0 videos');
+}
+
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loading-screen');
+    loadingScreen.classList.add('hidden');
+}
+
+function updateProgress(percentage, status, currentVideo, videoCount) {
+    const progressFill = document.getElementById('progress-fill');
+    const progressPercentage = document.getElementById('progress-percentage');
+    const progressStatus = document.getElementById('progress-status');
+    const currentVideoSpan = document.getElementById('current-video');
+    const videoCountSpan = document.getElementById('video-count');
+    
+    if (progressFill) progressFill.style.width = `${percentage}%`;
+    if (progressPercentage) progressPercentage.textContent = `${Math.round(percentage)}%`;
+    if (progressStatus) progressStatus.textContent = status;
+    if (currentVideoSpan) currentVideoSpan.textContent = currentVideo;
+    if (videoCountSpan) videoCountSpan.textContent = videoCount;
+}
+
+// Comprehensive video preloading with progress tracking
+async function preloadAllVideosForChallenge(mode) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Get current model category
+            const modelCategory = getCurrentModelCategory();
+            const words = CHALLENGE_WORDS[modelCategory] || CHALLENGE_WORDS.alphabet;
+            
+            // For sign-match mode, we need pairs of videos, so preload all
+            // For other modes, we can preload a subset for faster loading
+            const videosToPreload = mode === 'sign-match' ? words : words.slice(0, 15);
+            
+            const totalVideos = videosToPreload.length;
+            let loadedVideos = 0;
+            
+            updateProgress(0, 'Loading videos...', 'Starting...', `0 / ${totalVideos} videos`);
+            
+            // Preload videos with progress tracking
+            const loadPromises = videosToPreload.map(async (word, index) => {
+                try {
+                    const videoPath = getVideoPath(word, modelCategory);
+                    
+                    // Skip if already cached
+                    if (preloadedVideos.has(videoPath)) {
+                        loadedVideos++;
+                        const progress = (loadedVideos / totalVideos) * 100;
+                        updateProgress(progress, 'Loading videos...', `${word} (cached)`, `${loadedVideos} / ${totalVideos} videos`);
+                        return;
+                    }
+                    
+                    // Update current video being loaded
+                    updateProgress((loadedVideos / totalVideos) * 100, 'Loading videos...', word, `${loadedVideos} / ${totalVideos} videos`);
+                    
+                    const video = document.createElement('video');
+                    video.preload = 'auto';
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.crossOrigin = 'anonymous';
+                    
+                    // Wait for video to load
+                    await new Promise((resolveVideo, rejectVideo) => {
+                        const timeout = setTimeout(() => {
+                            console.warn(`Timeout loading ${word} video`);
+                            resolveVideo(); // Don't fail the entire loading for one video
+                        }, 8000); // 8 second timeout per video
+                        
+                        video.addEventListener('loadeddata', () => {
+                            clearTimeout(timeout);
+                            preloadedVideos.set(videoPath, video);
+                            loadedVideos++;
+                            const progress = (loadedVideos / totalVideos) * 100;
+                            updateProgress(progress, 'Loading videos...', `${word} loaded`, `${loadedVideos} / ${totalVideos} videos`);
+                            resolveVideo();
+                        });
+                        
+                        video.addEventListener('error', (error) => {
+                            clearTimeout(timeout);
+                            console.error(`Failed to load ${word} video:`, error);
+                            loadedVideos++;
+                            const progress = (loadedVideos / totalVideos) * 100;
+                            updateProgress(progress, 'Loading videos...', `${word} failed`, `${loadedVideos} / ${totalVideos} videos`);
+                            resolveVideo(); // Don't fail the entire loading for one video
+                        });
+                        
+                        video.src = videoPath;
+                    });
+                    
+                } catch (error) {
+                    console.error(`Error preloading ${word}:`, error);
+                    loadedVideos++;
+                    const progress = (loadedVideos / totalVideos) * 100;
+                    updateProgress(progress, 'Loading videos...', `${word} error`, `${loadedVideos} / ${totalVideos} videos`);
+                }
+            });
+            
+            // Wait for all videos to load (or timeout)
+            await Promise.all(loadPromises);
+            
+            // Final progress update
+            updateProgress(100, 'Complete!', 'All videos loaded', `${loadedVideos} / ${totalVideos} videos`);
+            
+            // Short delay to show completion
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            resolve();
+            
+        } catch (error) {
+            console.error('Error in preloadAllVideosForChallenge:', error);
+            reject(error);
+        }
+    });
 }
 
 function resetGameState() {
@@ -673,6 +807,15 @@ function showSignMatchQuestion() {
     });
     document.getElementById('video-selection-result').classList.add('hidden');
     
+    // Ensure webcam section is visible for this question
+    const webcamSection = document.querySelector('.webcam-section');
+    if (webcamSection) {
+        webcamSection.style.display = 'block';
+    }
+    
+    // Reset question answered state
+    gameState.questionAnswered = false;
+    
     // No timer for sign match mode - user takes their time to choose and perform
 }
 
@@ -782,24 +925,44 @@ function selectVideo(videoOption) {
         btn.disabled = true;
     });
     
-    // Show result and next step
-    const resultDiv = document.getElementById('video-selection-result');
-    const message = document.getElementById('selection-message');
-    
     if (isCorrect) {
+        // Correct selection - show message and continue to sign performance
+        const resultDiv = document.getElementById('video-selection-result');
+        const message = document.getElementById('selection-message');
+        
         message.textContent = 'Correct! Now perform the sign:';
         message.style.color = '#28a745';
+        
+        const word = document.getElementById('match-word').textContent;
+        document.getElementById('perform-word').textContent = word;
+        resultDiv.classList.remove('hidden');
+        
+        // Store video selection result for scoring
+        gameState.lastVideoSelectionCorrect = isCorrect;
     } else {
-        message.textContent = 'Wrong video selected. Try to perform the correct sign:';
+        // Wrong selection - immediately mark as wrong and move to next question
+        gameState.wrongAnswers++;
+        gameState.questionAnswered = true;
+        
+        // Show brief wrong feedback
+        const resultDiv = document.getElementById('video-selection-result');
+        const message = document.getElementById('selection-message');
+        
+        message.textContent = 'Wrong video selected!';
         message.style.color = '#dc3545';
+        resultDiv.classList.remove('hidden');
+        
+        // Hide webcam controls since we're skipping sign performance
+        const webcamSection = document.querySelector('.webcam-section');
+        if (webcamSection) {
+            webcamSection.style.display = 'none';
+        }
+        
+        // Show next question button or auto-advance after short delay
+        setTimeout(() => {
+            nextQuestion();
+        }, 1500); // 1.5 second delay to show the wrong message
     }
-    
-    const word = document.getElementById('match-word').textContent;
-    document.getElementById('perform-word').textContent = word;
-    resultDiv.classList.remove('hidden');
-    
-    // Store video selection result for scoring
-    gameState.lastVideoSelectionCorrect = isCorrect;
 }
 
 function startRoundTimer() {
@@ -1077,21 +1240,25 @@ async function predictWebcam() {
 }
 
 function checkAnswer(detectedSign) {
+    // Skip processing if question already answered (e.g., wrong video selection in sign-match)
+    if (gameState.questionAnswered) {
+        return;
+    }
+    
     let expectedSign;
     
     if (currentMode === 'sign-match') {
         expectedSign = document.getElementById('match-word').textContent;
-        // For sign match, also check if they selected the correct video
-        if (!gameState.lastVideoSelectionCorrect) {
-            handleWrongAnswer();
-            return;
-        }
+        // For sign match, video selection must be correct to reach this point
+        // Wrong video selections are handled immediately in selectVideo()
     } else {
         expectedSign = document.getElementById('challenge-word').textContent;
     }
     
     if (detectedSign === expectedSign) {
         handleCorrectAnswer();
+    } else {
+        handleWrongAnswer();
     }
 }
 
