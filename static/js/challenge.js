@@ -15,19 +15,29 @@ let gameState = {
     revealPowerUsed: false,
     correctAnswers: 0,
     wrongAnswers: 0,
+    skippedQuestions: 0,
     isGameActive: false,
     endlessQuestionQueue: [], // For endless mode shuffling
     questionsPerModel: 3,
     currentModelIndex: 0,
-    questionAnswered: false // Prevent multiple scoring per question
+    questionAnswered: false, // Prevent multiple scoring per question
+    videoSelectionMade: false, // New flag for sign-match mode
+    lastVideoSelectionCorrect: false,
+    signMatchAttempts: 0, // Counter for sign demonstration attempts in sign-match mode
+    requireDemonstration: false, // Flag to require hand demonstration after correct video selection
+    demonstrationWord: null, // Word that user must demonstrate
+    lastDetectedSign: null // Store last detected sign for feedback display
 };
 
 // MediaPipe and webcam variables
 let gestureRecognizer = undefined;
 let runningMode = "IMAGE";
 let webcamRunning = false;
+let gestureDetectionEnabled = false; // New flag to control gesture detection in sign-match mode
 let lastVideoTime = -1;
 let results = undefined;
+let predictionTimeout = null; // Add timeout to prevent freezing
+let lastPredictionTime = 0; // Track last prediction time for watchdog
 const video = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
 const canvasCtx = canvasElement.getContext("2d");
@@ -47,168 +57,12 @@ let gameTimer = null;
 let currentRoundTimer = null;
 let timeLeft = 10;
 
-// Video preloading system
-let preloadedVideos = new Map(); // Cache for preloaded videos
-let videoPreloadQueue = []; // Queue of videos to preload
-let isPreloading = false;
-
 // Initialize the challenge page
 document.addEventListener('DOMContentLoaded', function() {
-    // Test video loading first
-    testVideoLoading();
-    
     initializePage();
     setupEventListeners();
     createGestureRecognizer();
-    
-    // Only start comprehensive background preloading for additional categories
-    setTimeout(() => {
-        startComprehensivePreloading();
-    }, 3000); // Delay for initial page setup
 });
-
-async function startImmediatePreloading() {
-    console.log('⚡ Starting immediate silent video preloading...');
-    
-    // Get current model category
-    const modelCategory = getCurrentModelCategory();
-    const words = CHALLENGE_WORDS[modelCategory] || CHALLENGE_WORDS.alphabet;
-    
-    console.log(`📦 Silently preloading ${words.length} videos from ${modelCategory} category...`);
-    
-    // Start preloading all videos for the current category immediately
-    // This runs completely in background without any UI indicators
-    try {
-        await preloadAllVideosInBackground(modelCategory, words);
-        console.log('✅ Silent immediate preloading completed successfully');
-    } catch (error) {
-        console.warn('⚠️ Silent immediate preloading had some issues:', error);
-    }
-}
-
-async function preloadAllVideosInBackground(category, words) {
-    return new Promise(async (resolve) => {
-        try {
-            console.log(`🎬 Background preloading ${words.length} videos from ${category}...`);
-            
-            let loadedCount = 0;
-            const totalVideos = words.length;
-            
-            // Preload videos in parallel but limit concurrent requests to avoid overwhelming GitHub Pages
-            const batchSize = 3; // Load 3 videos at a time
-            for (let i = 0; i < words.length; i += batchSize) {
-                const batch = words.slice(i, i + batchSize);
-                
-                const batchPromises = batch.map(async (word) => {
-                    try {
-                        const videoPath = getVideoPath(word, category);
-                        
-                        // Skip if already cached
-                        if (preloadedVideos.has(videoPath)) {
-                            loadedCount++;
-                            return;
-                        }
-                        
-                        const video = document.createElement('video');
-                        video.preload = 'auto';
-                        video.muted = true;
-                        video.playsInline = true;
-                        video.crossOrigin = 'anonymous';
-                        
-                        await new Promise((resolveVideo) => {
-                            const timeout = setTimeout(() => {
-                                console.log(`⏰ Background timeout: ${word}`);
-                                resolveVideo(); // Don't block on timeouts
-                            }, 15000); // 15 second timeout for background loading
-                            
-                            video.addEventListener('loadeddata', () => {
-                                clearTimeout(timeout);
-                                preloadedVideos.set(videoPath, video);
-                                loadedCount++;
-                                console.log(`🟢 Background loaded: ${word} (${loadedCount}/${totalVideos})`);
-                                resolveVideo();
-                            }, { once: true });
-                            
-                            video.addEventListener('error', () => {
-                                clearTimeout(timeout);
-                                loadedCount++;
-                                console.log(`🔴 Background failed: ${word} (${loadedCount}/${totalVideos})`);
-                                resolveVideo();
-                            }, { once: true });
-                            
-                            video.src = videoPath;
-                            video.load();
-                        });
-                        
-                    } catch (error) {
-                        loadedCount++;
-                        console.warn(`Background preload error for ${word}:`, error);
-                    }
-                });
-                
-                // Wait for current batch to complete before starting next batch
-                await Promise.all(batchPromises);
-                
-                // Small delay between batches to avoid overwhelming the server
-                if (i + batchSize < words.length) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-            }
-            
-            console.log(`✅ Background preloading completed: ${loadedCount}/${totalVideos} videos loaded`);
-            resolve();
-            
-        } catch (error) {
-            console.error('Background preloading error:', error);
-            resolve(); // Don't fail, just continue
-        }
-    });
-}
-
-async function startComprehensivePreloading() {
-    console.log('Starting comprehensive silent preloading for better UX...');
-    
-    // Preload current model videos immediately
-    preloadChallengeVideos();
-    
-    // Preload other model categories in background
-    setTimeout(() => {
-        preloadOtherModelCategories();
-    }, 2000); // Delay to avoid overwhelming initial load
-}
-
-function preloadOtherModelCategories() {
-    const currentCategory = getCurrentModelCategory();
-    const allCategories = Object.keys(CHALLENGE_WORDS);
-    
-    // Preload other categories in background
-    allCategories.forEach((category, index) => {
-        if (category !== currentCategory) {
-            setTimeout(() => {
-                console.log(`Background preloading: ${category}`);
-                const words = CHALLENGE_WORDS[category] || [];
-                
-                // Add to queue with lower priority
-                words.forEach(word => {
-                    const videoPath = getVideoPath(word, category);
-                    if (!preloadedVideos.has(videoPath)) {
-                        videoPreloadQueue.push({
-                            word: word,
-                            category: category,
-                            url: videoPath,
-                            priority: false
-                        });
-                    }
-                });
-                
-                // Continue preloading if not already running
-                if (!isPreloading && videoPreloadQueue.length > 0) {
-                    preloadNextVideo();
-                }
-            }, index * 3000); // Stagger loading to avoid overwhelming browser
-        }
-    });
-}
 
 function initializePage() {
     // Initialize model selector
@@ -216,41 +70,10 @@ function initializePage() {
         console.log('Model changed to:', selectedModel);
         // Reinitialize gesture recognizer with new model
         createGestureRecognizer(selectedModel);
-        
-        // Smart preloading: prioritize new model but keep existing cache
-        prioritizeModelPreloading(selectedModel);
     }, 'alphabet');
     
     // Ensure all video elements are muted
     muteAllVideos();
-}
-
-function prioritizeModelPreloading(selectedModel) {
-    const newCategory = selectedModel;
-    const words = CHALLENGE_WORDS[newCategory] || [];
-    
-    console.log(`Prioritizing preloading for: ${newCategory}`);
-    
-    // Add new model videos to front of queue
-    const priorityVideos = words.map(word => ({
-        word: word,
-        category: newCategory,
-        url: getVideoPath(word, newCategory),
-        priority: true
-    }));
-    
-    // Filter out already cached videos
-    const uncachedVideos = priorityVideos.filter(item => !preloadedVideos.has(item.url));
-    
-    // Add to front of queue
-    videoPreloadQueue.unshift(...uncachedVideos);
-    
-    // Start preloading if not already running
-    if (!isPreloading && videoPreloadQueue.length > 0) {
-        preloadNextVideo();
-    }
-    
-    console.log(`Added ${uncachedVideos.length} videos to priority queue`);
 }
 
 function muteAllVideos() {
@@ -316,6 +139,14 @@ function setupEventListeners() {
     // Webcam button (with null check)
     if (enableWebcamButton) {
         enableWebcamButton.addEventListener('click', enableCam);
+        
+        // Add double-click to restart camera if frozen
+        enableWebcamButton.addEventListener('dblclick', async () => {
+            console.log('🔄 Double-click detected - restarting camera');
+            if (webcamRunning) {
+                await restartCamera();
+            }
+        });
     }
 }
 
@@ -337,154 +168,6 @@ async function createGestureRecognizer(modelCategory = 'alphabet') {
     } catch (error) {
         console.error('Error creating gesture recognizer:', error);
         alert('Failed to load AI model. Please refresh the page and try again.');
-    }
-}
-
-// Video Preloading System - Silent Background Loading
-async function preloadChallengeVideos() {
-    console.log('Starting silent video preloading...');
-    
-    // Get current model category
-    const modelCategory = getCurrentModelCategory();
-    
-    // Get all words for the current category
-    const words = CHALLENGE_WORDS[modelCategory] || [];
-    
-    // Prioritize first 10 videos for faster initial loading on GitHub Pages
-    const priorityWords = words.slice(0, 10);
-    const remainingWords = words.slice(10);
-    
-    // Create preload queue with priority loading
-    videoPreloadQueue = [
-        ...priorityWords.map(word => ({
-            word: word,
-            category: modelCategory,
-            url: getVideoPath(word, modelCategory),
-            priority: true
-        })),
-        ...remainingWords.map(word => ({
-            word: word,
-            category: modelCategory,
-            url: getVideoPath(word, modelCategory),
-            priority: false
-        }))
-    ];
-    
-    console.log(`Queued ${videoPreloadQueue.length} videos for silent preloading`);
-    
-    // Start silent preloading process
-    preloadNextVideo();
-}
-
-function preloadNextVideo() {
-    if (isPreloading || videoPreloadQueue.length === 0) return;
-    
-    isPreloading = true;
-    const videoData = videoPreloadQueue.shift();
-    
-    // Create video element for preloading
-    const video = document.createElement('video');
-    video.preload = 'auto';
-    video.muted = true;
-    video.crossOrigin = 'anonymous'; // Better compatibility for GitHub Pages
-    
-    // Set up loading timeout for GitHub Pages
-    const loadTimeout = setTimeout(() => {
-        console.warn(`Preload timeout for: ${videoData.word} (${videoData.category})`);
-        isPreloading = false;
-        setTimeout(() => preloadNextVideo(), 100);
-    }, 10000); // 10 second timeout
-    
-    video.addEventListener('canplaythrough', () => {
-        clearTimeout(loadTimeout);
-        // Video is fully loaded and ready to play
-        preloadedVideos.set(videoData.url, video);
-        console.log(`✅ Fully preloaded: ${videoData.word} (${videoData.category})`);
-        
-        isPreloading = false;
-        
-        // Continue with next video after a small delay
-        setTimeout(() => {
-            preloadNextVideo();
-        }, 100);
-    });
-    
-    video.addEventListener('loadeddata', () => {
-        // Fallback: Even if not fully loaded, cache it for faster loading
-        if (!preloadedVideos.has(videoData.url)) {
-            preloadedVideos.set(videoData.url, video);
-            console.log(`📊 Partially preloaded: ${videoData.word} (${videoData.category})`);
-        }
-    });
-    
-    video.addEventListener('error', (e) => {
-        clearTimeout(loadTimeout);
-        console.warn(`Failed to preload video: ${videoData.word} (${videoData.category})`);
-        isPreloading = false;
-        
-        // Continue with next video even if this one failed
-        setTimeout(() => {
-            preloadNextVideo();
-        }, 100);
-    });
-    
-    // Start loading
-    video.src = videoData.url;
-    video.load();
-}
-
-function getPreloadedVideo(videoPath) {
-    // Fall back to local cache
-    const cached = preloadedVideos.get(videoPath);
-    if (cached) {
-        // Return a cloned video element to avoid conflicts
-        const clonedVideo = cached.cloneNode(true);
-        clonedVideo.currentTime = 0;
-        console.log(`🏠 Using locally preloaded video: ${videoPath}`);
-        return clonedVideo;
-    }
-    
-    // If video isn't preloaded, create a new video element
-    console.log(`⚠️ Video not found in any cache, creating new element: ${videoPath}`);
-    const video = document.createElement('video');
-    video.src = videoPath;
-    video.muted = true;
-    video.defaultMuted = true;
-    video.preload = 'auto';
-    video.crossOrigin = 'anonymous';
-    
-    return video;
-}
-
-function clearVideoCache() {
-    // Clear existing cache and queue
-    preloadedVideos.clear();
-    videoPreloadQueue = [];
-    isPreloading = false;
-    console.log('Video cache cleared');
-}
-
-function preloadGameModeVideos(mode) {
-    // Preload videos specific to the current game mode and model
-    const modelCategory = getCurrentModelCategory();
-    const words = CHALLENGE_WORDS[modelCategory] || [];
-    
-    // Prioritize loading videos for current game session
-    words.forEach(word => {
-        const videoPath = getVideoPath(word, modelCategory);
-        if (!preloadedVideos.has(videoPath)) {
-            // Add to high priority queue (beginning of array)
-            videoPreloadQueue.unshift({
-                word: word,
-                category: modelCategory,
-                url: videoPath
-            });
-        }
-    });
-    
-    // Start preloading if not already running
-    if (!isPreloading) {
-        preloadNextVideo();
     }
 }
 
@@ -531,66 +214,8 @@ function startGameAfterLoading(mode) {
     nextQuestion();
 }
 
-// Loading screen functions
-function showLoadingScreen() {
-    console.log('🔍 Showing loading screen - finding elements...');
-    const loadingScreen = document.getElementById('loading-screen');
-    const modeSelection = document.getElementById('mode-selection');
-    
-    console.log('Loading screen element:', loadingScreen);
-    console.log('Mode selection element:', modeSelection);
-    console.log('Loading screen classes before:', loadingScreen ? loadingScreen.className : 'NOT FOUND');
-    
-    if (loadingScreen) {
-        console.log('📺 Removing hidden class from loading screen');
-        loadingScreen.classList.remove('hidden');
-        console.log('Loading screen classes after:', loadingScreen.className);
-        // Force display for debugging
-        loadingScreen.style.display = 'flex';
-        loadingScreen.style.zIndex = '9999';
-        console.log('Forced loading screen display');
-    } else {
-        console.error('❌ Loading screen element not found!');
-    }
-    
-    if (modeSelection) {
-        console.log('🔽 Hiding mode selection');
-        modeSelection.classList.add('hidden');
-    }
-    
-    updateProgress(0, 'Initializing...', 'Preparing...', '0 / 0 videos');
-}
-
-function hideLoadingScreen() {
-    const loadingScreen = document.getElementById('loading-screen');
-    loadingScreen.classList.add('hidden');
-}
-
-function updateProgress(percentage, status, currentVideo, videoCount) {
-    console.log(`📊 updateProgress called: ${percentage}% - ${status} - ${currentVideo} - ${videoCount}`);
-    
-    const progressFill = document.getElementById('progress-fill');
-    const progressPercentage = document.getElementById('progress-percentage');
-    const progressStatus = document.getElementById('progress-status');
-    const currentVideoSpan = document.getElementById('current-video');
-    const videoCountSpan = document.getElementById('video-count');
-    
-    console.log('Progress elements found:', {
-        progressFill: !!progressFill,
-        progressPercentage: !!progressPercentage,
-        progressStatus: !!progressStatus,
-        currentVideoSpan: !!currentVideoSpan,
-        videoCountSpan: !!videoCountSpan
-    });
-    
-    if (progressFill) progressFill.style.width = `${percentage}%`;
-    if (progressPercentage) progressPercentage.textContent = `${Math.round(percentage)}%`;
-    if (progressStatus) progressStatus.textContent = status;
-    if (currentVideoSpan) currentVideoSpan.textContent = currentVideo;
-    if (videoCountSpan) videoCountSpan.textContent = videoCount;
-}
-
 function resetGameState() {
+    console.log('🎯 resetGameState called - current scores before reset:', gameState.score, gameState.correctAnswers);
     gameState = {
         score: 0,
         currentQuestion: 0,
@@ -599,6 +224,7 @@ function resetGameState() {
         revealPowerUsed: false,
         correctAnswers: 0,
         wrongAnswers: 0,
+        skippedQuestions: 0,
         isGameActive: true,
         endlessQuestionQueue: [],
         questionsPerModel: 3,
@@ -606,8 +232,18 @@ function resetGameState() {
         questionAnswered: false,
         videoSelectionMade: false, // New flag for sign-match mode
         lastVideoSelectionCorrect: false,
-        signMatchAttempts: 0 // Counter for sign demonstration attempts in sign-match mode
+        signMatchAttempts: 0, // Counter for sign demonstration attempts in sign-match mode
+        requireDemonstration: false, // Flag to require hand demonstration after correct video selection
+        demonstrationWord: null, // Word that user must demonstrate
+        lastDetectedSign: null // Store last detected sign for feedback display
     };
+    
+    // Initialize gesture detection state based on mode
+    if (currentMode === 'sign-match') {
+        gestureDetectionEnabled = false; // Start disabled for sign-match
+    } else {
+        gestureDetectionEnabled = true; // Start enabled for other modes
+    }
     
     // Initialize endless mode question queue
     if (currentMode === 'endless') {
@@ -690,8 +326,8 @@ function skipQuestion() {
         clearInterval(currentRoundTimer);
     }
     
-    // Count as wrong answer
-    gameState.wrongAnswers++;
+    // Count only as skipped question (not as wrong answer)
+    gameState.skippedQuestions++;
     
     // Show skip feedback
     gestureOutput.style.background = '#fff3cd';
@@ -720,7 +356,14 @@ function updateLivesDisplay() {
 }
 
 function nextQuestion() {
+    console.log('🎯 nextQuestion() called - isGameActive:', gameState.isGameActive);
     if (!gameState.isGameActive) return;
+    
+    // Turn off camera to prevent freezing and save resources
+    disableCamera('next question');
+    
+    // Force clear canvas to ensure no residual landmarks from previous question
+    forceCanvasClear();
     
     // Clear canvas and reset camera state for new question
     clearCanvasAndResetCamera();
@@ -732,19 +375,49 @@ function nextQuestion() {
     gameState.videoSelectionMade = false;
     gameState.signMatchAttempts = 0;
     gameState.lastVideoSelectionCorrect = false;
+    gameState.requireDemonstration = false; // Reset demonstration requirement
+    gameState.demonstrationWord = null; // Clear demonstration word
+    
+    // DISABLE gesture detection at start of new question (sign-match mode)
+    if (currentMode === 'sign-match') {
+        disableGestureDetection();
+        
+        // Ensure webcam section is visible for new question
+        const webcamSection = document.querySelector('.webcam-section');
+        if (webcamSection) {
+            webcamSection.style.display = 'block';
+        }
+    }
+    
+    // Reset video styling and stop any playing videos
+    document.querySelectorAll('.video-option').forEach(option => {
+        option.style.border = '';
+        option.style.boxShadow = '';
+        // No animation to reset since we removed it
+        const video = option.querySelector('video');
+        if (video) {
+            video.pause();
+            video.currentTime = 0;
+            video.muted = true; // Reset to muted
+        }
+    });
     
     gameState.currentQuestion++;
     
     // Check if game should end
     if (currentMode !== 'endless' && gameState.currentQuestion > gameState.totalQuestions) {
+        console.log('🎯 Game ending - reached total questions:', gameState.currentQuestion, '/', gameState.totalQuestions);
         endGame();
         return;
     }
     
     if (currentMode === 'endless' && gameState.lives <= 0) {
+        console.log('🎯 Game ending - no lives left:', gameState.lives);
         endGame();
         return;
     }
+    
+    console.log('🎯 Continuing to question:', gameState.currentQuestion, '/', gameState.totalQuestions);
     
     updateGameUI();
     
@@ -798,6 +471,9 @@ function showFlashSignQuestion() {
         challengeWordEl.textContent = randomWord;
     }
     
+    // ENABLE gesture detection for flash-sign and endless modes
+    enableGestureDetection();
+    
     // Start timer for flash sign and endless modes
     startRoundTimer();
 }
@@ -845,62 +521,34 @@ function showSignMatchQuestion() {
         } while (wrongWord === correctWord);
     }
     
-    document.getElementById('match-word').textContent = correctWord;
+    const matchWordEl = document.getElementById('match-word');
+    if (matchWordEl) {
+        matchWordEl.textContent = correctWord;
+    }
     
     // Set up videos
     const videoA = document.getElementById('video-a');
     const videoB = document.getElementById('video-b');
     
-    // Ensure videos are muted
+    if (!videoA || !videoB) {
+        console.error('Video elements not found');
+        return;
+    }
+    
+    // Ensure videos are muted and won't autoplay
     videoA.muted = true;
     videoB.muted = true;
+    videoA.autoplay = false;
+    videoB.autoplay = false;
     
     // Randomly assign correct/wrong videos
     const isACorrect = Math.random() < 0.5;
     const correctVideoPath = getVideoPath(correctWord, modelCategory);
     const wrongVideoPath = getVideoPath(wrongWord, modelCategory);
     
-    // Use preloaded videos if available
-    const correctPreloaded = preloadedVideos.has(correctVideoPath);
-    const wrongPreloaded = preloadedVideos.has(wrongVideoPath);
-    
-    if (correctPreloaded && wrongPreloaded) {
-        // Both videos are preloaded - use them directly
-        const videoASrc = isACorrect ? correctVideoPath : wrongVideoPath;
-        const videoBSrc = isACorrect ? wrongVideoPath : correctVideoPath;
-        
-        videoA.src = videoASrc;
-        videoB.src = videoBSrc;
-        
-        // Don't call load() since videos are preloaded
-        console.log(`Using fully preloaded videos for sign-match: ${correctWord} vs ${wrongWord}`);
-        
-        // Videos should be ready immediately, try to play
-        setTimeout(() => {
-            videoA.play().catch(e => console.log('Video A autoplay failed:', e));
-            videoB.play().catch(e => console.log('Video B autoplay failed:', e));
-        }, 100);
-    } else {
-        // Some or all videos aren't preloaded - load normally
-        videoA.src = isACorrect ? correctVideoPath : wrongVideoPath;
-        videoB.src = isACorrect ? wrongVideoPath : correctVideoPath;
-        
-        videoA.preload = 'auto';
-        videoB.preload = 'auto';
-        videoA.load();
-        videoB.load();
-        
-        console.log(`Loading videos normally for sign-match: ${correctWord} vs ${wrongWord} (Correct preloaded: ${correctPreloaded}, Wrong preloaded: ${wrongPreloaded})`);
-        
-        // Auto-play videos when they load
-        videoA.addEventListener('loadeddata', () => {
-            videoA.play().catch(e => console.log('Video A autoplay failed:', e));
-        }, { once: true });
-        
-        videoB.addEventListener('loadeddata', () => {
-            videoB.play().catch(e => console.log('Video B autoplay failed:', e));
-        }, { once: true });
-    }
+    // Set video sources but don't load or play automatically
+    videoA.src = isACorrect ? correctVideoPath : wrongVideoPath;
+    videoB.src = isACorrect ? wrongVideoPath : correctVideoPath;
     
     // Store correct answer
     videoA.dataset.isCorrect = isACorrect;
@@ -916,17 +564,8 @@ function showSignMatchQuestion() {
     });
     document.getElementById('video-selection-result').classList.add('hidden');
     
-    // Initially DISABLE webcam section until correct video is selected
-    const webcamSection = document.querySelector('.webcam-section');
-    const webcamButton = document.getElementById('webcamButton');
-    if (webcamSection) {
-        webcamSection.style.display = 'block';
-        webcamSection.style.opacity = '0.5'; // Visual indication it's disabled
-    }
-    if (webcamButton) {
-        webcamButton.disabled = true;
-        webcamButton.style.opacity = '0.5';
-    }
+    // Initially DISABLE gesture detection until correct video is selected
+    disableGestureDetection();
     
     // Reset question answered state
     gameState.questionAnswered = false;
@@ -936,6 +575,10 @@ function showSignMatchQuestion() {
     gestureOutput.style.color = '#333';
     gestureOutput.textContent = `First select the correct video, then demonstrate the sign for "${correctWord}"`;
     
+    // Add click to play functionality for videos
+    setupVideoClickToPlay(videoA);
+    setupVideoClickToPlay(videoB);
+    
     // No timer for sign match mode - user takes their time to choose and perform
 }
 
@@ -944,7 +587,7 @@ function createVideoWithErrorHandling(src, word = 'unknown') {
     const video = document.createElement('video');
     video.src = src;
     video.muted = true;
-    video.preload = 'auto';
+    video.preload = 'metadata';
     video.playsInline = true;
     video.crossOrigin = 'anonymous';
     
@@ -968,25 +611,37 @@ function createVideoWithErrorHandling(src, word = 'unknown') {
     return video;
 }
 
-// Test function to verify video paths and loading
-function testVideoLoading() {
-    console.log('🧪 Testing video loading...');
-    console.log('Current hostname:', window.location.hostname);
-    console.log('Is GitHub Pages?:', window.location.hostname.includes('github.io'));
+// Setup click to play functionality for videos
+function setupVideoClickToPlay(video) {
+    // Remove any existing click listeners
+    video.removeEventListener('click', handleVideoClick);
     
-    // Test alphabet A
-    const testPathA = getVideoPath('A', 'alphabet');
-    console.log('Testing path for A:', testPathA);
+    // Add click listener to play/pause video
+    video.addEventListener('click', handleVideoClick);
     
-    // Test numbers 1
-    const testPath1 = getVideoPath('1', 'numbers');
-    console.log('Testing path for 1:', testPath1);
+    // Ensure video starts paused
+    video.pause();
+    video.currentTime = 0;
+}
+
+function handleVideoClick(event) {
+    const video = event.target;
     
-    // Create test video elements to verify loading
-    const testVideoA = createVideoWithErrorHandling(testPathA, 'A');
-    const testVideo1 = createVideoWithErrorHandling(testPath1, '1');
+    // Pause all other videos when this one is clicked
+    const allVideos = document.querySelectorAll('video');
+    allVideos.forEach(otherVideo => {
+        if (otherVideo !== video) {
+            otherVideo.pause();
+        }
+    });
     
-    return { testVideoA, testVideo1 };
+    // Toggle play/pause for clicked video
+    if (video.paused) {
+        video.currentTime = 0; // Start from beginning
+        video.play().catch(e => console.log('Video play failed:', e));
+    } else {
+        video.pause();
+    }
 }
 
 function getCurrentModelCategory() {
@@ -1015,67 +670,124 @@ function selectVideo(videoOption) {
     clearCanvasAndResetCamera();
     
     if (isCorrect) {
-        // Correct selection - show message and ENABLE demonstration
+        // Correct selection - award points immediately
+        console.log('🎯 selectVideo: Correct video selected - before scoring:', gameState.score, gameState.correctAnswers);
+        gameState.score++;
+        gameState.correctAnswers++;
+        // Don't set questionAnswered = true yet in sign-match mode - wait for demonstration
+        console.log('🎯 selectVideo: After scoring:', gameState.score, gameState.correctAnswers);
+        
+        // Play correct sound
+        globalSoundManager.playSoundByName('correct');
+        
+        // Demonstrate the correct answer by playing the selected video (MUTED)
+        const correctVideo = selectedVideo.querySelector('video');
+        if (correctVideo) {
+            // Pause all other videos first
+            document.querySelectorAll('video').forEach(v => {
+                if (v !== correctVideo) v.pause();
+            });
+            
+            correctVideo.currentTime = 0; // Reset to beginning
+            correctVideo.muted = true; // ALWAYS MUTED
+            
+            // Play the video (muted) automatically for correct selection
+            correctVideo.play().then(() => {
+                console.log('🎬 Demonstration video playing successfully (muted)');
+            }).catch(e => {
+                console.log('🎬 Video play failed:', e);
+            });
+            
+            // Highlight the correct video with a visual indicator
+            selectedVideo.style.border = '3px solid #28a745';
+            selectedVideo.style.boxShadow = '0 0 15px rgba(40, 167, 69, 0.5)';
+        }
+        
+        // Show message requiring demonstration
         const resultDiv = document.getElementById('video-selection-result');
         const message = document.getElementById('selection-message');
         
-        message.textContent = 'Correct! Now perform the sign:';
-        message.style.color = '#28a745';
+        if (message) {
+            message.textContent = 'Correct! +1 point ✓ Now demonstrate this sign with your hands to continue!';
+            message.style.color = '#28a745';
+        }
         
-        const word = document.getElementById('match-word').textContent;
-        document.getElementById('perform-word').textContent = word;
-        resultDiv.classList.remove('hidden');
+        const matchWordEl = document.getElementById('match-word');
+        const performWordEl = document.getElementById('perform-word');
+        if (matchWordEl && performWordEl) {
+            const word = matchWordEl.textContent;
+            performWordEl.textContent = word;
+        }
+        if (resultDiv) {
+            resultDiv.classList.remove('hidden');
+        }
         
         // Store video selection result for scoring
         gameState.lastVideoSelectionCorrect = isCorrect;
         gameState.videoSelectionMade = true;
         
-        // Reset gesture output for sign demonstration
-        gestureOutput.style.background = '#f8f9fa';
-        gestureOutput.style.color = '#333';
-        gestureOutput.textContent = `Now demonstrate the sign for "${word}"`;
+        // Update the UI to reflect new score
+        updateGameUI();
         
-        // ENABLE the webcam section for demonstration
-        const webcamSection = document.querySelector('.webcam-section');
-        if (webcamSection) {
-            webcamSection.style.display = 'block';
-            webcamSection.style.opacity = '1';
-        }
+        // Reset gesture output to prompt for demonstration
+        gestureOutput.style.background = '#fff3cd';
+        gestureOutput.style.color = '#856404';
+        const word = matchWordEl.textContent;
+        gestureOutput.textContent = `Watch the video above, then perform the sign for "${word}" to continue!`;
         
-        // Enable the webcam button if it's disabled
-        const webcamButton = document.getElementById('webcamButton');
-        if (webcamButton) {
-            webcamButton.disabled = false;
-            webcamButton.style.opacity = '1';
-        }
+        // Enable gesture recognition for demonstration requirement
+        gameState.requireDemonstration = true;
+        gameState.demonstrationWord = word;
+        
+        // ENABLE gesture detection now that correct video is selected
+        enableGestureDetection();
+        
+        // DO NOT auto-advance - wait for demonstration
+        // The user must now perform the gesture to proceed
         
     } else {
-        // Wrong selection - immediately mark as wrong and move to next question
+        // Wrong selection - mark as wrong but with specific feedback for sign-match mode
         gameState.wrongAnswers++;
         gameState.questionAnswered = true;
+        
+        // In endless mode, also lose a life (consistency with other wrong answers)
+        if (currentMode === 'endless') {
+            gameState.lives--;
+            updateLivesDisplay();
+        }
         
         // Show brief wrong feedback
         const resultDiv = document.getElementById('video-selection-result');
         const message = document.getElementById('selection-message');
         
-        message.textContent = 'Wrong video selected!';
-        message.style.color = '#dc3545';
-        resultDiv.classList.remove('hidden');
-        
-        // DISABLE webcam controls since we're skipping sign performance
-        const webcamSection = document.querySelector('.webcam-section');
-        if (webcamSection) {
-            webcamSection.style.display = 'none';
+        if (message) {
+            message.textContent = 'Wrong video selected!';
+            message.style.color = '#dc3545';
         }
+        if (resultDiv) {
+            resultDiv.classList.remove('hidden');
+        }
+        
+        // DISABLE webcam controls since we're skipping sign performance for wrong selection
+        // Don't hide the webcam section completely, just disable gesture detection
+        disableGestureDetection();
+        
+        // Ensure gesture detection remains disabled for wrong selection
+        disableGestureDetection();
         
         // Play incorrect sound
         globalSoundManager.playSoundByName('incorrect');
         
         // Show next question button or auto-advance after short delay
         setTimeout(() => {
+            // Check if game should end in endless mode after losing life
+            if (currentMode === 'endless' && gameState.lives <= 0) {
+                endGame();
+                return;
+            }
             clearCanvasAndResetCamera(); // Clear canvas before next question
             nextQuestion();
-        }, 1500); // 1.5 second delay to show the wrong message
+        }, 10); // Immediate progression
     }
 }
 
@@ -1133,7 +845,7 @@ function timeUp() {
         
         setTimeout(() => {
             nextQuestion();
-        }, 1500);
+        }, 10);
     } else {
         // In other modes, just move to next question (no score change)
         gameState.wrongAnswers++;
@@ -1145,7 +857,7 @@ function timeUp() {
         
         setTimeout(() => {
             nextQuestion();
-        }, 1500);
+        }, 10);
     }
 }
 
@@ -1157,45 +869,44 @@ function useRevealPower() {
     
     // Show reveal modal
     const revealModal = document.getElementById('reveal-content');
+    if (!revealModal) {
+        console.error('Reveal modal not found');
+        return;
+    }
     revealModal.classList.remove('hidden');
     
     // Get current word and show video
     let currentWord;
     if (currentMode === 'sign-match') {
-        currentWord = document.getElementById('match-word').textContent;
+        const matchWordEl = document.getElementById('match-word');
+        currentWord = matchWordEl ? matchWordEl.textContent : '';
     } else {
-        currentWord = document.getElementById('challenge-word').textContent;
+        const challengeWordEl = document.getElementById('challenge-word');
+        currentWord = challengeWordEl ? challengeWordEl.textContent : '';
+    }
+    
+    if (!currentWord) {
+        console.error('Could not determine current word for reveal');
+        return;
     }
     
     const modelCategory = getCurrentModelCategory();
     const videoPath = getVideoPath(currentWord, modelCategory);
     const revealVideo = document.getElementById('reveal-video');
     
+    if (!revealVideo) {
+        console.error('Reveal video element not found');
+        return;
+    }
+    
     // Ensure reveal video is muted
     revealVideo.muted = true;
     
-    // Use preloaded video if available
-    const preloadedVideo = getPreloadedVideo(videoPath);
-    if (preloadedVideos.has(videoPath)) {
-        // Copy the preloaded video properties to the reveal video
-        revealVideo.src = preloadedVideo.src;
-        revealVideo.currentTime = 0;
-        
-        // If the preloaded video is already loaded, we can play immediately
-        if (preloadedVideo.readyState >= 3) { // HAVE_FUTURE_DATA
-            console.log(`Using fully preloaded video for: ${currentWord}`);
-            // Video is ready to play
-        } else {
-            // Wait for the video to load
-            revealVideo.load();
-        }
-    } else {
-        // Fallback to normal loading
-        revealVideo.src = videoPath;
-        revealVideo.preload = 'auto';
-        revealVideo.load();
-        console.log(`Loading video normally for: ${currentWord}`);
-    }
+    // Set up the video source
+    revealVideo.src = videoPath;
+    revealVideo.preload = 'metadata';
+    
+    console.log(`Loading reveal video for: ${currentWord}`);
     
     // Ensure the video plays from the beginning when modal opens
     revealVideo.addEventListener('loadeddata', () => {
@@ -1226,12 +937,52 @@ function continueAfterReveal() {
     // The user can still perform the sign for points
 }
 
+function showCorrectAnswerDemonstration() {
+    const currentWord = document.getElementById('challenge-word').textContent;
+    const modelCategory = getCurrentModelCategory();
+    const videoPath = getVideoPath(currentWord, modelCategory);
+    
+    // Reuse the reveal modal structure for demonstration
+    const revealModal = document.getElementById('reveal-content');
+    const revealVideo = document.getElementById('reveal-video');
+    const continueBtn = document.getElementById('continue-after-reveal');
+    
+    // Update the modal title and content for demonstration
+    const titleElement = revealModal.querySelector('h3');
+    if (titleElement) {
+        titleElement.textContent = 'Correct! Here\'s the demonstration:';
+    }
+    
+    // Set up the video (MUTED)
+    revealVideo.src = videoPath;
+    revealVideo.currentTime = 0;
+    revealVideo.muted = true; // ALWAYS MUTED
+    
+    // Show the modal
+    revealModal.classList.remove('hidden');
+    
+    // Auto-play the demonstration video
+    revealVideo.play().catch(e => console.log('Video autoplay blocked:', e));
+    
+    // Update the continue button to move to next question
+    continueBtn.onclick = () => {
+        revealModal.classList.add('hidden');
+        // Reset the title back to default
+        if (titleElement) {
+            titleElement.textContent = 'Correct Sign:';
+        }
+        nextQuestion();
+    };
+}
+
 function handleCorrectAnswer() {
+    console.log('🎯 handleCorrectAnswer called - questionAnswered:', gameState.questionAnswered);
     if (gameState.questionAnswered) return; // Prevent multiple scoring
     gameState.questionAnswered = true;
     
     gameState.score++;
     gameState.correctAnswers++;
+    console.log('🎯 Updated scores - score:', gameState.score, 'correctAnswers:', gameState.correctAnswers);
     
     // Play correct sound
     globalSoundManager.playSoundByName('correct');
@@ -1241,10 +992,13 @@ function handleCorrectAnswer() {
         const expectedSign = document.getElementById('match-word').textContent;
         showSignMatchFeedback(expectedSign, expectedSign, true);
     } else {
-        // Show regular feedback for other modes
+        // Show regular feedback for other modes and proceed immediately
         gestureOutput.style.background = '#d4edda';
         gestureOutput.style.color = '#155724';
-        gestureOutput.textContent = 'Correct! +1 point ✓';
+        gestureOutput.textContent = `Correct! Detected "${gameState.lastDetectedSign || 'sign'}" ✓ +1 point!`;
+        
+        // Don't show demonstration modal - proceed immediately
+        // showCorrectAnswerDemonstration();
     }
     
     // Update the UI to reflect new score
@@ -1252,9 +1006,10 @@ function handleCorrectAnswer() {
     
     clearInterval(currentRoundTimer);
     
+    // Proceed immediately for all modes (no delay)
     setTimeout(() => {
         nextQuestion();
-    }, 1500);
+    }, 10); // Absolute minimal delay
 }
 
 function handleWrongAnswer() {
@@ -1268,15 +1023,15 @@ function handleWrongAnswer() {
         gameState.lives--;
         updateLivesDisplay();
         
-        // Show feedback
+        // Show feedback with detected sign
         gestureOutput.style.background = '#f8d7da';
         gestureOutput.style.color = '#721c24';
-        gestureOutput.textContent = 'Wrong sign! Lost a life ✗💔';
+        gestureOutput.textContent = `Wrong! Detected "${gameState.lastDetectedSign || 'unknown'}" ✗ Lost a life 💔`;
     } else {
         // In other modes, no score penalty - just move on
         gestureOutput.style.background = '#f8d7da';
         gestureOutput.style.color = '#721c24';
-        gestureOutput.textContent = 'Wrong or no sign detected ✗';
+        gestureOutput.textContent = `Wrong! Detected "${gameState.lastDetectedSign || 'unknown'}" ✗`;
     }
     
     // Play incorrect sound
@@ -1291,7 +1046,7 @@ function handleWrongAnswer() {
             return;
         }
         nextQuestion();
-    }, 1500);
+    }, 10); // Immediate progression for all answers
 }
 
 // Function to show feedback in sign-match mode without ending the question
@@ -1336,6 +1091,61 @@ function showSignMatchFeedback(detectedSign, expectedSign, isCorrect, customMess
 }
 
 // Webcam and gesture recognition functions
+
+// Enable gesture detection for sign-match mode demonstration
+function enableGestureDetection() {
+    gestureDetectionEnabled = true;
+    const webcamSection = document.querySelector('.webcam-section');
+    const webcamButton = document.getElementById('webcamButton');
+    
+    if (webcamSection) {
+        webcamSection.style.opacity = '1'; // Full opacity when enabled
+        webcamSection.style.pointerEvents = 'auto';
+        webcamSection.style.display = 'block'; // Ensure it's visible
+    }
+    
+    if (webcamButton) {
+        webcamButton.disabled = false;
+        webcamButton.style.opacity = '1';
+    }
+    
+    // Clear any residual landmarks when enabling gesture detection for fresh start
+    if (canvasCtx && canvasElement) {
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        results = undefined;
+        console.log('🧹 Cleared landmarks when enabling gesture detection');
+    }
+    
+    console.log('🔵 Gesture detection ENABLED for demonstration');
+}
+
+// Disable gesture detection for sign-match mode
+function disableGestureDetection() {
+    gestureDetectionEnabled = false;
+    const webcamSection = document.querySelector('.webcam-section');
+    const webcamButton = document.getElementById('webcamButton');
+    
+    if (webcamSection) {
+        webcamSection.style.opacity = '0.5'; // Dim when disabled
+        webcamSection.style.pointerEvents = 'none'; // Prevent interaction
+        // Don't hide completely, just dim it
+    }
+    
+    if (webcamButton) {
+        webcamButton.disabled = true;
+        webcamButton.style.opacity = '0.5';
+    }
+    
+    // Clear any residual landmarks when disabling gesture detection
+    if (canvasCtx && canvasElement) {
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        results = undefined;
+        console.log('🧹 Cleared landmarks when disabling gesture detection');
+    }
+    
+    console.log('🔴 Gesture detection DISABLED');
+}
+
 async function enableCam() {
     if (!gestureRecognizer) {
         alert("Please wait for the model to load");
@@ -1343,26 +1153,132 @@ async function enableCam() {
     }
 
     if (webcamRunning) {
+        // Disable webcam
         webcamRunning = false;
         enableWebcamButton.textContent = "Enable Camera";
-        video.srcObject?.getTracks().forEach(track => track.stop());
+        
+        // Clear any pending timeouts
+        if (predictionTimeout) {
+            clearTimeout(predictionTimeout);
+            predictionTimeout = null;
+        }
+        
+        // Stop all video tracks
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => {
+                track.stop();
+                console.log('🛑 Stopped video track:', track.kind);
+            });
+            video.srcObject = null;
+        }
+        
+        // Clear canvas
+        if (canvasCtx) {
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        }
+        
+        // Reset variables
+        results = undefined;
+        lastVideoTime = -1;
+        lastPredictionTime = 0;
+        
+        console.log('📷 Webcam disabled and cleaned up');
     } else {
+        // Enable webcam
         webcamRunning = true;
         enableWebcamButton.textContent = "Disable Camera";
         
+        // Force clear canvas immediately when enabling camera to remove any residual landmarks
+        forceCanvasClear();
+        console.log('🧹 Force cleared canvas before enabling camera');
+        
+        // Reset all MediaPipe variables to ensure clean state
+        results = undefined;
+        lastVideoTime = -1;
+        lastPredictionTime = 0;
+        runningMode = "IMAGE";
+        
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            // Clear any existing stream first
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    frameRate: { ideal: 30 }
+                } 
+            });
+            
             video.srcObject = stream;
-            video.addEventListener("loadeddata", predictWebcam);
+            
+            // Wait for video to be ready before starting prediction
+            video.addEventListener("loadeddata", () => {
+                console.log('📷 Video loaded, starting prediction');
+                
+                // Force clear canvas again when video is ready to ensure no residual landmarks
+                forceCanvasClear();
+                console.log('🧹 Force cleared canvas after video loaded');
+                
+                lastPredictionTime = Date.now();
+                predictWebcam();
+                
+                // Start watchdog to detect freezing
+                startPredictionWatchdog();
+            }, { once: true });
+            
         } catch (error) {
             console.error('Error accessing webcam:', error);
+            webcamRunning = false;
+            enableWebcamButton.textContent = "Enable Camera";
             alert('Failed to access webcam. Please check permissions.');
         }
     }
 }
 
+// Add watchdog to detect camera freezing
+function startPredictionWatchdog() {
+    // Clear any existing watchdog
+    if (predictionTimeout) {
+        clearTimeout(predictionTimeout);
+    }
+    
+    predictionTimeout = setTimeout(() => {
+        if (webcamRunning) {
+            const timeSinceLastPrediction = Date.now() - lastPredictionTime;
+            console.log('🐕 Watchdog check - time since last prediction:', timeSinceLastPrediction, 'ms');
+            
+            if (timeSinceLastPrediction > 3000) { // 3 seconds without prediction
+                console.warn('⚠️ Camera appears frozen, restarting prediction loop');
+                
+                // Reset variables
+                results = undefined;
+                lastVideoTime = -1;
+                runningMode = "IMAGE";
+                
+                // Restart prediction
+                if (video && video.readyState >= 2) {
+                    lastPredictionTime = Date.now();
+                    predictWebcam();
+                }
+            }
+            
+            // Continue watchdog if webcam is still running
+            if (webcamRunning) {
+                startPredictionWatchdog();
+            }
+        }
+    }, 5000); // Check every 5 seconds
+}
+
 async function predictWebcam() {
-    if (!gameState.isGameActive || !webcamRunning) return;
+    // Add safety check to prevent infinite loops
+    if (!gameState.isGameActive || !webcamRunning || !video || !gestureRecognizer) {
+        console.log('🛑 Stopping prediction: game inactive, webcam stopped, or components missing');
+        return;
+    }
     
     // Use responsive canvas sizing to match the video display
     canvasElement.style.width = '100%';
@@ -1375,68 +1291,264 @@ async function predictWebcam() {
     } else {
         console.warn('Video dimensions not available yet');
         if (webcamRunning) {
-            window.requestAnimationFrame(predictWebcam);
+            // Add timeout to prevent infinite waiting
+            setTimeout(() => {
+                if (webcamRunning) {
+                    window.requestAnimationFrame(predictWebcam);
+                }
+            }, 100);
         }
         return;
     }
 
-    if (runningMode === "IMAGE") {
-        runningMode = "VIDEO";
-        await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
-    }
-
-    let startTimeMs = performance.now();
-    if (lastVideoTime !== video.currentTime) {
-        lastVideoTime = video.currentTime;
-        results = gestureRecognizer.recognizeForVideo(video, startTimeMs);
-    }
-
-    canvasCtx.save();
-    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-    
-    if (results.landmarks) {
-        const drawingUtils = new DrawingUtils(canvasCtx);
-        for (const landmarks of results.landmarks) {
-            drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
-                color: "#00FF00",
-                lineWidth: 2
-            });
-            drawingUtils.drawLandmarks(landmarks, {
-                color: "#FF0000",
-                lineWidth: 1
-            });
+    try {
+        // Update watchdog timer
+        lastPredictionTime = Date.now();
+        
+        if (runningMode === "IMAGE") {
+            runningMode = "VIDEO";
+            await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
         }
-    }
-    
-    canvasCtx.restore();
 
-    // Check for gesture recognition
-    if (results.gestures && results.gestures.length > 0) {
+        let startTimeMs = performance.now();
+        
+        // Simplify the video time check - always process if webcam is running
+        // This prevents freezing when video.currentTime doesn't update properly
+        if (webcamRunning && video.readyState >= 2) { // HAVE_CURRENT_DATA
+            lastVideoTime = video.currentTime;
+            results = gestureRecognizer.recognizeForVideo(video, startTimeMs);
+        }
+
+        // Always clear and redraw canvas to prevent freezing
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        
+        if (results && results.landmarks) {
+            const drawingUtils = new DrawingUtils(canvasCtx);
+            for (const landmarks of results.landmarks) {
+                drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
+                    color: "#00FF00",
+                    lineWidth: 2
+                });
+                drawingUtils.drawLandmarks(landmarks, {
+                    color: "#FF0000",
+                    lineWidth: 1
+                });
+            }
+        }
+        
+        canvasCtx.restore();
+
+        // Check for gesture recognition (only if enabled)
+        if (results && results.gestures && results.gestures.length > 0) {
         const gesture = results.gestures[0][0];
         const confidence = gesture.score;
+        const detectedSign = normalizeModelOutput(gesture.categoryName);
         
-        if (confidence > 0.7) {
-            const detectedSign = normalizeModelOutput(gesture.categoryName);
-            checkAnswer(detectedSign);
+        // Debug: Log all gesture detections
+        if (confidence > 0.3) { // Lower threshold for debugging
+            console.log('🎯 Gesture detected:', detectedSign, 'confidence:', confidence.toFixed(2), 'mode:', currentMode);
+        }
+        
+        // Show real-time detection output when gesture detection is enabled
+        if (gestureDetectionEnabled && currentMode === 'sign-match' && gameState.requireDemonstration) {
+            gestureOutput.style.background = confidence > 0.3 ? '#d4edda' : '#f8f9fa';
+            gestureOutput.style.color = confidence > 0.3 ? '#155724' : '#333';
+            gestureOutput.textContent = `Detecting: "${detectedSign}"`;
+        }
+        
+        if (confidence > 0.3) {
+            console.log('🎯 GESTURE DETECTED:', detectedSign, 'Mode:', currentMode, 'Confidence:', confidence.toFixed(2));
+            
+            // In sign-match mode, only process gestures if detection is enabled
+            if (currentMode === 'sign-match') {
+                console.log('🎯 Sign-match mode - gestureDetectionEnabled:', gestureDetectionEnabled);
+                if (gestureDetectionEnabled) {
+                    checkAnswer(detectedSign);
+                }
+                // If detection is disabled, ignore the gesture
+            } else {
+                // For other modes, always process gestures immediately
+                console.log('🎯 Flash-sign/Endless mode - processing immediately');
+                
+                // Store the detected sign for feedback
+                gameState.lastDetectedSign = detectedSign;
+                
+                // Check if this is the correct answer
+                const expectedSign = document.getElementById('challenge-word').textContent;
+                console.log('🎯 Expected:', expectedSign, 'Detected:', detectedSign, 'Match:', detectedSign === expectedSign);
+                console.log('🎯 Question already answered?', gameState.questionAnswered);
+                
+                if (detectedSign === expectedSign) {
+                    // Immediate correct answer processing
+                    if (!gameState.questionAnswered) {
+                        console.log('🎯 PROCESSING CORRECT ANSWER IMMEDIATELY');
+                        gameState.questionAnswered = true;
+                        gameState.score++;
+                        gameState.correctAnswers++;
+                        
+                        // Show immediate feedback
+                        gestureOutput.style.background = '#d4edda';
+                        gestureOutput.style.color = '#155724';
+                        gestureOutput.textContent = `Correct! Detected "${detectedSign}" ✓ +1 point!`;
+                        
+                        // Play correct sound
+                        try {
+                            globalSoundManager.playSoundByName('correct');
+                        } catch (e) {
+                            console.log('Sound error:', e);
+                        }
+                        
+                        // Update UI
+                        try {
+                            updateGameUI();
+                        } catch (e) {
+                            console.log('UpdateUI error:', e);
+                        }
+                        
+                        try {
+                            clearInterval(currentRoundTimer);
+                        } catch (e) {
+                            console.log('Timer clear error:', e);
+                        }
+                        
+                        // Proceed immediately to next question
+                        console.log('🎯 SETTING TIMEOUT TO NEXT QUESTION');
+                        setTimeout(() => {
+                            console.log('🎯 CALLING NEXT QUESTION NOW');
+                            try {
+                                nextQuestion();
+                            } catch (e) {
+                                console.error('🎯 ERROR CALLING NEXT QUESTION:', e);
+                            }
+                        }, 100);
+                    } else {
+                        console.log('🎯 Question already answered, ignoring');
+                    }
+                } else {
+                    // Wrong answer - use regular flow
+                    console.log('🎯 Wrong answer, using regular checkAnswer flow');
+                    checkAnswer(detectedSign);
+                }
+            }
+        }
+    } else {
+        // No gesture detected - show waiting message if in demonstration mode
+        if (gestureDetectionEnabled && currentMode === 'sign-match' && gameState.requireDemonstration) {
+            gestureOutput.style.background = '#f8f9fa';
+            gestureOutput.style.color = '#6c757d';
+            gestureOutput.textContent = `Waiting for gesture... Demonstrate "${gameState.demonstrationWord}"`;
         }
     }
 
+    } catch (error) {
+        console.error('Error in predictWebcam:', error);
+        // Continue the loop even if there's an error to prevent freezing
+    }
+
+    // Continue the prediction loop
     if (webcamRunning) {
         window.requestAnimationFrame(predictWebcam);
     }
 }
 
+// Function to restart camera when it's frozen
+async function restartCamera() {
+    console.log('🔄 Restarting camera due to freeze detection');
+    
+    if (webcamRunning) {
+        // Temporarily disable and re-enable camera
+        const wasRunning = webcamRunning;
+        await enableCam(); // This will disable it
+        
+        if (wasRunning) {
+            // Wait a moment then re-enable
+            setTimeout(async () => {
+                await enableCam(); // This will enable it again
+            }, 500);
+        }
+    }
+}
+
+// Special function to forcefully clear any residual landmarks
+function forceCanvasClear() {
+    if (canvasElement && canvasCtx) {
+        // Multiple clearing approaches to ensure complete cleanup
+        canvasCtx.save();
+        canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
+        canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+        canvasCtx.restore();
+        
+        // Reset canvas dimensions to trigger redraw
+        const width = canvasElement.width;
+        const height = canvasElement.height;
+        canvasElement.width = width;
+        canvasElement.height = height;
+        
+        console.log('🧹 Canvas force cleared - all residual landmarks removed');
+    }
+    
+    // Also reset all MediaPipe variables
+    results = undefined;
+    lastVideoTime = -1;
+    runningMode = "IMAGE";
+}
+
+// Helper function to cleanly disable camera
+function disableCamera(reason = 'cleanup') {
+    if (webcamRunning) {
+        console.log(`📷 Turning off camera - ${reason}`);
+        webcamRunning = false;
+        enableWebcamButton.textContent = "Enable Camera";
+        
+        // Clear any pending timeouts
+        if (predictionTimeout) {
+            clearTimeout(predictionTimeout);
+            predictionTimeout = null;
+        }
+        
+        // Stop all video tracks
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => {
+                track.stop();
+            });
+            video.srcObject = null;
+        }
+        
+        // Reset variables
+        results = undefined;
+        lastVideoTime = -1;
+        lastPredictionTime = 0;
+        runningMode = "IMAGE";
+        
+        // Thoroughly clear canvas to prevent residual landmarks
+        if (canvasCtx && canvasElement) {
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.fillStyle = 'transparent';
+            canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+            console.log('🧹 Canvas thoroughly cleared during camera disable');
+        }
+    }
+}
+
 // Helper function to clear canvas and reset camera landmarks
 function clearCanvasAndResetCamera() {
-    // Clear the canvas completely
+    // Clear the canvas completely and thoroughly
     if (canvasElement && canvasCtx) {
+        // Clear with background color to ensure complete cleanup
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-        console.log('🧹 Canvas cleared and reset');
+        canvasCtx.fillStyle = 'transparent';
+        canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+        console.log('🧹 Canvas cleared and reset thoroughly');
     }
     
     // Reset any stored results to prevent residual landmarks
     results = undefined;
     lastVideoTime = -1;
+    lastPredictionTime = Date.now(); // Reset watchdog timer
+    runningMode = "IMAGE"; // Reset to ensure fresh start
     
     // Clear gesture output display
     if (gestureOutput) {
@@ -1444,18 +1556,42 @@ function clearCanvasAndResetCamera() {
         gestureOutput.style.color = '#333';
         gestureOutput.textContent = '';
     }
+    
+    // If camera is running but seems frozen, restart prediction
+    if (webcamRunning && video && video.readyState >= 2) {
+        console.log('🔄 Restarting prediction after canvas clear');
+        setTimeout(() => {
+            if (webcamRunning) {
+                predictWebcam();
+            }
+        }, 100);
+    }
 }
 
 function checkAnswer(detectedSign) {
-    // Skip processing if question already answered (e.g., wrong video selection in sign-match)
-    if (gameState.questionAnswered) {
+    // Store the detected sign for feedback display
+    gameState.lastDetectedSign = detectedSign;
+    
+    console.log('🎯 checkAnswer() called with:', detectedSign);
+    console.log('🎯 gameState.questionAnswered:', gameState.questionAnswered);
+    console.log('🎯 gameState.isGameActive:', gameState.isGameActive);
+    
+    // Skip processing if question already answered, EXCEPT in sign-match mode where demonstration is required
+    if (gameState.questionAnswered && !(currentMode === 'sign-match' && gameState.requireDemonstration)) {
+        console.log('🎯 Question already answered, returning early');
         return;
     }
     
     let expectedSign;
     
     if (currentMode === 'sign-match') {
-        expectedSign = document.getElementById('match-word').textContent;
+        const matchWordEl = document.getElementById('match-word');
+        expectedSign = matchWordEl ? matchWordEl.textContent : '';
+        
+        if (!expectedSign) {
+            console.error('Could not determine expected sign for sign-match mode');
+            return;
+        }
         
         // In sign-match mode, user MUST select a video first before demonstrating
         if (!gameState.videoSelectionMade) {
@@ -1464,74 +1600,124 @@ function checkAnswer(detectedSign) {
             return;
         }
         
-        // In sign-match mode, if they selected the correct video, they get ONE attempt at the sign
-        if (detectedSign === expectedSign) {
-            handleCorrectAnswer();
-        } else {
-            // Initialize attempt counter if not set
-            if (!gameState.signMatchAttempts) {
-                gameState.signMatchAttempts = 0;
-            }
+        // Check if demonstration is required (after correct video selection)
+        if (gameState.requireDemonstration && gameState.demonstrationWord) {
+            const requiredSign = gameState.demonstrationWord;
             
-            gameState.signMatchAttempts++;
-            
-            // Allow up to 3 attempts for sign demonstration
-            if (gameState.signMatchAttempts >= 3) {
-                // After 3 failed attempts, count as wrong and move to next question
-                gameState.wrongAnswers++;
+            if (detectedSign === requiredSign) {
+                // Successful demonstration - proceed immediately to next question
+                showSignMatchFeedback(detectedSign, requiredSign, true, `Perfect! Detected "${detectedSign}" correctly!`);
+                
+                // Mark question as answered ONLY after successful demonstration
                 gameState.questionAnswered = true;
                 
-                gestureOutput.style.background = '#f8d7da';
-                gestureOutput.style.color = '#721c24';
-                gestureOutput.textContent = `Out of attempts! The correct sign was "${expectedSign}" ✗`;
+                // Clear demonstration requirement
+                gameState.requireDemonstration = false;
+                gameState.demonstrationWord = null;
                 
-                // Play incorrect sound
-                globalSoundManager.playSoundByName('incorrect');
+                // DISABLE gesture detection after successful demonstration
+                disableGestureDetection();
                 
+                // Proceed immediately to next question (no delay)
                 setTimeout(() => {
                     nextQuestion();
-                }, 2000);
+                }, 10); // Absolute minimal delay
             } else {
-                // Show feedback but let them try again (with attempt counter)
-                const attemptsLeft = 3 - gameState.signMatchAttempts;
-                showSignMatchFeedback(detectedSign, expectedSign, false, `Wrong sign! You have ${attemptsLeft} attempts left.`);
+                // Wrong demonstration - show what was detected and try again
+                showSignMatchFeedback(detectedSign, requiredSign, false, `Detected "${detectedSign}" but need "${requiredSign}". Please try again.`);
             }
+        } else {
+            // Video selection was wrong, or no demonstration required yet
+            showSignMatchFeedback(detectedSign, expectedSign, false, 'Please select the correct video first!');
         }
     } else {
-        // Other modes: normal logic
-        expectedSign = document.getElementById('challenge-word').textContent;
-        
-        if (detectedSign === expectedSign) {
-            handleCorrectAnswer();
-        } else {
-            handleWrongAnswer();
+        // Other modes: normal logic (but not sign-match mode)
+        if (currentMode !== 'sign-match') {
+            const challengeWordEl = document.getElementById('challenge-word');
+            expectedSign = challengeWordEl ? challengeWordEl.textContent : '';
+            
+            if (!expectedSign) {
+                console.error('Could not determine expected sign for challenge mode');
+                return;
+            }
+            
+            if (detectedSign === expectedSign) {
+                handleCorrectAnswer();
+            } else {
+                handleWrongAnswer();
+            }
         }
+        // Note: sign-match mode handles scoring through selectVideo(), not gesture recognition
     }
 }
 
 function endGame() {
+    console.log('🎯 endGame() called');
     gameState.isGameActive = false;
     clearInterval(currentRoundTimer);
+    
+    // Turn off camera when game ends
+    disableCamera('game ended');
     
     // Show results screen
     gameScreen.classList.add('hidden');
     resultsScreen.classList.remove('hidden');
+    
+    // Calculate total questions attempted first
+    const totalQuestionsAttempted = currentMode === 'endless' ? Math.max(1, gameState.currentQuestion - 1) : gameState.totalQuestions;
     
     // Update results (with null checks)
     const finalScoreEl = document.getElementById('final-score');
     const finalTotalEl = document.getElementById('final-total');
     const correctCountEl = document.getElementById('correct-count');
     const wrongCountEl = document.getElementById('wrong-count');
+    const skipCountEl = document.getElementById('skip-count');
     const revealUsedEl = document.getElementById('reveal-used');
     
-    if (finalScoreEl) finalScoreEl.textContent = gameState.score;
-    if (finalTotalEl) finalTotalEl.textContent = currentMode === 'endless' ? gameState.currentQuestion - 1 : gameState.totalQuestions;
-    if (correctCountEl) correctCountEl.textContent = gameState.correctAnswers;
-    if (wrongCountEl) wrongCountEl.textContent = gameState.wrongAnswers;
+    // Debug: Check if elements are found
+    console.log('🎯 HTML Elements found:');
+    console.log('finalScoreEl:', !!finalScoreEl);
+    console.log('correctCountEl:', !!correctCountEl);
+    console.log('wrongCountEl:', !!wrongCountEl);
+    console.log('skipCountEl:', !!skipCountEl);
+    
+    if (finalScoreEl) {
+        finalScoreEl.textContent = gameState.score;
+        console.log('📊 Set finalScoreEl to:', gameState.score);
+    }
+    if (finalTotalEl) {
+        finalTotalEl.textContent = totalQuestionsAttempted;
+        console.log('📊 Set finalTotalEl to:', totalQuestionsAttempted);
+    }
+    if (correctCountEl) {
+        correctCountEl.textContent = gameState.correctAnswers;
+        console.log('📊 Set correctCountEl to:', gameState.correctAnswers);
+    }
+    if (wrongCountEl) {
+        wrongCountEl.textContent = gameState.wrongAnswers;
+        console.log('📊 Set wrongCountEl to:', gameState.wrongAnswers);
+    }
+    if (skipCountEl) {
+        skipCountEl.textContent = gameState.skippedQuestions;
+        console.log('📊 Set skipCountEl to:', gameState.skippedQuestions);
+    }
     if (revealUsedEl) revealUsedEl.textContent = gameState.revealPowerUsed ? 'Yes' : 'No';
     
+    // Debug logging to understand the scoring issue
+    console.log('� GAME ENDING - Final gameState:');
+    console.log('gameState.score:', gameState.score);
+    console.log('gameState.correctAnswers:', gameState.correctAnswers);
+    console.log('gameState.wrongAnswers:', gameState.wrongAnswers);
+    console.log('gameState.skippedQuestions:', gameState.skippedQuestions);
+    console.log('totalQuestionsAttempted:', totalQuestionsAttempted);
+    console.log('Full gameState object:', JSON.stringify(gameState, null, 2));
+    console.log('Skipped Questions:', gameState.skippedQuestions);
+    console.log('Total Questions Attempted:', totalQuestionsAttempted);
+    console.log('Current Mode:', currentMode);
+    console.log('Current Question:', gameState.currentQuestion);
+    
     // Performance message
-    const percentage = (gameState.score / (currentMode === 'endless' ? gameState.currentQuestion - 1 : gameState.totalQuestions)) * 100;
+    const percentage = totalQuestionsAttempted > 0 ? (gameState.score / totalQuestionsAttempted) * 100 : 0;
     const performanceText = document.getElementById('performance-text');
     const resultsTitleEl = document.getElementById('results-title');
     
@@ -1552,9 +1738,8 @@ function endGame() {
 
 function quitGame() {
     if (confirm('Are you sure you want to quit the current game?')) {
-        gameState.isGameActive = false;
-        clearInterval(currentRoundTimer);
-        backToModeSelection();
+        // End the game and show the score results
+        endGame();
     }
 }
 
@@ -1572,12 +1757,8 @@ function backToModeSelection() {
     // Clear canvas and reset camera state
     clearCanvasAndResetCamera();
     
-    // Stop webcam
-    if (webcamRunning) {
-        webcamRunning = false;
-        enableWebcamButton.textContent = "Enable Camera";
-        video.srcObject?.getTracks().forEach(track => track.stop());
-    }
+    // Stop webcam and clean up properly
+    disableCamera('back to mode selection');
 }
 
 // Navigation menu toggle - with null safety

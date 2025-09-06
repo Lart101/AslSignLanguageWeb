@@ -1,10 +1,18 @@
 function translateText() {
-    const inputText = document.getElementById('input-text').value;
+    const inputTextEl = document.getElementById('input-text');
     const imagesContainer = document.getElementById('translated-images');
     const videosContainer = document.getElementById('translated-videos');
+    const displayModeEl = document.getElementById('display-mode');
     
+    // Check if required elements exist
+    if (!inputTextEl || !imagesContainer || !videosContainer || !displayModeEl) {
+        console.error('Required elements not found for text translation');
+        return;
+    }
+    
+    const inputText = inputTextEl.value;
     // Get selected mode from dropdown instead of radio buttons
-    const isAvatarMode = document.getElementById('display-mode').value === 'avatar';
+    const isAvatarMode = displayModeEl.value === 'avatar';
     
     // Clear previous translations
     imagesContainer.innerHTML = '';
@@ -360,6 +368,12 @@ function setupCombinedVideoPlayer(letters) {
     const progressBar = document.getElementById('progress-bar');
     const currentLetterIndicator = document.getElementById('current-letter-indicator');
     const letterElements = document.querySelectorAll('.sequence-letter');
+    
+    // Check if required elements exist
+    if (!video || !playPauseBtn || !restartBtn || !speedSelect || !progressBar || !currentLetterIndicator) {
+        console.error('Required video control elements not found');
+        return;
+    }
     
     let currentLetterIndex = 0;
     let videoSequence = [];

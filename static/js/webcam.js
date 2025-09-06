@@ -35,20 +35,29 @@ const createGestureRecognizer = async (modelCategory = null) => {
 
 const video = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
-const canvasCtx = canvasElement.getContext("2d");
+const canvasCtx = canvasElement?.getContext("2d");
 const gestureOutput = document.getElementById("gesture_output");
 const enableWebcamButton = document.getElementById("webcamButton");
+
+// Check if required elements exist
+if (!video || !canvasElement || !canvasCtx || !gestureOutput || !enableWebcamButton) {
+    console.error('Required webcam elements not found');
+}
 
 function hasGetUserMedia() {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 }
 
 if (hasGetUserMedia()) {
-    enableWebcamButton.addEventListener("click", enableCam);
+    if (enableWebcamButton) {
+        enableWebcamButton.addEventListener("click", enableCam);
+    }
 } else {
     console.warn("getUserMedia() is not supported by your browser");
-    enableWebcamButton.textContent = "Webcam Not Supported";
-    enableWebcamButton.disabled = true;
+    if (enableWebcamButton) {
+        enableWebcamButton.textContent = "Webcam Not Supported";
+        enableWebcamButton.disabled = true;
+    }
 }
 
 async function enableCam() {
@@ -110,6 +119,14 @@ async function predictWebcam() {
     if (video.currentTime !== lastVideoTime) {
         lastVideoTime = video.currentTime;
         results = gestureRecognizer.recognizeForVideo(video, nowInMs);
+    }
+
+    if (!canvasCtx || !canvasElement) {
+        console.warn('Canvas not available for drawing');
+        if (webcamRunning) {
+            window.requestAnimationFrame(predictWebcam);
+        }
+        return;
     }
 
     canvasCtx.save();

@@ -37,9 +37,14 @@ createGestureRecognizer();
 
 const video = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
-const canvasCtx = canvasElement.getContext("2d");
+const canvasCtx = canvasElement?.getContext("2d");
 const gestureOutput = document.getElementById("gesture_output");
 const enableWebcamButton = document.getElementById("webcamButton");
+
+// Check if required elements exist
+if (!video || !canvasElement || !canvasCtx || !gestureOutput || !enableWebcamButton) {
+    console.error('Required alphabet elements not found');
+}
 
 // Function to play sound using global sound manager
 function playSound(audioElement) {
@@ -185,6 +190,14 @@ async function predictWebcam() {
     if (video.currentTime !== lastVideoTime) {
         lastVideoTime = video.currentTime;
         results = gestureRecognizer.recognizeForVideo(video, nowInMs);
+    }
+
+    if (!canvasCtx || !canvasElement) {
+        console.warn('Canvas not available for drawing');
+        if (webcamRunning) {
+            window.requestAnimationFrame(predictWebcam);
+        }
+        return;
     }
 
     canvasCtx.save();
