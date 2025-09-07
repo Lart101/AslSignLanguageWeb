@@ -34,6 +34,7 @@ let gestureRecognizer = undefined;
 let runningMode = "IMAGE";
 let webcamRunning = false;
 let gestureDetectionEnabled = false; // New flag to control gesture detection in sign-match mode
+let manualCameraToggle = false; // Flag to track when user manually toggles camera
 let lastVideoTime = -1;
 let results = undefined;
 let predictionTimeout = null; // Add timeout to prevent freezing
@@ -456,7 +457,7 @@ function nextQuestion() {
     console.log('🎯 nextQuestion() called - isGameActive:', gameState.isGameActive);
     if (!gameState.isGameActive) return;
     
-    // Turn off camera to prevent freezing and save resources
+    // Turn off camera to prevent freezing and save resources for all modes
     disableCamera('next question');
     
     // Force clear canvas to ensure no residual landmarks from previous question
@@ -570,6 +571,18 @@ function showFlashSignQuestion() {
     
     // ENABLE gesture detection for flash-sign and endless modes
     enableGestureDetection();
+    
+    // Automatically re-enable camera for flash-sign and endless modes
+    // Set manualCameraToggle to false since this is automatic
+    manualCameraToggle = false;
+    if (!webcamRunning) {
+        enableCam();
+    } else {
+        // If camera is already running, just update the gesture output
+        gestureOutput.style.background = '#f8f9fa';
+        gestureOutput.style.color = '#333';
+        gestureOutput.textContent = `Show the sign for "${randomWord}"!`;
+    }
     
     // Start timer for flash sign and endless modes
     startRoundTimer();
@@ -1270,6 +1283,9 @@ async function enableCam() {
         return;
     }
 
+    // Set flag to indicate this is a manual camera toggle
+    manualCameraToggle = true;
+
     if (webcamRunning) {
         // Disable webcam
         webcamRunning = false;
@@ -1340,11 +1356,45 @@ async function enableCam() {
                 forceCanvasClear();
                 console.log('🧹 Force cleared canvas after video loaded');
                 
-                lastPredictionTime = Date.now();
-                predictWebcam();
+                // Always add 1 second delay when enabling camera (manual or automatic)
+                console.log('🔄 Camera enabled - adding 1 second delay before detection starts');
                 
-                // Start watchdog to detect freezing
-                startPredictionWatchdog();
+                // Show preparation message
+                if (gestureOutput && (currentMode === 'flash-sign' || currentMode === 'endless')) {
+                    const challengeWordEl = document.getElementById('challenge-word');
+                    const currentWord = challengeWordEl ? challengeWordEl.textContent : 'the sign';
+                    gestureOutput.style.background = '#fff3cd';
+                    gestureOutput.style.color = '#856404';
+                    gestureOutput.textContent = manualCameraToggle ? 
+                        'Camera reactivated! Preparing detection system...' : 
+                        `Preparing detection for "${currentWord}"... Get ready!`;
+                } else if (gestureOutput && currentMode === 'sign-match') {
+                    gestureOutput.style.background = '#fff3cd';
+                    gestureOutput.style.color = '#856404';
+                    gestureOutput.textContent = 'Preparing camera system...';
+                }
+                
+                setTimeout(() => {
+                    lastPredictionTime = Date.now();
+                    predictWebcam();
+                    startPredictionWatchdog();
+                    
+                    // Clear the preparation message and show appropriate message for each mode
+                    if (gestureOutput && (currentMode === 'flash-sign' || currentMode === 'endless')) {
+                        const challengeWordEl = document.getElementById('challenge-word');
+                        const currentWord = challengeWordEl ? challengeWordEl.textContent : 'the sign';
+                        gestureOutput.style.background = '#f8f9fa';
+                        gestureOutput.style.color = '#333';
+                        gestureOutput.textContent = `Show the sign for "${currentWord}"!`;
+                    } else if (gestureOutput && currentMode === 'sign-match') {
+                        gestureOutput.style.background = '#f8f9fa';
+                        gestureOutput.style.color = '#333';
+                        gestureOutput.textContent = 'First select the correct video, then demonstrate the sign';
+                    }
+                    
+                    // Reset the manual toggle flag
+                    manualCameraToggle = false;
+                }, 1000);
             }, { once: true });
             
         } catch (error) {
