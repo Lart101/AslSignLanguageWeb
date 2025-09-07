@@ -35,6 +35,7 @@ let runningMode = "IMAGE";
 let webcamRunning = false;
 let gestureDetectionEnabled = false; // New flag to control gesture detection in sign-match mode
 let manualCameraToggle = false; // Flag to track when user manually toggles camera
+let currentActiveModel = 'alphabet'; // Track the currently active model for consistency
 let lastVideoTime = -1;
 let results = undefined;
 let predictionTimeout = null; // Add timeout to prevent freezing
@@ -251,6 +252,9 @@ function setupEventListeners() {
 // Create gesture recognizer
 async function createGestureRecognizer(modelCategory = 'alphabet') {
     try {
+        // Update the active model tracker
+        currentActiveModel = modelCategory;
+        
         const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
         const modelUrl = getModelUrl(modelCategory);
         
@@ -562,6 +566,9 @@ function showFlashSignQuestion() {
         const modelCategory = getCurrentModelCategory();
         const words = CHALLENGE_WORDS[modelCategory] || CHALLENGE_WORDS.alphabet;
         randomWord = words[Math.floor(Math.random() * words.length)];
+        
+        // Switch gesture recognizer to the selected model category for consistency
+        createGestureRecognizer(modelCategory);
     }
     
     const challengeWordEl = document.getElementById('challenge-word');
@@ -600,6 +607,10 @@ function showSignMatchQuestion() {
     
     // Get random word and set up video options
     const modelCategory = getCurrentModelCategory();
+    
+    // Switch gesture recognizer to the selected model category for consistency
+    createGestureRecognizer(modelCategory);
+    
     let words = CHALLENGE_WORDS[modelCategory];
     
     // Fallback if category doesn't exist
@@ -758,6 +769,18 @@ function getCurrentModelCategory() {
     const selector = document.getElementById('model-selector');
     const category = selector ? selector.value : 'alphabet';
     return category;
+}
+
+// Helper function to ensure model consistency
+function ensureModelConsistency() {
+    const selectedModel = getCurrentModelCategory();
+    if (selectedModel !== currentActiveModel) {
+        console.warn(`⚠️ Model mismatch detected! Selected: ${selectedModel}, Active: ${currentActiveModel}`);
+        console.log('🔄 Updating gesture recognizer to match selected model');
+        createGestureRecognizer(selectedModel);
+        return false; // Indicates model was inconsistent
+    }
+    return true; // Model is consistent
 }
 
 function selectVideo(videoOption) {
@@ -1526,7 +1549,7 @@ async function predictWebcam() {
         }
         
         if (confidence > 0.3) {
-            console.log('🎯 GESTURE DETECTED:', detectedSign, 'Mode:', currentMode, 'Confidence:', confidence.toFixed(2));
+            console.log('🎯 GESTURE DETECTED:', detectedSign, 'Mode:', currentMode, 'Confidence:', confidence.toFixed(2), 'Active Model:', currentActiveModel);
             
             // In sign-match mode, only process gestures if detection is enabled
             if (currentMode === 'sign-match') {
@@ -1744,6 +1767,12 @@ function checkAnswer(detectedSign) {
     console.log('🎯 gameState.questionAnswered:', gameState.questionAnswered);
     console.log('🎯 gameState.isGameActive:', gameState.isGameActive);
     
+    // Ensure model consistency before processing answer
+    if (!ensureModelConsistency()) {
+        console.log('🔄 Model was updated, waiting for next gesture detection');
+        return; // Wait for next detection with correct model
+    }
+    
     // Skip processing if question already answered, EXCEPT in sign-match mode where demonstration is required
     if (gameState.questionAnswered && !(currentMode === 'sign-match' && gameState.requireDemonstration)) {
         console.log('🎯 Question already answered, returning early');
@@ -1838,11 +1867,21 @@ function endGame() {
     resultsScreen.classList.remove('hidden');
     
     // Calculate total questions attempted first
-    const totalQuestionsAttempted = currentMode === 'endless' ? Math.max(1, gameState.currentQuestion - 1) : gameState.totalQuestions;
+    let totalQuestionsAttempted;
+    if (currentMode === 'endless') {
+        // For endless mode, calculate based on actual answers given to ensure consistency
+        totalQuestionsAttempted = gameState.correctAnswers + gameState.wrongAnswers + gameState.skippedQuestions;
+        // Ensure we have at least 1 if somehow all counters are 0
+        totalQuestionsAttempted = Math.max(1, totalQuestionsAttempted);
+    } else {
+        // For other modes, use the fixed total questions
+        totalQuestionsAttempted = gameState.totalQuestions;
+    }
     
     // Update results (with null checks)
     const finalScoreEl = document.getElementById('final-score');
     const finalTotalEl = document.getElementById('final-total');
+    const finalScoreContainer = document.querySelector('.final-score');
     const correctCountEl = document.getElementById('correct-count');
     const wrongCountEl = document.getElementById('wrong-count');
     const skipCountEl = document.getElementById('skip-count');
@@ -1855,14 +1894,27 @@ function endGame() {
     console.log('wrongCountEl:', !!wrongCountEl);
     console.log('skipCountEl:', !!skipCountEl);
     
-    if (finalScoreEl) {
-        finalScoreEl.textContent = gameState.score;
-        console.log('📊 Set finalScoreEl to:', gameState.score);
+    // Handle final score display differently for endless mode
+    if (currentMode === 'endless') {
+        // For endless mode, hide the traditional final score and show dynamic counter
+        if (finalScoreContainer) {
+            finalScoreContainer.innerHTML = `
+                <span class="score-label">Questions Attempted:</span>
+                <span class="endless-questions">${totalQuestionsAttempted}</span>
+            `;
+        }
+    } else {
+        // For other modes, show traditional score format
+        if (finalScoreEl) {
+            finalScoreEl.textContent = gameState.score;
+            console.log('📊 Set finalScoreEl to:', gameState.score);
+        }
+        if (finalTotalEl) {
+            finalTotalEl.textContent = totalQuestionsAttempted;
+            console.log('📊 Set finalTotalEl to:', totalQuestionsAttempted);
+        }
     }
-    if (finalTotalEl) {
-        finalTotalEl.textContent = totalQuestionsAttempted;
-        console.log('📊 Set finalTotalEl to:', totalQuestionsAttempted);
-    }
+    
     if (correctCountEl) {
         correctCountEl.textContent = gameState.correctAnswers;
         console.log('📊 Set correctCountEl to:', gameState.correctAnswers);
@@ -1890,23 +1942,58 @@ function endGame() {
     console.log('Current Mode:', currentMode);
     console.log('Current Question:', gameState.currentQuestion);
     
+    // Validate that the numbers add up correctly
+    const calculatedTotal = gameState.correctAnswers + gameState.wrongAnswers + gameState.skippedQuestions;
+    console.log('📊 Calculated total from answers:', calculatedTotal);
+    console.log('📊 Total questions attempted:', totalQuestionsAttempted);
+    
+    if (calculatedTotal !== totalQuestionsAttempted && currentMode === 'endless') {
+        console.warn('⚠️ MISMATCH detected! Correcting totalQuestionsAttempted to match actual answers');
+        totalQuestionsAttempted = calculatedTotal;
+    }
+    
     // Performance message
-    const percentage = totalQuestionsAttempted > 0 ? (gameState.score / totalQuestionsAttempted) * 100 : 0;
     const performanceText = document.getElementById('performance-text');
     const resultsTitleEl = document.getElementById('results-title');
     
-    if (percentage >= 90 && resultsTitleEl) {
-        if (performanceText) performanceText.textContent = '🎉 Outstanding performance! You\'re an ASL master!';
-        resultsTitleEl.textContent = 'Excellent Work!';
-    } else if (percentage >= 70 && resultsTitleEl) {
-        if (performanceText) performanceText.textContent = '👏 Great job! Keep practicing to improve further!';
-        resultsTitleEl.textContent = 'Well Done!';
-    } else if (percentage >= 50 && resultsTitleEl) {
-        if (performanceText) performanceText.textContent = '👍 Good effort! Practice more to boost your skills!';
-        resultsTitleEl.textContent = 'Keep Going!';
-    } else if (resultsTitleEl) {
-        if (performanceText) performanceText.textContent = '💪 Don\'t give up! Every expert was once a beginner!';
-        resultsTitleEl.textContent = 'Keep Practicing!';
+    if (currentMode === 'endless') {
+        // Special messages for endless mode based on questions attempted and accuracy
+        const percentage = totalQuestionsAttempted > 0 ? (gameState.score / totalQuestionsAttempted) * 100 : 0;
+        
+        if (resultsTitleEl) {
+            resultsTitleEl.textContent = 'Endless Challenge Complete!';
+        }
+        
+        if (performanceText) {
+            if (totalQuestionsAttempted >= 20 && percentage >= 80) {
+                performanceText.textContent = `🏆 Amazing endurance! You answered ${totalQuestionsAttempted} questions with ${percentage.toFixed(0)}% accuracy!`;
+            } else if (totalQuestionsAttempted >= 15 && percentage >= 70) {
+                performanceText.textContent = `🔥 Great persistence! ${totalQuestionsAttempted} questions attempted with solid ${percentage.toFixed(0)}% accuracy!`;
+            } else if (totalQuestionsAttempted >= 10) {
+                performanceText.textContent = `💪 Good effort! You tackled ${totalQuestionsAttempted} questions. Keep pushing your limits!`;
+            } else if (totalQuestionsAttempted >= 5) {
+                performanceText.textContent = `👍 Nice try! ${totalQuestionsAttempted} questions is a good start. Challenge yourself to go further!`;
+            } else {
+                performanceText.textContent = `🌟 Every journey begins with a step! Try to push beyond ${totalQuestionsAttempted} questions next time!`;
+            }
+        }
+    } else {
+        // Traditional performance messages for other modes
+        const percentage = totalQuestionsAttempted > 0 ? (gameState.score / totalQuestionsAttempted) * 100 : 0;
+        
+        if (percentage >= 90 && resultsTitleEl) {
+            if (performanceText) performanceText.textContent = '🎉 Outstanding performance! You\'re an ASL master!';
+            resultsTitleEl.textContent = 'Excellent Work!';
+        } else if (percentage >= 70 && resultsTitleEl) {
+            if (performanceText) performanceText.textContent = '👏 Great job! Keep practicing to improve further!';
+            resultsTitleEl.textContent = 'Well Done!';
+        } else if (percentage >= 50 && resultsTitleEl) {
+            if (performanceText) performanceText.textContent = '👍 Good effort! Practice more to boost your skills!';
+            resultsTitleEl.textContent = 'Keep Going!';
+        } else if (resultsTitleEl) {
+            if (performanceText) performanceText.textContent = '💪 Don\'t give up! Every expert was once a beginner!';
+            resultsTitleEl.textContent = 'Keep Practicing!';
+        }
     }
 }
 
