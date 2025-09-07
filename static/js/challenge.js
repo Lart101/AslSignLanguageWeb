@@ -1050,9 +1050,26 @@ function useRevealPower() {
     
     console.log(`Loading reveal video for: ${currentWord}`);
     
-    // Ensure the video plays from the beginning when modal opens
+    // Handle video loading and portrait detection
     revealVideo.addEventListener('loadeddata', () => {
         revealVideo.currentTime = 0;
+        
+        // Detect if video is portrait orientation
+        const videoWidth = revealVideo.videoWidth;
+        const videoHeight = revealVideo.videoHeight;
+        const isPortrait = videoHeight > videoWidth;
+        
+        if (isPortrait) {
+            revealVideo.setAttribute('data-portrait', 'true');
+            console.log('Portrait video detected, adjusting layout');
+        } else {
+            revealVideo.removeAttribute('data-portrait');
+        }
+        
+        // Auto-play the video
+        revealVideo.play().catch(e => {
+            console.log('Auto-play blocked, user will need to click:', e);
+        });
     }, { once: true });
     
     // Update UI to reflect reveal power is used
@@ -1099,6 +1116,19 @@ function showCorrectAnswerDemonstration() {
     revealVideo.src = videoPath;
     revealVideo.currentTime = 0;
     revealVideo.muted = true; // ALWAYS MUTED
+    
+    // Handle portrait video detection for demonstration
+    revealVideo.addEventListener('loadeddata', () => {
+        const videoWidth = revealVideo.videoWidth;
+        const videoHeight = revealVideo.videoHeight;
+        const isPortrait = videoHeight > videoWidth;
+        
+        if (isPortrait) {
+            revealVideo.setAttribute('data-portrait', 'true');
+        } else {
+            revealVideo.removeAttribute('data-portrait');
+        }
+    }, { once: true });
     
     // Show the modal
     revealModal.classList.remove('hidden');
