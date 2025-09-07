@@ -52,6 +52,103 @@ const flashSignContent = document.getElementById('flash-sign-content');
 const signMatchContent = document.getElementById('sign-match-content');
 const revealContent = document.getElementById('reveal-content');
 
+// Popup notification system for demonstration feedback
+function showPopupNotification(message, type = 'success', duration = 2000) {
+    // Remove any existing popups
+    const existingPopup = document.querySelector('.demo-popup-notification');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
+    // Create popup element
+    const popup = document.createElement('div');
+    popup.className = `demo-popup-notification ${type}`;
+    popup.innerHTML = `
+        <div class="popup-content">
+            <div class="popup-icon">
+                ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+            </div>
+            <div class="popup-message">${message}</div>
+        </div>
+    `;
+    
+    // Add styles
+    popup.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        font-family: 'Arial', sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    
+    // Set background color based on type
+    if (type === 'success') {
+        popup.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+    } else if (type === 'error') {
+        popup.style.background = 'linear-gradient(135deg, #dc3545, #fd7e14)';
+    } else {
+        popup.style.background = 'linear-gradient(135deg, #007bff, #6f42c1)';
+    }
+    
+    // Style the content
+    const content = popup.querySelector('.popup-content');
+    content.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    `;
+    
+    const icon = popup.querySelector('.popup-icon');
+    icon.style.cssText = `
+        font-size: 24px;
+        flex-shrink: 0;
+    `;
+    
+    const messageEl = popup.querySelector('.popup-message');
+    messageEl.style.cssText = `
+        flex: 1;
+        line-height: 1.4;
+    `;
+    
+    // Add to document
+    document.body.appendChild(popup);
+    
+    // Animate in
+    setTimeout(() => {
+        popup.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        popup.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (popup && popup.parentNode) {
+                popup.parentNode.removeChild(popup);
+            }
+        }, 300);
+    }, duration);
+    
+    // Add click to dismiss
+    popup.addEventListener('click', () => {
+        popup.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (popup && popup.parentNode) {
+                popup.parentNode.removeChild(popup);
+            }
+        }, 300);
+    });
+}
+
 // Timer variables
 let gameTimer = null;
 let currentRoundTimer = null;
@@ -680,6 +777,9 @@ function selectVideo(videoOption) {
         // Play correct sound
         globalSoundManager.playSoundByName('correct');
         
+        // Show success popup notification for correct video selection
+        showPopupNotification(`🎯 Great choice! Correct video selected! +1 point. Now demonstrate the sign!`, 'success', 3500);
+        
         // Demonstrate the correct answer by playing the selected video (MUTED)
         const correctVideo = selectedVideo.querySelector('video');
         if (correctVideo) {
@@ -754,6 +854,12 @@ function selectVideo(videoOption) {
         if (currentMode === 'endless') {
             gameState.lives--;
             updateLivesDisplay();
+            
+            // Show error popup notification for wrong video selection in endless mode
+            showPopupNotification(`❌ Wrong video selected! Lost a life 💔`, 'error', 3000);
+        } else {
+            // Show error popup notification for wrong video selection in other modes
+            showPopupNotification(`❌ Wrong video selected! Try again next time!`, 'error', 2500);
         }
         
         // Show brief wrong feedback
@@ -997,6 +1103,10 @@ function handleCorrectAnswer() {
         gestureOutput.style.color = '#155724';
         gestureOutput.textContent = `Correct! Detected "${gameState.lastDetectedSign || 'sign'}" ✓ +1 point!`;
         
+        // Show success popup notification for flash-sign and endless modes
+        const detectedSign = gameState.lastDetectedSign || 'sign';
+        showPopupNotification(`🎉 Correct! You signed "${detectedSign}" perfectly! +1 point`, 'success', 2500);
+        
         // Don't show demonstration modal - proceed immediately
         // showCorrectAnswerDemonstration();
     }
@@ -1027,11 +1137,19 @@ function handleWrongAnswer() {
         gestureOutput.style.background = '#f8d7da';
         gestureOutput.style.color = '#721c24';
         gestureOutput.textContent = `Wrong! Detected "${gameState.lastDetectedSign || 'unknown'}" ✗ Lost a life 💔`;
+        
+        // Show error popup notification for endless mode
+        const detectedSign = gameState.lastDetectedSign || 'unknown';
+        showPopupNotification(`❌ Wrong! You signed "${detectedSign}" but we needed "${gameState.currentAnswer}". Lost a life 💔`, 'error', 3000);
     } else {
         // In other modes, no score penalty - just move on
         gestureOutput.style.background = '#f8d7da';
         gestureOutput.style.color = '#721c24';
         gestureOutput.textContent = `Wrong! Detected "${gameState.lastDetectedSign || 'unknown'}" ✗`;
+        
+        // Show error popup notification for flash-sign mode
+        const detectedSign = gameState.lastDetectedSign || 'unknown';
+        showPopupNotification(`❌ Wrong! You signed "${detectedSign}" but we needed "${gameState.currentAnswer}"`, 'error', 2500);
     }
     
     // Play incorrect sound
@@ -1608,6 +1726,9 @@ function checkAnswer(detectedSign) {
                 // Successful demonstration - proceed immediately to next question
                 showSignMatchFeedback(detectedSign, requiredSign, true, `Perfect! Detected "${detectedSign}" correctly!`);
                 
+                // Show success popup notification
+                showPopupNotification(`🎉 Perfect! You correctly signed "${detectedSign}"!`, 'success', 3000);
+                
                 // Mark question as answered ONLY after successful demonstration
                 gameState.questionAnswered = true;
                 
@@ -1625,6 +1746,9 @@ function checkAnswer(detectedSign) {
             } else {
                 // Wrong demonstration - show what was detected and try again
                 showSignMatchFeedback(detectedSign, requiredSign, false, `Detected "${detectedSign}" but need "${requiredSign}". Please try again.`);
+                
+                // Show error popup notification
+                showPopupNotification(`❌ Detected "${detectedSign}" but need "${requiredSign}". Try again!`, 'error', 3000);
             }
         } else {
             // Video selection was wrong, or no demonstration required yet
