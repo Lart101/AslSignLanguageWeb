@@ -1,25 +1,25 @@
 
 import { GestureRecognizer, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
-// Model URLs for different learning categories
+// Model URLs for different learning categories - using local model folder
 export const MODEL_URLS = {
     // Alphabet Learning (A-Z)
-    alphabet: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/letters.task",
+    alphabet: "./model/letters.task",
 
     // Numbers Learning (0-9)
-    numbers: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/numbers.task",
+    numbers: "./model/numbers.task",
     
     // Colors Learning
-    colors: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/colors.task",
+    colors: "./model/colors.task",
     
     // Basic Words Learning
-    basicWords: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/basicwords.task",
+    basicWords: "./model/basicwords.task",
     
     // Family & People Learning
-    family: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/family.task",
+    family: "./model/family.task",
     
     // Food & Drinks Learning
-    food: "https://rgxalrnmnlbmskupyhcm.supabase.co/storage/v1/object/public/signlanguage/Food.task"
+    food: "./model/Food.task"
 };
 
 // Legacy export for backward compatibility - now uses automatic detection
