@@ -1,10 +1,10 @@
 
 import { GestureRecognizer, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
-// Supabase Configuration
-const SUPABASE_URL = 'https://rgxalrnmnlbmskupyhcm.supabase.co';
-const STORAGE_BUCKET = 'signlanguage';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneGFscm5tbmxibXNrdXB5aGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjExMzYsImV4cCI6MjA2MDI5NzEzNn0.sB4B5_kwyng0kZ7AHD_lnSpLJ3WfseYwDW1o5-foG-E';
+// Supabase Configuration - Use environment variables if available
+const SUPABASE_URL = window.env?.SUPABASE_URL || 'https://rgxalrnmnlbmskupyhcm.supabase.co';
+const STORAGE_BUCKET = window.env?.STORAGE_BUCKET || 'signlanguage';
+const SUPABASE_ANON_KEY = window.env?.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneGFscm5tbmxibXNrdXB5aGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjExMzYsImV4cCI6MjA2MDI5NzEzNn0.sB4B5_kwyng0kZ7AHD_lnSpLJ3WfseYwDW1o5-foG-E';
 
 // Initialize MODEL_URLS as an empty object that will be populated dynamically
 export let MODEL_URLS = {

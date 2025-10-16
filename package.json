@@ -1,0 +1,25 @@
+{
+  "name": "signademy",
+  "version": "1.0.0",
+  "description": "A simple platform for learning American Sign Language",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "sign language",
+    "ASL",
+    "education",
+    "accessibility"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

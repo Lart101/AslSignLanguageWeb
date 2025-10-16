@@ -205,9 +205,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkIfAdmin() {
         // First check if Supabase is available
         if (typeof window.supabase !== 'undefined') {
+            // Use environment variables if available
+            const supabaseUrl = window.env?.SUPABASE_URL || 'https://rgxalrnmnlbmskupyhcm.supabase.co';
+            const supabaseAnonKey = window.env?.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneGFscm5tbmxibXNrdXB5aGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjExMzYsImV4cCI6MjA2MDI5NzEzNn0.sB4B5_kwyng0kZ7AHD_lnSpLJ3WfseYwDW1o5-foG-E';
+            
             const supabase = window.supabase.createClient(
-                'https://rgxalrnmnlbmskupyhcm.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneGFscm5tbmxibXNrdXB5aGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjExMzYsImV4cCI6MjA2MDI5NzEzNn0.sB4B5_kwyng0kZ7AHD_lnSpLJ3WfseYwDW1o5-foG-E'
+                supabaseUrl,
+                supabaseAnonKey
             );
             
             // Check if user is logged in
