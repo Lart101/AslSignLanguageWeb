@@ -777,6 +777,282 @@ function setupCombinedVideoPlayer(letters) {
     currentLetterIndicator.textContent = "Click PLAY to start";
 }
 
+// Speech recognition implementation
+let recognition;
+let isListening = false;
+let micButton;
+
+// Initialize the speech recognition
+function initializeSpeechRecognition() {
+    // Check if the browser supports speech recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        console.error('Speech recognition not supported by this browser');
+        
+        // Disable mic button if it exists
+        if (micButton) {
+            micButton.disabled = true;
+            micButton.title = 'Speech recognition not supported by your browser';
+            micButton.classList.add('disabled');
+        }
+        return false;
+    }
+    
+    // Create a new speech recognition instance
+    recognition = new SpeechRecognition();
+    
+    // Configure recognition settings
+    recognition.continuous = false;      // Get only one result
+    recognition.interimResults = false;  // Only return final results
+    recognition.lang = 'en-US';          // Set language to English (US)
+    
+    // Handle recognition results
+    recognition.onresult = function(event) {
+        const speechResult = event.results[0][0].transcript;
+        console.log('Speech recognized:', speechResult);
+        
+        // Filter out non-alphabetic characters
+        const filteredText = speechResult.replace(/[^a-zA-Z\s]/g, '');
+        
+        // Insert the recognized text into the input field
+        const inputTextEl = document.getElementById('input-text');
+        if (inputTextEl) {
+            inputTextEl.value = filteredText;
+            updateCharCount(); // Update the character counter
+            
+            // Automatically translate after speech recognition
+            translateText();
+        }
+    };
+    
+    // Handle recognition end
+    recognition.onend = function() {
+        isListening = false;
+        if (micButton) {
+            micButton.classList.remove('listening');
+            micButton.title = 'Speak to translate (Speech to Text)';
+        }
+        console.log('Speech recognition ended');
+    };
+    
+    // Handle recognition errors
+    recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        isListening = false;
+        if (micButton) {
+            micButton.classList.remove('listening');
+            micButton.title = 'Speak to translate (Speech to Text)';
+            
+            // Show error toast
+            showToast(`Speech recognition error: ${event.error}`, 'error');
+        }
+    };
+    
+    return true;
+}
+
+// Toggle speech recognition on/off
+function toggleSpeechRecognition() {
+    if (!recognition) {
+        const isSupported = initializeSpeechRecognition();
+        if (!isSupported) {
+            showToast('Speech recognition not supported by your browser', 'error');
+            return;
+        }
+    }
+    
+    if (isListening) {
+        // Stop listening
+        recognition.stop();
+        isListening = false;
+        micButton.classList.remove('listening');
+        micButton.title = 'Speak to translate (Speech to Text)';
+    } else {
+        // Start listening
+        try {
+            recognition.start();
+            isListening = true;
+            micButton.classList.add('listening');
+            micButton.title = 'Listening... Click to stop';
+            
+            // Show toast notification
+            showToast('Listening... Please speak now', 'info');
+        } catch (error) {
+            console.error('Error starting speech recognition:', error);
+            showToast('Could not start speech recognition', 'error');
+        }
+    }
+}
+
+// Helper function to show toast notifications
+function showToast(message, type = 'info') {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.querySelector('.toast-container');
+    
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+        
+        // Add styles for toast
+        const style = document.createElement('style');
+        style.textContent = `
+            .toast-container {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .toast {
+                min-width: 250px;
+                padding: 12px 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                animation: toast-slide-in 0.3s ease-out forwards;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-family: 'Inter', sans-serif;
+            }
+            
+            .toast-info {
+                background-color: #2563eb;
+                color: white;
+            }
+            
+            .toast-error {
+                background-color: #dc2626;
+                color: white;
+            }
+            
+            .toast-success {
+                background-color: #059669;
+                color: white;
+            }
+            
+            .toast-close {
+                background: none;
+                border: none;
+                color: inherit;
+                font-size: 16px;
+                cursor: pointer;
+                padding: 0;
+                margin-left: 8px;
+            }
+            
+            @keyframes toast-slide-in {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes toast-slide-out {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            
+            .mic-btn {
+                border-radius: 50%;
+                width: 44px;
+                height: 44px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0;
+                background-color: #2563eb;
+                color: white;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .mic-btn:hover {
+                background-color: #1e40af;
+                transform: scale(1.05);
+            }
+            
+            .mic-btn.listening {
+                animation: mic-pulse 1.5s infinite;
+                background-color: #dc2626;
+            }
+            
+            .mic-btn.disabled {
+                background-color: #9ca3af;
+                cursor: not-allowed;
+            }
+            
+            @keyframes mic-pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+                }
+                70% {
+                    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+                }
+            }
+            
+            .main-actions {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    // Add message and close button
+    toast.innerHTML = `
+        ${message}
+        <button class="toast-close">&times;</button>
+    `;
+    
+    // Add toast to container
+    toastContainer.appendChild(toast);
+    
+    // Add event listener for close button
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => {
+        toast.style.animation = 'toast-slide-out 0.3s ease-out forwards';
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    });
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'toast-slide-out 0.3s ease-out forwards';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
 // Add event listeners when the document is loaded
 document.addEventListener('DOMContentLoaded', function() {
     const displayModeSelect = document.getElementById('display-mode');
@@ -787,25 +1063,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize character counter
     updateCharCount();
     
+    // Set up the microphone button
+    micButton = document.getElementById('mic-button');
+    if (micButton) {
+        micButton.addEventListener('click', toggleSpeechRecognition);
+        
+        // Initialize speech recognition
+        initializeSpeechRecognition();
+    }
+    
     // Add input event listener to textarea for character counting and validation
-    inputText.addEventListener('input', function() {
-        // Filter out non-alphabetic characters
-        const value = this.value;
-        const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
-        
-        // If the value changed (non-alphabetic characters were removed), update the textarea
-        if (value !== filteredValue) {
-            this.value = filteredValue;
+    if (inputText) {
+        inputText.addEventListener('input', function() {
+            // Filter out non-alphabetic characters
+            const value = this.value;
+            const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
             
-            // Visual feedback that an invalid character was attempted
-            this.classList.add('invalid');
-            setTimeout(() => {
-                this.classList.remove('invalid');
-            }, 500);
-        }
-        
-        updateCharCount();
-    });
+            // If the value changed (non-alphabetic characters were removed), update the textarea
+            if (value !== filteredValue) {
+                this.value = filteredValue;
+                
+                // Visual feedback that an invalid character was attempted
+                this.classList.add('invalid');
+                setTimeout(() => {
+                    this.classList.remove('invalid');
+                }, 500);
+            }
+            
+            updateCharCount();
+        });
+    }
     
     // Character counter function
     function updateCharCount() {

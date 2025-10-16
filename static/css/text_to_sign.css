@@ -142,6 +142,13 @@ main {
     flex-wrap: wrap; /* Allow wrapping on small screens */
 }
 
+.main-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex: 1;
+}
+
 .display-mode-selector {
     padding: 8px 12px;
     border: 1px solid #ccc;
@@ -152,9 +159,51 @@ main {
     max-width: 200px; /* But not too much */
 }
 
-#text-to-sign-form button {
+#text-to-sign-form button.translate-btn {
     flex: 1;
     min-width: 180px; /* Ensure button is not too small */
+}
+
+.mic-btn {
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mic-btn:hover {
+    background-color: #1e40af;
+    transform: scale(1.05);
+}
+
+.mic-btn.listening {
+    animation: mic-pulse 1.5s infinite;
+    background-color: #dc2626;
+}
+
+.mic-btn.disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+@keyframes mic-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    }
 }
 
 .content-section {
@@ -924,5 +973,79 @@ textarea.invalid {
     
     .warning {
         padding: 0.5rem 1rem;
+    }
+    
+    .main-actions {
+        width: 100%;
+    }
+}
+
+/* Toast notifications */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    min-width: 250px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: toast-slide-in 0.3s ease-out forwards;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+}
+
+.toast-info {
+    background-color: #2563eb;
+    color: white;
+}
+
+.toast-error {
+    background-color: #dc2626;
+    color: white;
+}
+
+.toast-success {
+    background-color: #059669;
+    color: white;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+}
+
+@keyframes toast-slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toast-slide-out {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
     }
 }
