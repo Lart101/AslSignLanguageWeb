@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Admin Dashboard - Signademy</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="static/css/navigation.css">
+    <link rel="stylesheet" href="static/css/admin.css">
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <header>
+        <!-- Navigation will be injected by navigation.js -->
+    </header>
+    
+    <main>
+        <section id="login-section" class="content-section">
+            <h2>Admin Authentication</h2>
+            <p>Please log in to access the admin dashboard.</p>
+            
+            <form id="login-form" class="admin-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" id="login-button" class="primary-button">Log In</button>
+                </div>
+                
+                <p id="login-message" class="message"></p>
+            </form>
+        </section>
+        
+        <section id="admin-dashboard" class="content-section" style="display: none;">
+            <div class="dashboard-header">
+                <h2>Admin Dashboard</h2>
+                <button id="logout-button" class="secondary-button">Log Out</button>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab-button active" data-tab="models">Models</button>
+                <button class="tab-button" data-tab="settings">Settings</button>
+            </div>
+            
+            <div id="models-tab" class="tab-content">
+                <div class="section-header">
+                    <h3>Model Management</h3>
+                    <button id="add-model-button" class="primary-button">Add New Model</button>
+                </div>
+                
+                <div class="model-list-container">
+                    <table class="model-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Display Name</th>
+                                <th>File Name</th>
+                                <th>Last Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="model-list">
+                            <!-- Models will be listed here -->
+                            <tr class="loading-row">
+                                <td colspan="5">Loading models...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="settings-tab" class="tab-content" style="display: none;">
+                <div class="section-header">
+                    <h3>Admin Settings</h3>
+                </div>
+                
+                <div class="settings-form-container">
+                    <form id="settings-form" class="admin-form">
+                        <div class="form-group">
+                            <label for="bucket-name">Storage Bucket Name</label>
+                            <input type="text" id="bucket-name" name="bucket-name" value="signlanguage" disabled>
+                            <small>This is the Supabase storage bucket where models are stored.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="update-interval">Model Update Check Interval (hours)</label>
+                            <input type="number" id="update-interval" name="update-interval" min="1" max="48" value="24">
+                            <small>How often the application checks for model updates.</small>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="primary-button">Save Settings</button>
+                        </div>
+                    </form>
+                    
+                    <div style="margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 2rem;">
+                        <h4>Troubleshooting</h4>
+                        <p style="text-align: left;">If you're having trouble with storage permissions, you can run diagnostics to help identify the issue.</p>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                            <button id="debug-storage-button" class="secondary-button">Debug Storage Permissions</button>
+                            <button id="verify-models-button" class="secondary-button">Verify Model URLs</button>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <textarea id="debug-output" readonly style="width: 100%; height: 200px; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius); font-family: monospace; font-size: 12px; background-color: #f8fafc; color: #334155;"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Model Upload Modal -->
+        <div id="model-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">Add New Model</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="model-form" class="admin-form">
+                        <input type="hidden" id="model-id" name="model-id">
+                        
+                        <div class="form-group">
+                            <label for="model-category">Model Category *</label>
+                            <select id="model-category" name="model-category" required>
+                                <option value="">Select a category</option>
+                                <option value="alphabet">Alphabet (A-Z)</option>
+                                <option value="numbers">Numbers (0-9)</option>
+                                <option value="colors">Colors</option>
+                                <option value="basicWords">Basic Words</option>
+                                <option value="family">Family & People</option>
+                                <option value="food">Food & Drinks</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="model-display-name">Display Name *</label>
+                            <input type="text" id="model-display-name" name="model-display-name" required>
+                        </div>
+                        
+                        <!-- Required filename reminder -->
+                        <div id="filename-reminder" class="form-group alert-box">
+                            <div class="alert-icon">📋</div>
+                            <div class="alert-content">
+                                <h4>Required Filename Format</h4>
+                                <p>Your model file <strong>MUST</strong> use the exact filename shown below for the selected category:</p>
+                                <div id="required-filename" class="filename-display">Please select a category</div>
+                                <p class="alert-note">Each category can only have one model file. Uploading will replace any existing model.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="model-file">Model File (.task) *</label>
+                            <input type="file" id="model-file" name="model-file" accept=".task">
+                            <small>Only .task files are supported for MediaPipe models.</small>
+                        </div>
+                        
+                        <div class="upload-progress">
+                            <div class="progress-bar" id="upload-progress-bar"></div>
+                            <span class="progress-text" id="upload-progress-text">0%</span>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="secondary-button cancel-button">Cancel</button>
+                            <button type="submit" class="primary-button">Save Model</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Developed with as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
+    </footer>
+    
+    <script src="static/js/navigation.js"></script>
+    <script src="static/js/admin.js" type="module"></script>
+</body>
+</html>

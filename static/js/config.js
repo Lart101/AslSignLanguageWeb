@@ -1,26 +1,145 @@
 
 import { GestureRecognizer, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
-// Model URLs for different learning categories - using local model folder
-export const MODEL_URLS = {
-    // Alphabet Learning (A-Z)
-    alphabet: "./model/letters.task",
+// Supabase Configuration
+const SUPABASE_URL = 'https://rgxalrnmnlbmskupyhcm.supabase.co';
+const STORAGE_BUCKET = 'signlanguage';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneGFscm5tbmxibXNrdXB5aGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjExMzYsImV4cCI6MjA2MDI5NzEzNn0.sB4B5_kwyng0kZ7AHD_lnSpLJ3WfseYwDW1o5-foG-E';
 
-    // Numbers Learning (0-9)
-    numbers: "./model/numbers.task",
-    
-    // Colors Learning
-    colors: "./model/colors.task",
-    
-    // Basic Words Learning
-    basicWords: "./model/basicwords.task",
-    
-    // Family & People Learning
-    family: "./model/family.task",
-    
-    // Food & Drinks Learning
-    food: "./model/Food.task"
+// Initialize MODEL_URLS as an empty object that will be populated dynamically
+export let MODEL_URLS = {
+    // Default model URLs as fallbacks
+    alphabet: `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/letters.task`,
+    numbers: `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/numbers.task`,
+    colors: `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/colors.task`,
+    basicWords: `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/basicWords.task`,
+    family: `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/family.task`,
+    food: `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/Food.task`
 };
+
+// Function to load model URLs from Supabase storage
+export async function loadModelUrlsFromStorage() {
+    try {
+        console.log('Fetching models from Supabase storage...');
+        
+        // Create a temporary Supabase client for fetching files
+        const supabase = window.supabase ? 
+            window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+            
+        if (!supabase) {
+            console.warn('Supabase client not available. Using default model URLs.');
+            return MODEL_URLS;
+        }
+        
+        // List all files in storage bucket
+        const { data: files, error } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .list();
+            
+        if (error) {
+            console.error('Error loading models from storage:', error);
+            return MODEL_URLS;
+        }
+        
+        // Debug: Log all files found in storage
+        console.log('All files found in storage:', files.map(f => f.name).join(', '));
+        
+        // Filter for .task model files
+        const modelFiles = files.filter(file => file.name.endsWith('.task'));
+        
+        if (modelFiles.length === 0) {
+            console.warn('No model files found in storage.');
+            return MODEL_URLS;
+        }
+        
+        console.log('Found model files:', modelFiles.map(f => f.name).join(', '));
+        
+        // Map filenames to categories and update MODEL_URLS
+        const newModelUrls = {...MODEL_URLS}; // Start with defaults
+        
+        // Store mappings for debugging
+        const mappings = [];
+        
+        modelFiles.forEach(file => {
+            try {
+                // Extract category from filename (removing .task extension)
+                const category = file.name.replace('.task', '');
+                const categoryKey = getCategoryKeyFromFilename(category);
+                
+                mappings.push({
+                    originalFilename: file.name,
+                    extractedCategory: category,
+                    mappedKey: categoryKey
+                });
+                
+                if (categoryKey) {
+                    const url = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${file.name}`;
+                    newModelUrls[categoryKey] = url;
+                    console.log(`Found model for ${categoryKey}: ${url}`);
+                } else {
+                    console.warn(`Could not determine category key for file: ${file.name}`);
+                }
+            } catch (mappingError) {
+                console.error(`Error mapping file ${file.name}:`, mappingError);
+            }
+        });
+        
+        // Log mapping details for debugging
+        console.log('File to category mappings:', mappings);
+        
+        // Update global MODEL_URLS
+        MODEL_URLS = newModelUrls;
+        console.log('Updated model URLs from storage:', MODEL_URLS);
+        
+        return MODEL_URLS;
+    } catch (error) {
+        console.error('Error loading models from Supabase:', error);
+        return MODEL_URLS; // Return default URLs on error
+    }
+}
+
+// Helper function to convert filename to category key
+function getCategoryKeyFromFilename(filename) {
+    // Direct matches (exact filename to category key)
+    const directMatches = {
+        // Original mappings
+        'alphabet': 'alphabet',
+        'letters': 'alphabet',   // Add this mapping for letters.task -> alphabet
+        'numbers': 'numbers',
+        'colors': 'colors',
+        'basicWords': 'basicWords',
+        'basicwords': 'basicWords',
+        'basic-words': 'basicWords',
+        'basic_words': 'basicWords',
+        'family': 'family',
+        'Food': 'food',
+        'food': 'food'
+    };
+    
+    if (directMatches[filename]) {
+        return directMatches[filename];
+    }
+    
+    // Case-insensitive matching for flexibility
+    const lowerFilename = filename.toLowerCase();
+    if (lowerFilename === 'letters') return 'alphabet';
+    if (lowerFilename === 'basicwords') return 'basicWords';
+    if (lowerFilename === 'basic-words') return 'basicWords';
+    if (lowerFilename === 'basic_words') return 'basicWords';
+    if (lowerFilename === 'food') return 'food';
+    
+    return filename; // Default to the original name if no mapping found
+}
+
+// Automatically load models from storage on startup
+loadModelUrlsFromStorage().catch(err => {
+    console.error('Failed to load models from storage:', err);
+});
+
+// Make the loadModelUrlsFromStorage function available globally
+if (typeof window !== 'undefined') {
+    window.loadModelUrlsFromStorage = loadModelUrlsFromStorage;
+}
 
 // Legacy export for backward compatibility - now uses automatic detection
 export function getGestureModelUrl() {
@@ -41,7 +160,13 @@ export const GESTURE_MODEL_URL = MODEL_URLS.alphabet;
 
 // Helper function to get model URL by category
 export function getModelUrl(category) {
-    return MODEL_URLS[category] || MODEL_URLS.alphabet;
+    // Special case for alphabet - try both alphabet and letters
+    if (category === 'alphabet' && !MODEL_URLS.alphabet && MODEL_URLS.letters) {
+        console.log('Using letters.task for alphabet category');
+        return MODEL_URLS.letters;
+    }
+    
+    return MODEL_URLS[category] || MODEL_URLS.alphabet || MODEL_URLS.letters;
 }
 
 // Function to detect current learning module from URL and return appropriate model URL
@@ -123,6 +248,44 @@ export function debugModelDetection() {
         modelUrl: detectedUrl,
         availableModels: Object.keys(MODEL_URLS)
     };
+}
+
+// Check for model updates from Supabase
+export async function checkForModelUpdates() {
+    // Get the last update check timestamp from localStorage
+    const lastCheckTime = localStorage.getItem('model_last_check') || 0;
+    const now = Date.now();
+    
+    // Get the update interval from localStorage (default to 24 hours)
+    const updateIntervalHours = parseInt(localStorage.getItem('model_update_interval') || '24', 10);
+    const updateIntervalMs = updateIntervalHours * 60 * 60 * 1000; // Convert to milliseconds
+    
+    // Skip check if we've checked recently
+    if (now - lastCheckTime < updateIntervalMs) {
+        console.log('Skipping model update check - checked recently');
+        return false;
+    }
+    
+    try {
+        // Record that we've checked
+        localStorage.setItem('model_last_check', now.toString());
+        
+        // Reload all model URLs from Supabase storage
+        console.log('Checking for model updates from Supabase...');
+        
+        // Load fresh models from storage
+        await loadModelUrlsFromStorage();
+        
+        // Also force cache refresh by adding a timestamp to model URLs
+        for (const key of Object.keys(MODEL_URLS)) {
+            MODEL_URLS[key] = MODEL_URLS[key].split('?')[0] + `?t=${now}`;
+        }
+        
+        return true; // Indicate that models were updated
+    } catch (error) {
+        console.error('Error checking for model updates:', error);
+        return false;
+    }
 }
 
 // Word mapping for basic words model output normalization
@@ -476,6 +639,11 @@ export async function loadModelWithProgress(modelUrl, options = {}) {
     const showProgress = options.showProgress !== false; // Default to true
     
     try {
+        // Check for model updates first
+        if (options.checkForUpdates !== false) {
+            await checkForModelUpdates();
+        }
+        
         if (showProgress) {
             progress.show('Initializing AI model...');
             progress.updateProgress(10, 'Loading MediaPipe framework...');

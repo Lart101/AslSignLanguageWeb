@@ -46,9 +46,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="nav-item">
                         <a href="contact.html">Contact Us</a>
                     </div>
+                    <div class="nav-item admin-link" style="display:none;">
+                        <a href="admin.html">⚙️ Admin</a>
+                    </div>
                 </nav>
             </div>
         `;
+        
+        // Check if user is admin (after creating nav)
+        setTimeout(checkIfAdmin, 100);
     }
 
     // Function to initialize navigation
@@ -193,6 +199,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    }
+
+    // Check if the current user is an admin
+    function checkIfAdmin() {
+        // First check if Supabase is available
+        if (typeof window.supabase !== 'undefined') {
+            const supabase = window.supabase.createClient(
+                'https://rgxalrnmnlbmskupyhcm.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneGFscm5tbmxibXNrdXB5aGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjExMzYsImV4cCI6MjA2MDI5NzEzNn0.sB4B5_kwyng0kZ7AHD_lnSpLJ3WfseYwDW1o5-foG-E'
+            );
+            
+            // Check if user is logged in
+            supabase.auth.getUser().then(({ data: { user } }) => {
+                const adminLink = document.querySelector('.admin-link');
+                if (adminLink) {
+                    if (user) {
+                        // Show admin link if user is logged in
+                        adminLink.style.display = 'block';
+                    } else {
+                        // Hide admin link if user is not logged in
+                        adminLink.style.display = 'none';
+                    }
+                }
+            });
+        } else {
+            // If on admin page, load Supabase and check again
+            if (window.location.pathname.includes('admin.html')) {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+                script.onload = checkIfAdmin;
+                document.head.appendChild(script);
+            }
+        }
     }
 
     // Initialize the navigation
