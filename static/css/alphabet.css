@@ -37,6 +37,159 @@ main {
     margin: 0 auto 2rem;
 }
 
+.module-selector-container {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.module-selector-container label {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.module-dropdown {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    font-size: 1rem;
+    color: var(--text-color);
+    min-width: 250px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.module-dropdown:hover {
+    border-color: var(--secondary-color);
+}
+
+.module-dropdown:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Mobile responsive styles for module selector */
+@media (max-width: 768px) {
+    .module-selector-container {
+        margin-bottom: 1rem;
+    }
+    
+    .module-dropdown {
+        min-width: 200px;
+        font-size: 0.9rem;
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .module-selector-container label {
+        font-size: 0.9rem;
+    }
+}
+
+/* AI Recognition Styles */
+.letter-card.recognized {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+    border: 3px solid #22c55e;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+}
+
+.letter-card.recognized .letter {
+    color: #15803d;
+    font-weight: bold;
+}
+
+/* Card Selection Styles */
+.letter-card.selected {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+    border: 2px solid var(--primary-color);
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+
+.letter-card.selected .letter {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* Card Interaction States */
+.letter-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.letter-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Webcam and Practice Area Styles */
+.webcam-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.video-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+#webcam {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+}
+
+#output_canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.control-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin: 0.5rem;
+}
+
+.control-btn:hover {
+    background: var(--secondary-color);
+    transform: translateY(-1px);
+}
+
+.control-btn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.output {
+    text-align: center;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
 .instructions h2 {
     color: var(--primary-color);
     font-size: 2rem;
@@ -58,6 +211,7 @@ main {
 }
 
 .alphabet-section {
+    position: relative;
     flex: 1;
     max-height: 80vh;
     overflow-y: auto;
@@ -187,7 +341,8 @@ main {
     min-height: 280px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 1rem;
 }
 
 .letter-card:hover {
@@ -198,6 +353,579 @@ main {
 .letter-card.selected {
     border: 3px solid var(--primary-color);
     transform: translateY(-5px);
+    animation: pulse-blue 2s infinite;
+}
+
+/* Gesture Validation States */
+.letter-card.correct-gesture {
+    border: 3px solid #22c55e;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.2));
+    animation: success-pulse 1s ease-out;
+    transform: scale(1.1) translateY(-5px);
+}
+
+.letter-card.incorrect-gesture {
+    border: 3px solid #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+    animation: error-shake 0.5s ease-out;
+}
+
+.letter-card.recognized {
+    border: 3px solid #10b981;
+    transform: scale(1.05) translateY(-5px);
+    animation: glow-green 1s ease-out;
+}
+
+/* Gesture Validation Animations */
+@keyframes success-pulse {
+    0% { 
+        transform: scale(1.05) translateY(-5px); 
+        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+    }
+    50% { 
+        transform: scale(1.15) translateY(-8px); 
+        box-shadow: 0 12px 35px rgba(34, 197, 94, 0.8);
+    }
+    100% { 
+        transform: scale(1.1) translateY(-5px); 
+        box-shadow: 0 10px 30px rgba(34, 197, 94, 0.6);
+    }
+}
+
+@keyframes error-shake {
+    0%, 100% { transform: translateX(0) translateY(-5px); }
+    20% { transform: translateX(-5px) translateY(-5px); }
+    40% { transform: translateX(5px) translateY(-5px); }
+    60% { transform: translateX(-3px) translateY(-5px); }
+    80% { transform: translateX(3px) translateY(-5px); }
+}
+
+@keyframes pulse-blue {
+    0%, 100% { box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+    50% { box-shadow: 0 12px 35px rgba(59, 130, 246, 0.8); }
+}
+
+@keyframes glow-green {
+    0% { box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+    50% { box-shadow: 0 8px 30px rgba(16, 185, 129, 0.8); }
+    100% { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+}
+
+/* Responsive Video and Image Containers */
+.video-container,
+.image-container {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    position: relative;
+    border-radius: 8px;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.video-container .video-thumbnail {
+    aspect-ratio: 9/16;
+    width: 100%;
+}
+
+.image-container {
+    aspect-ratio: 9/16;
+}
+
+/* Container video modal without footer */
+.container-video-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    margin: 1rem;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    z-index: 1000;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container-video-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: white;
+}
+
+.container-video-header .video-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.close-container-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.close-container-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.container-video-content {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container-video-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Ensure video elements fill container properly */
+.container-video-content video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+/* Global video muting styles */
+video {
+    /* Force all videos to start without sound */
+    background: #000;
+}
+
+/* Hide volume controls where possible */
+video::-webkit-media-controls-volume-slider,
+video::-webkit-media-controls-mute-button {
+    display: none !important;
+}
+
+.video-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: #64748b;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid #2563eb;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive design for container video modal */
+@media (max-width: 768px) {
+    .container-video-modal {
+        margin: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    .container-video-content {
+        height: 300px;
+    }
+    
+    .container-video-header {
+        padding: 0.75rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container-video-modal {
+        margin: 0.25rem;
+        border-radius: 6px;
+    }
+    
+    .container-video-content {
+        height: 250px;
+    }
+    
+    .container-video-header .video-title {
+        font-size: 1rem;
+    }
+}
+
+/* Backdrop overlay when video modal is open */
+.alphabet-section.video-modal-open::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+}
+
+/* Animation for modal popup */
+.container-video-modal {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Video Thumbnail Styling */
+.video-thumbnail {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+.video-thumbnail:hover {
+    transform: scale(1.05);
+}
+
+.responsive-video-thumbnail {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+    background: #f3f4f6;
+}
+
+/* Video element specific styling */
+.responsive-video-thumbnail video {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+/* Google Drive thumbnail styling */
+.google-drive-thumbnail {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #4285f4, #34a853);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+}
+
+.drive-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.google-drive-thumbnail p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.google-drive-thumbnail .video-name {
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.video-thumbnail:hover .play-overlay {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.play-button {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.video-thumbnail:hover .play-button {
+    background: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Video Modal Styling */
+.video-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.video-modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.video-modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+}
+
+.video-modal-header h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.25rem;
+}
+
+.video-modal-close {
+    font-size: 24px;
+    font-weight: bold;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.video-modal-close:hover {
+    color: #ef4444;
+}
+
+.video-modal-body {
+    padding: 0;
+}
+
+.video-modal-iframe {
+    width: 80vw;
+    height: 80vh;
+    max-width: 800px;
+    max-height: 600px;
+    border: none;
+}
+
+/* Loading state for modal */
+.video-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 80vw;
+    height: 80vh;
+    max-width: 800px;
+    max-height: 600px;
+    color: #64748b;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* New tab buttons */
+.open-new-tab-btn {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.open-new-tab-btn:hover {
+    background: #2563eb;
+}
+
+.open-new-tab-btn-small {
+    padding: 0.5rem 1rem;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s ease;
+}
+
+.open-new-tab-btn-small:hover {
+    background: #4b5563;
+}
+
+.video-controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+.video-modal-body {
+    padding: 0;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .video-modal-iframe {
+        width: 90vw;
+        height: 70vh;
+    }
+    
+    .video-modal-header h3 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Responsive video styling */
+.responsive-video {
+    width: 100%;
+    height: 100%;
+    min-height: 120px;
+    max-height: 250px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #000;
+}
+
+/* Responsive image styling */
+.responsive-image {
+    width: 100%;
+    height: auto;
+    min-height: 120px;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Special handling for portrait videos */
+.video-container iframe.responsive-video {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Container for videos - show full content */
+.video-container {
+    position: relative;
+    background: #000;
+}
+
+/* Hover effects for video containers */
+.letter-card:hover .video-container {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.letter-card:hover .image-container {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+/* Responsive adjustments for different screen sizes */
+@media (max-width: 768px) {
+    .video-container,
+    .image-container {
+        max-width: 150px;
+        aspect-ratio: 9/16;
+    }
+    
+    .play-button {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .responsive-video,
+    .responsive-image {
+        min-height: unset;
+        max-height: unset;
+    }
+}
+
+@media (min-width: 1200px) {
+    .video-container,
+    .image-container {
+        max-width: 220px;
+        aspect-ratio: 9/16;
+    }
+    
+    .play-button {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    .responsive-video,
+    .responsive-image {
+        min-height: unset;
+        max-height: unset;
+    }
 }
 
 .letter {

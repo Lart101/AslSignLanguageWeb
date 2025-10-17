@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title id="page-title">Loading Module - Signademy</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="static/css/navigation.css">
+    <link rel="stylesheet" href="static/css/alphabet.css?v=20250829">
+    <link rel="stylesheet" href="static/css/card-video-controller.css">
+    
+    <!-- FORCE MUTE ALL VIDEOS CSS -->
+    <style>
+        /* Hide volume controls */
+        video::-webkit-media-controls-volume-slider,
+        video::-webkit-media-controls-mute-button,
+        audio::-webkit-media-controls-volume-slider,
+        audio::-webkit-media-controls-mute-button {
+            display: none !important;
+        }
+        
+        /* Prevent text selection */
+        * {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+    </style>
+    
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- MediaPipe for AI gesture recognition -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3"></script>
+</head>
+<body>
+    <header>
+    </header>
+    <main>
+        <div class="instructions">
+            <div class="module-selector-container">
+                <label for="module-selector">Select Learning Module:</label>
+                <select id="module-selector" class="module-dropdown">
+                    <option value="">Loading modules...</option>
+                </select>
+            </div>
+            <h2 id="module-title">Loading Module...</h2>
+            <p id="module-description">Loading module content...</p>
+        </div>
+        <div class="practice-container">
+            <div class="alphabet-section">
+                <div id="quick-alphabet" class="quick-alphabet">
+                    <!-- Quick links will be generated dynamically -->
+                </div>
+                <div id="alphabet-grid" class="alphabet-grid">
+                    <!-- Items will be loaded dynamically -->
+                </div>
+            </div>
+            <div class="webcam-section">
+                <h3>Practice Area</h3>
+                <p>Show your hand sign to the camera</p>
+                <div class="video-container">
+                    <video id="webcam" autoplay playsinline muted defaultMuted></video>
+                    <canvas class="output_canvas" id="output_canvas"></canvas>
+                </div>
+                <p id="gesture_output" class="output"></p>
+                <button id="webcamButton" class="control-btn">Enable Camera</button>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>Developed with ❤️ as part of the Capstone Project | <a href="https://github.com/Lart101/AslSignLanguageWeb">Learn More</a></p>
+    </footer>
+    
+    <!-- Audio elements for sound effects -->
+    <audio id="selectSound" src="static/audio/select.mp3" preload="auto"></audio>
+    <audio id="correctSound" src="static/audio/correct.mp3" preload="auto"></audio>
+    <audio id="incorrectSound" src="static/audio/incorrect.mp3" preload="auto"></audio>
+    <audio id="cameraSound" src="static/audio/camera.mp3" preload="auto"></audio>
+
+    <script src="static/js/card-video-controller.js"></script>
+    <script type="module" src="static/js/module-template.js"></script>
+    <script src="static/js/navigation.js"></script>
+    
+    <!-- AGGRESSIVE VIDEO MUTING SCRIPT -->
+    <script>
+        // Immediate muting function
+        function forcemuteAllVideos() {
+            // Mute all video elements
+            document.querySelectorAll('video').forEach(video => {
+                video.muted = true;
+                video.volume = 0;
+                video.defaultMuted = true;
+            });
+            
+            // Mute all audio elements
+            document.querySelectorAll('audio').forEach(audio => {
+                audio.muted = true;
+                audio.volume = 0;
+                audio.defaultMuted = true;
+            });
+            
+            // Try to control iframes
+            document.querySelectorAll('iframe').forEach(iframe => {
+                try {
+                    iframe.contentWindow.postMessage(JSON.stringify({
+                        event: 'command',
+                        func: 'mute',
+                        args: ''
+                    }), '*');
+                } catch (e) {
+                    // Cross-origin, can't control
+                }
+            });
+        }
+        
+        // Run immediately when script loads
+        forcemuteAllVideos();
+        
+        // Run when DOM is ready
+        document.addEventListener('DOMContentLoaded', forcemuteAllVideos);
+        
+        // Run when page is fully loaded
+        window.addEventListener('load', forcemuteAllVideos);
+        
+        // Run every second aggressively
+        setInterval(forcemuteAllVideos, 1000);
+        
+        // Capture all video events and mute immediately
+        ['play', 'playing', 'loadeddata', 'canplay', 'loadedmetadata', 'loadstart', 'volumechange'].forEach(event => {
+            document.addEventListener(event, function(e) {
+                if (e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO') {
+                    e.target.muted = true;
+                    e.target.volume = 0;
+                    console.log('🔇 FORCE MUTED on', event);
+                }
+            }, true);
+        });
+        
+        // Observer for new elements
+        new MutationObserver(forcemuteAllVideos).observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+        console.log('🔇 GLOBAL AGGRESSIVE MUTING ACTIVATED');
+    </script>
+</body>
+</html>

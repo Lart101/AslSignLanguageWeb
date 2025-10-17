@@ -50,6 +50,7 @@
             
             <div class="tabs">
                 <button class="tab-button active" data-tab="models">Models</button>
+                <button class="tab-button" data-tab="content">Content Management</button>
                 <button class="tab-button" data-tab="settings">Settings</button>
             </div>
             
@@ -77,6 +78,79 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            
+            <div id="content-tab" class="tab-content" style="display: none;">
+                <div class="section-header">
+                    <h3>Content Management</h3>
+                    <p>Manage modules and their content items. Select a module, manage its items, and associate models.</p>
+                </div>
+                
+                <!-- Module Selection -->
+                <div class="content-management-flow">
+                    <div class="step-section" id="module-selection">
+                        <div class="step-header">
+                            <h4>Step 1: Select or Manage Module</h4>
+                        </div>
+                        <div class="module-actions">
+                            <div class="form-group">
+                                <label for="module-selector">Choose Module:</label>
+                                <select id="module-selector" class="module-selector">
+                                    <option value="">-- Select a Module --</option>
+                                    <option value="alphabet">Alphabet (A-Z)</option>
+                                    <option value="numbers">Numbers (0-9)</option>
+                                    <option value="colors">Colors</option>
+                                    <option value="basicWords">Basic Words</option>
+                                    <option value="family">Family & People</option>
+                                    <option value="food">Food & Drinks</option>
+                                </select>
+                            </div>
+                            <div class="module-buttons">
+                                <button id="add-module-btn" class="primary-button">Add New Module</button>
+                                <button id="edit-module-btn" class="secondary-button" disabled>Edit Module</button>
+                                <button id="delete-module-btn" class="danger-button" disabled>Delete Module</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Items Management -->
+                    <div class="step-section" id="items-management" style="display: none;">
+                        <div class="step-header">
+                            <h4>Step 2: Manage Items in <span id="selected-module-name">Module</span></h4>
+                        </div>
+                        <div class="items-container">
+                            <div class="items-header">
+                                <h5>Items in this module:</h5>
+                                <button id="add-item-btn" class="primary-button">Add New Item</button>
+                            </div>
+                            <div class="items-list" id="module-items-list">
+                                <!-- Items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Model Association -->
+                    <div class="step-section" id="model-association" style="display: none;">
+                        <div class="step-header">
+                            <h4>Step 3: Associate Model (Required)</h4>
+                        </div>
+                        <div class="model-association-container">
+                            <div class="form-group">
+                                <label for="associated-model">Select Model for <span id="model-module-name">Module</span>:</label>
+                                <select id="associated-model" class="model-selector" required>
+                                    <option value="">-- Select a Model --</option>
+                                </select>
+                            </div>
+                            <div class="model-info" id="model-info-display">
+                                <!-- Model information will be displayed here -->
+                            </div>
+                            <div class="association-actions">
+                                <button id="save-association-btn" class="primary-button" disabled>Save Association</button>
+                                <button id="test-model-btn" class="secondary-button" disabled>Test Model</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -173,6 +247,125 @@
                         <div class="form-actions">
                             <button type="button" class="secondary-button cancel-button">Cancel</button>
                             <button type="submit" class="primary-button">Save Model</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module Management Modal -->
+        <div id="module-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="module-modal-title">Add New Module</h3>
+                    <span class="close-modal" id="close-module-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="module-form" class="admin-form">
+                        <input type="hidden" id="module-id" name="module-id">
+                        
+                        <div class="form-group">
+                            <label for="module-key">Module Key *</label>
+                            <input type="text" id="module-key" name="module-key" required 
+                                   placeholder="e.g., animals, weather, sports">
+                            <small>Used internally. Only lowercase letters, no spaces.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="module-display-name">Display Name *</label>
+                            <input type="text" id="module-display-name" name="module-display-name" required
+                                   placeholder="e.g., Animals, Weather, Sports">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="module-description">Description</label>
+                            <textarea id="module-description" name="module-description" rows="3"
+                                      placeholder="Brief description of this module..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="module-icon">Icon (emoji)</label>
+                            <input type="text" id="module-icon" name="module-icon" maxlength="2"
+                                   placeholder="🐾">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="secondary-button" id="cancel-module-btn">Cancel</button>
+                            <button type="submit" class="primary-button">Save Module</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Item Management Modal -->
+        <div id="item-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="item-modal-title">Add New Item</h3>
+                    <span class="close-modal" id="close-item-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="item-form" class="admin-form">
+                        <input type="hidden" id="item-id" name="item-id">
+                        <input type="hidden" id="item-module" name="item-module">
+                        
+                        <div class="form-group">
+                            <label for="item-name">Item Name *</label>
+                            <input type="text" id="item-name" name="item-name" required
+                                   placeholder="e.g., Hello, Apple, Red">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="item-description">Description</label>
+                            <textarea id="item-description" name="item-description" rows="2"
+                                      placeholder="Brief description of this sign or gesture..."></textarea>
+                            <small>Optional description to help users understand this sign.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="item-order">Display Order</label>
+                            <input type="number" id="item-order" name="item-order" min="1"
+                                   placeholder="1">
+                            <small>Order in which this item appears in the module.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Media Type</label>
+                            <div class="media-type-selection">
+                                <label class="radio-option">
+                                    <input type="radio" name="media-type" value="none" id="media-none" checked>
+                                    <span class="radio-label">No Media</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="media-type" value="video" id="media-video">
+                                    <span class="radio-label">🎬 Video</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="media-type" value="image" id="media-image">
+                                    <span class="radio-label">🖼️ Image</span>
+                                </label>
+                            </div>
+                            <small>Choose the type of media for this item.</small>
+                        </div>
+                        
+                        <div class="form-group" id="video-url-group" style="display: none;">
+                            <label for="item-video">Video URL *</label>
+                            <input type="url" id="item-video" name="item-video" 
+                                   placeholder="https://example.com/video.mp4">
+                            <small>Enter the URL of a video demonstration for this item.</small>
+                        </div>
+                        
+                        <div class="form-group" id="image-url-group" style="display: none;">
+                            <label for="item-image">Image URL *</label>
+                            <input type="url" id="item-image" name="item-image" 
+                                   placeholder="https://example.com/image.jpg">
+                            <small>Enter the URL of an image for this item.</small>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="secondary-button" id="cancel-item-btn">Cancel</button>
+                            <button type="submit" class="primary-button">Save Item</button>
                         </div>
                     </form>
                 </div>
