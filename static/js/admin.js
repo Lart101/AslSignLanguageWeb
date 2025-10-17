@@ -3,8 +3,8 @@
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://rgxalrnmnlbmskupyhcm.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneGFscm5tbmxibXNrdXB5aGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjExMzYsImV4cCI6MjA2MDI5NzEzNn0.sB4B5_kwyng0kZ7AHD_lnSpLJ3WfseYwDW1o5-foG-E';
-const STORAGE_BUCKET = 'signlanguage';
+const SUPABASE_ANON_KEY = 'anonkeyhere';
+const STORAGE_BUCKET = 'bucketname';
 
 // Initialize Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
