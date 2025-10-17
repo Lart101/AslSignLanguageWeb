@@ -95,11 +95,22 @@
                 video.defaultMuted = true;
             });
             
-            // Mute all audio elements
+            // Mute all audio elements EXCEPT feedback sounds
             document.querySelectorAll('audio').forEach(audio => {
-                audio.muted = true;
-                audio.volume = 0;
-                audio.defaultMuted = true;
+                // Don't mute feedback audio elements
+                const audioId = audio.id;
+                if (audioId === 'selectSound' || audioId === 'correctSound' || audioId === 'incorrectSound' || audioId === 'cameraSound') {
+                    // Keep feedback sounds unmuted
+                    audio.muted = false;
+                    audio.volume = 1;
+                    audio.defaultMuted = false;
+                    console.log(`🔊 Keeping ${audioId} unmuted for feedback`);
+                } else {
+                    // Mute other audio elements
+                    audio.muted = true;
+                    audio.volume = 0;
+                    audio.defaultMuted = true;
+                }
             });
             
             // Try to control iframes
@@ -131,10 +142,18 @@
         // Capture all video events and mute immediately
         ['play', 'playing', 'loadeddata', 'canplay', 'loadedmetadata', 'loadstart', 'volumechange'].forEach(event => {
             document.addEventListener(event, function(e) {
-                if (e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO') {
+                if (e.target.tagName === 'VIDEO') {
                     e.target.muted = true;
                     e.target.volume = 0;
-                    console.log('🔇 FORCE MUTED on', event);
+                    console.log('🔇 FORCE MUTED VIDEO on', event);
+                } else if (e.target.tagName === 'AUDIO') {
+                    // Only mute audio if it's NOT a feedback sound
+                    const audioId = e.target.id;
+                    if (audioId !== 'selectSound' && audioId !== 'correctSound' && audioId !== 'incorrectSound' && audioId !== 'cameraSound') {
+                        e.target.muted = true;
+                        e.target.volume = 0;
+                        console.log('🔇 FORCE MUTED AUDIO on', event);
+                    }
                 }
             }, true);
         });
@@ -145,7 +164,7 @@
             subtree: true
         });
         
-        console.log('🔇 GLOBAL AGGRESSIVE MUTING ACTIVATED');
+        console.log('🔇 SELECTIVE MUTING ACTIVATED - Videos muted, feedback sounds enabled');
     </script>
 </body>
 </html>

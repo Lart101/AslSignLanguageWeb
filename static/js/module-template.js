@@ -478,6 +478,9 @@ class UniversalModuleTemplate {
                 const selectSound = document.getElementById('selectSound');
                 if (selectSound) {
                     try {
+                        // Ensure the audio is unmuted and has volume
+                        selectSound.muted = false;
+                        selectSound.volume = 1;
                         selectSound.currentTime = 0;
                         selectSound.play().catch(e => console.warn('Select sound play failed:', e));
                     } catch (error) {
@@ -1021,6 +1024,10 @@ class UniversalModuleTemplate {
         
         if (audioElement) {
             try {
+                // Ensure the audio is unmuted and has volume
+                audioElement.muted = false;
+                audioElement.volume = 1;
+                
                 audioElement.currentTime = 0; // Reset to start
                 const playPromise = audioElement.play();
                 
@@ -1031,6 +1038,8 @@ class UniversalModuleTemplate {
                         console.warn(`⚠️ Failed to play ${type} sound:`, error);
                         // Try again without reset
                         setTimeout(() => {
+                            audioElement.muted = false;
+                            audioElement.volume = 1;
                             audioElement.play().catch(e => console.warn('Second attempt failed:', e));
                         }, 100);
                     });
