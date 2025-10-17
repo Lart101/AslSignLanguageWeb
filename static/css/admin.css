@@ -73,6 +73,9 @@ main {
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: var(--text-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
 }
 
 .form-group input,
@@ -919,6 +922,8 @@ main {
     border-radius: var(--border-radius);
     padding: 1.5rem;
     transition: var(--transition);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .step-section.active {
@@ -938,6 +943,9 @@ main {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
 }
 
 .module-actions {
@@ -1105,6 +1113,15 @@ main {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+/* Fix text overflow in model association labels */
+.model-association-container .form-group label {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.4;
+    overflow-wrap: break-word;
 }
 
 .model-selector {

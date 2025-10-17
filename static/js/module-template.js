@@ -645,10 +645,14 @@ class UniversalModuleTemplate {
                 return;
             }
             
-            // Import MediaPipe classes
-            const { GestureRecognizer, FilesetResolver } = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3");
+            // Import MediaPipe classes (store them for use in recognition)
+            const { GestureRecognizer, FilesetResolver, DrawingUtils } = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3");
             
-            if (!GestureRecognizer || !FilesetResolver) {
+            // Store the classes for later use
+            this.GestureRecognizer = GestureRecognizer;
+            this.DrawingUtils = DrawingUtils;
+            
+            if (!GestureRecognizer || !FilesetResolver || !DrawingUtils) {
                 console.error('❌ MediaPipe classes not available');
                 return;
             }
@@ -786,6 +790,10 @@ class UniversalModuleTemplate {
         canvas.width = webcamVideo.videoWidth || 640;
         canvas.height = webcamVideo.videoHeight || 480;
         
+        // Variables for video-based recognition
+        let lastVideoTime = -1;
+        let results = undefined;
+        
         // Recognition loop
         const recognizeLoop = async () => {
             if (!this.webcamActive || !this.gestureRecognizer) return;
@@ -797,16 +805,45 @@ class UniversalModuleTemplate {
                     canvas.height = webcamVideo.videoHeight;
                 }
                 
-                // Draw video frame to canvas
-                ctx.drawImage(webcamVideo, 0, 0, canvas.width, canvas.height);
+                // Switch to VIDEO mode if needed
+                if (this.runningMode === "IMAGE") {
+                    this.runningMode = "VIDEO";
+                    await this.gestureRecognizer.setOptions({ runningMode: "VIDEO" });
+                }
                 
-                // Get image data for recognition
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                // Perform gesture recognition for video
+                let nowInMs = Date.now();
+                if (webcamVideo.currentTime !== lastVideoTime) {
+                    lastVideoTime = webcamVideo.currentTime;
+                    results = this.gestureRecognizer.recognizeForVideo(webcamVideo, nowInMs);
+                }
                 
-                // Perform gesture recognition
-                const results = this.gestureRecognizer.recognize(imageData);
+                // Clear canvas and prepare for drawing
+                ctx.save();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Process results
+                // Draw hand landmarks if available (using stored DrawingUtils)
+                if (results && results.landmarks && this.DrawingUtils && this.GestureRecognizer) {
+                    const drawingUtils = new this.DrawingUtils(ctx);
+                    
+                    for (const landmarks of results.landmarks) {
+                        // Draw hand connections (skeleton) - use static HAND_CONNECTIONS
+                        drawingUtils.drawConnectors(landmarks, this.GestureRecognizer.HAND_CONNECTIONS, {
+                            color: "#00FF00", // Green connections
+                            lineWidth: 2
+                        });
+                        
+                        // Draw landmark points
+                        drawingUtils.drawLandmarks(landmarks, {
+                            color: "#FF0000", // Red points
+                            lineWidth: 1
+                        });
+                    }
+                }
+                
+                ctx.restore();
+                
+                // Process gesture results
                 if (results && results.gestures && results.gestures.length > 0) {
                     const topGesture = results.gestures[0][0];
                     const confidence = Math.round(topGesture.score * 100);

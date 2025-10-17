@@ -25,17 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <a href="module-template.html">📚 Learn Modules</a>
                     </div>
                     <div class="nav-item dropdown">
-                        <a href="#" class="dropdown-toggle">Quick Learn</a>
-                        <div class="dropdown-menu">
-                            <a href="module-template.html?module=alphabet">Letters (A–Z)</a>
-                            <a href="module-template.html?module=basic-words">Basic Words</a>
-                            <a href="module-template.html?module=numbers">Numbers (0–9)</a>
-                            <a href="module-template.html?module=colors">Colors</a>
-                            <a href="module-template.html?module=family">Family & People</a>
-                            <a href="module-template.html?module=food">Food & Drinks</a>
-                        </div>
-                    </div>
-                    <div class="nav-item dropdown">
                         <a href="#" class="dropdown-toggle">Tools</a>
                         <div class="dropdown-menu">
                             <a href="image_to_sign.html">Image → Sign</a>
