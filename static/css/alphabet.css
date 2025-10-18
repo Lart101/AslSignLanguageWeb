@@ -250,8 +250,8 @@ main {
 
 .letter-quick-link {
     min-width: 40px;
-    height: 40px;
-    padding: 0 0.75rem;
+    min-height: 40px;
+    padding: 0.5rem 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -262,9 +262,13 @@ main {
     font-weight: 600;
     text-decoration: none;
     transition: var(--transition);
-    white-space: nowrap;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
     font-size: 0.85rem;
     text-align: center;
+    line-height: 1.2;
 }
 
 .letter-quick-link:hover {
@@ -281,17 +285,19 @@ main {
     
     .letter-quick-link {
         min-width: 35px;
-        height: 35px;
-        padding: 0 0.5rem;
+        min-height: 35px;
+        padding: 0.4rem 0.5rem;
         font-size: 0.75rem;
+        line-height: 1.1;
     }
     
     /* Stack navigation items more efficiently on small screens */
     .quick-alphabet {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         max-height: 200px;
         overflow-y: auto;
+        gap: 0.3rem;
     }
 }
 
@@ -299,12 +305,14 @@ main {
     .letter-quick-link {
         font-size: 0.7rem;
         min-width: 30px;
-        height: 30px;
-        padding: 0 0.4rem;
+        min-height: 30px;
+        padding: 0.3rem 0.4rem;
+        line-height: 1.0;
     }
     
     .quick-alphabet {
-        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 0.25rem;
     }
 }
 

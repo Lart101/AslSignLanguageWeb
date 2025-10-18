@@ -202,7 +202,7 @@ class UniversalModuleTemplate {
             this.generateModuleGrid();
             this.updateDropdownSelection();
             
-            // Initialize AI model if available
+            // Initialize model automatically if available
             if (this.moduleData.hasAI && this.moduleData.model) {
                 await this.initializeAIModel();
             }
@@ -378,10 +378,10 @@ class UniversalModuleTemplate {
         
         const quickLinks = this.moduleData.items.map(item => {
             const itemName = item.item_name || item.name;
+            // Use full name and let CSS handle the display with wrapping
             const displayName = this.currentModule === 'alphabet' ? itemName.toUpperCase() : 
                                 this.currentModule === 'numbers' ? itemName :
-                                itemName.length <= 3 ? itemName.toUpperCase() : 
-                                itemName.charAt(0).toUpperCase() + itemName.slice(1, 3);
+                                itemName.charAt(0).toUpperCase() + itemName.slice(1);
             
             return `<a href="#${this.getItemId(item)}" class="letter-quick-link">${displayName}</a>`;
         }).join('');
@@ -640,16 +640,23 @@ class UniversalModuleTemplate {
         
         try {
             this.modelLoading = true;
-            console.log('🤖 Loading AI model for module:', this.currentModule);
+            console.log('🤖 Loading model for module:', this.currentModule);
             
             const modelUrl = this.moduleData.model.model_url || this.moduleData.model.model_path;
             if (!modelUrl) {
                 console.warn('⚠️ No model URL available for module:', this.currentModule);
+                this.hideModelLoadingProgress();
                 return;
             }
+
+            // Show progress bar and start loading
+            this.showModelLoadingProgress();
+            this.updateModelLoadingProgress(10, 'Importing MediaPipe components...');
             
             // Import MediaPipe classes (store them for use in recognition)
             const { GestureRecognizer, FilesetResolver, DrawingUtils } = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3");
+            
+            this.updateModelLoadingProgress(30, 'MediaPipe components loaded...');
             
             // Store the classes for later use
             this.GestureRecognizer = GestureRecognizer;
@@ -657,13 +664,18 @@ class UniversalModuleTemplate {
             
             if (!GestureRecognizer || !FilesetResolver || !DrawingUtils) {
                 console.error('❌ MediaPipe classes not available');
+                this.showModelLoadingError('MediaPipe components not available');
                 return;
             }
+            
+            this.updateModelLoadingProgress(50, 'Loading FilesetResolver...');
             
             // Load FilesetResolver
             const vision = await FilesetResolver.forVisionTasks(
                 "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
             );
+            
+            this.updateModelLoadingProgress(70, 'Creating gesture recognizer...');
             
             // Create gesture recognizer
             this.gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
@@ -674,12 +686,89 @@ class UniversalModuleTemplate {
                 runningMode: this.runningMode
             });
             
-            console.log('✅ AI model loaded successfully for:', this.currentModule);
+            this.updateModelLoadingProgress(100, '✅ Model ready!');
+            
+            console.log('✅ Model loaded successfully for:', this.currentModule);
             this.modelLoading = false;
             
+            // Show success for a moment, then hide
+            setTimeout(() => {
+                this.showModelLoadingSuccess();
+                setTimeout(() => {
+                    this.hideModelLoadingProgress();
+                }, 2000);
+            }, 500);
+            
         } catch (error) {
-            console.error('❌ Error loading AI model:', error);
+            console.error('❌ Error loading model:', error);
             this.modelLoading = false;
+            this.showModelLoadingError('Failed to load model: ' + error.message);
+        }
+    }
+
+    // Progress bar helper methods
+    showModelLoadingProgress() {
+        const container = document.getElementById('model-loading-container');
+        if (container) {
+            container.style.display = 'block';
+            container.className = 'model-loading-container';
+        }
+    }
+
+    updateModelLoadingProgress(percentage, status) {
+        const progressFill = document.getElementById('model-progress-fill');
+        const progressText = document.getElementById('model-progress-text');
+        const loadingStatus = document.getElementById('loading-status');
+        
+        if (progressFill) {
+            progressFill.style.width = percentage + '%';
+        }
+        
+        if (progressText) {
+            progressText.textContent = percentage + '%';
+        }
+        
+        if (loadingStatus) {
+            loadingStatus.textContent = status;
+        }
+    }
+
+    showModelLoadingSuccess() {
+        const container = document.getElementById('model-loading-container');
+        const loadingStatus = document.getElementById('loading-status');
+        
+        if (container) {
+            container.className = 'model-loading-container success';
+        }
+        
+        if (loadingStatus) {
+            loadingStatus.textContent = '✅ Model loaded successfully!';
+        }
+    }
+
+    showModelLoadingError(errorMessage) {
+        const container = document.getElementById('model-loading-container');
+        const loadingStatus = document.getElementById('loading-status');
+        
+        if (container) {
+            container.style.display = 'block';
+            container.className = 'model-loading-container error';
+        }
+        
+        if (loadingStatus) {
+            loadingStatus.textContent = '❌ ' + errorMessage;
+        }
+        
+        // Hide after 5 seconds
+        setTimeout(() => {
+            this.hideModelLoadingProgress();
+        }, 5000);
+    }
+
+    hideModelLoadingProgress() {
+        const container = document.getElementById('model-loading-container');
+        if (container) {
+            container.style.display = 'none';
         }
     }
 
@@ -698,12 +787,12 @@ class UniversalModuleTemplate {
         webcamButton.disabled = false;
         gestureOutput.textContent = 'Camera not started';
         
-        // Remove any existing event listeners
-        const newButton = webcamButton.cloneNode(true);
-        webcamButton.parentNode.replaceChild(newButton, webcamButton);
+        // Remove any existing event listeners and replace button
+        const newWebcamButton = webcamButton.cloneNode(true);
+        webcamButton.parentNode.replaceChild(newWebcamButton, webcamButton);
         
         // Add click handler for webcam toggle
-        newButton.addEventListener('click', () => {
+        newWebcamButton.addEventListener('click', () => {
             if (this.webcamActive) {
                 this.stopWebcam();
             } else {
@@ -713,6 +802,8 @@ class UniversalModuleTemplate {
         
         console.log('✅ Webcam controls setup complete');
     }
+
+
 
     async startWebcam() {
         const webcamButton = document.getElementById('webcamButton');
@@ -740,8 +831,10 @@ class UniversalModuleTemplate {
                 // Start gesture recognition if model is loaded
                 if (this.gestureRecognizer) {
                     this.startGestureRecognition();
+                } else if (this.modelLoading) {
+                    gestureOutput.textContent = 'Camera active - Model loading...';
                 } else {
-                    gestureOutput.textContent = 'Camera active - AI model not loaded';
+                    gestureOutput.textContent = 'Camera active - Model not available for this module';
                 }
             });
             
@@ -858,10 +951,10 @@ class UniversalModuleTemplate {
                         this.validateGesture(gestureName, confidence);
                     } else {
                         // No card selected - just show detection
-                        gestureOutput.textContent = `Detected: ${gestureName} (${confidence}% confidence) - Select a card to practice!`;
+                        gestureOutput.textContent = `Detected: ${gestureName} - Select a card to practice!`;
                         
                         // Still highlight matching card for reference
-                        if (confidence > 70) {
+                        if (confidence >= 60) {
                             this.highlightMatchingCard(gestureName);
                         }
                     }
@@ -908,7 +1001,7 @@ class UniversalModuleTemplate {
 
     validateGesture(detectedGesture, confidence) {
         const gestureOutput = document.getElementById('gesture_output');
-        const minConfidence = 75; // Minimum confidence for validation
+        const minConfidence = 60; // Minimum confidence for validation
         const currentTime = Date.now();
         
         // Normalize both gestures for comparison
@@ -939,7 +1032,7 @@ class UniversalModuleTemplate {
             }
         } else {
             // Low confidence - encourage user (no cooldown for this)
-            gestureOutput.textContent = `Try again! Show the sign for "${this.selectedLetter}" more clearly (${confidence}% confidence)`;
+            gestureOutput.textContent = `Try again! Show the sign for "${this.selectedLetter}" more clearly`;
             gestureOutput.style.color = '#f59e0b'; // Amber color for low confidence
         }
     }
@@ -967,7 +1060,7 @@ class UniversalModuleTemplate {
         const selectedCard = document.querySelector('.letter-card.selected');
         
         // Update UI with success message
-        gestureOutput.textContent = `✅ Correct! Great job signing "${this.selectedLetter}" (${confidence}% confidence)`;
+        gestureOutput.textContent = `✅ Correct! Great job signing "${this.selectedLetter}"`;
         gestureOutput.style.color = '#22c55e'; // Green color for success
         
         // Add success animation to selected card
@@ -995,7 +1088,7 @@ class UniversalModuleTemplate {
         const selectedCard = document.querySelector('.letter-card.selected');
         
         // Update UI with helpful message
-        gestureOutput.textContent = `❌ Detected "${detectedGesture}" but expected "${expectedGesture}". Try again! (${confidence}% confidence)`;
+        gestureOutput.textContent = `❌ Detected "${detectedGesture}" but expected "${expectedGesture}". Try again!`;
         gestureOutput.style.color = '#ef4444'; // Red color for incorrect
         
         // Add error animation to selected card
@@ -1418,61 +1511,82 @@ class UniversalModuleTemplate {
         });
     }
     
-    // Ensure all videos are muted - AGGRESSIVE MUTING
+    // Ensure all videos are muted - OPTIMIZED MUTING
     ensureAllVideosMuted() {
-        console.log('🔇 Starting aggressive video muting system...');
+        console.log('🔇 Starting optimized video muting system...');
         
-        // Function to mute all videos
-        const muteAllVideos = () => {
+        let processedVideos = new WeakSet();
+        let mutingInProgress = false;
+        
+        // Function to intelligently mute videos
+        const smartMuteVideos = () => {
+            if (mutingInProgress) return;
+            mutingInProgress = true;
+            
             const allVideos = document.querySelectorAll('video');
+            let newlyMuted = 0;
+            
             allVideos.forEach(video => {
-                video.muted = true;
-                video.volume = 0;
-                // Also remove autoplay to prevent unexpected audio
-                video.removeAttribute('autoplay');
+                // Only process if not already correctly muted or not processed before
+                if (!processedVideos.has(video) || !video.muted || video.volume > 0) {
+                    video.muted = true;
+                    video.volume = 0;
+                    video.removeAttribute('autoplay');
+                    
+                    if (!processedVideos.has(video)) {
+                        processedVideos.add(video);
+                        newlyMuted++;
+                    }
+                }
             });
-            if (allVideos.length > 0) {
-                console.log(`🔇 Muted ${allVideos.length} videos`);
+            
+            if (newlyMuted > 0) {
+                console.log(`🔇 Muted ${newlyMuted} new videos (${allVideos.length} total)`);
             }
+            
+            mutingInProgress = false;
         };
         
         // Mute existing videos immediately
-        muteAllVideos();
+        smartMuteVideos();
         
-        // Set up observer for new videos
-        const observer = new MutationObserver(() => {
-            muteAllVideos();
+        // Throttled observer for new videos (prevents excessive calls)
+        let observerTimeout;
+        const throttledMuteObserver = new MutationObserver((mutations) => {
+            // Only react to actual video additions
+            const hasNewVideos = mutations.some(mutation => 
+                mutation.type === 'childList' && 
+                Array.from(mutation.addedNodes).some(node => 
+                    node.tagName === 'VIDEO' || 
+                    (node.querySelectorAll && node.querySelectorAll('video').length > 0)
+                )
+            );
+            
+            if (hasNewVideos) {
+                clearTimeout(observerTimeout);
+                observerTimeout = setTimeout(smartMuteVideos, 200);
+            }
         });
         
-        observer.observe(document.body, {
+        throttledMuteObserver.observe(document.body, {
             childList: true,
-            subtree: true
+            subtree: true,
+            attributes: false // Don't watch attributes to prevent loops
         });
         
-        // Global event listeners to catch ANY video activity
-        ['play', 'playing', 'loadeddata', 'canplay', 'loadedmetadata', 'loadstart'].forEach(eventType => {
+        // Event-based muting (silent - no console spam)
+        ['play', 'playing', 'loadeddata', 'canplay'].forEach(eventType => {
             document.addEventListener(eventType, (event) => {
                 if (event.target.tagName === 'VIDEO') {
-                    event.target.muted = true;
-                    event.target.volume = 0;
-                    console.log(`🔇 Muted video on ${eventType} event`);
+                    if (!event.target.muted || event.target.volume > 0) {
+                        event.target.muted = true;
+                        event.target.volume = 0;
+                    }
                 }
             }, true);
         });
         
-        // Aggressive continuous muting check
-        setInterval(() => {
-            muteAllVideos();
-        }, 1000); // Check every second
-        
-        // Also mute on page visibility change
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                setTimeout(muteAllVideos, 100);
-            }
-        });
-        
-        console.log('✅ AGGRESSIVE video muting system initialized - ALL VIDEOS WILL BE MUTED');
+        console.log('✅ Optimized video muting system initialized');
     }
 }
 

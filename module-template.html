@@ -27,6 +27,96 @@
             -webkit-user-select: none;
             user-select: none;
         }
+        
+        /* AI Model Loading Progress Bar Styles */
+        .model-loading-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            animation: pulse-glow 2s infinite;
+        }
+        
+        .loading-info h4 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .loading-info p {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            height: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 20px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: loading-shimmer 1.5s infinite;
+        }
+        
+        .progress-text {
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 40px;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            }
+            50% { 
+                box-shadow: 0 4px 25px rgba(102, 126, 234, 0.5);
+            }
+        }
+        
+        @keyframes loading-shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .model-loading-container.success {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            animation: none;
+        }
+        
+        .model-loading-container.error {
+            background: linear-gradient(135deg, #f44336 0%, #ff5722 100%);
+            animation: none;
+        }
+        
+
     </style>
     
     <!-- Supabase Client Library -->
@@ -61,6 +151,21 @@
             <div class="webcam-section">
                 <h3>Practice Area</h3>
                 <p>Show your hand sign to the camera</p>
+                
+                <!-- AI Model Loading Progress Bar -->
+                <div id="model-loading-container" class="model-loading-container" style="display: none;">
+                    <div class="loading-info">
+                        <h4>🤖 Loading Model...</h4>
+                        <p id="loading-status">Initializing model components...</p>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="model-progress-fill"></div>
+                        </div>
+                        <span class="progress-text" id="model-progress-text">0%</span>
+                    </div>
+                </div>
+                
                 <div class="video-container">
                     <video id="webcam" autoplay playsinline muted defaultMuted></video>
                     <canvas class="output_canvas" id="output_canvas"></canvas>
@@ -84,87 +189,128 @@
     <script type="module" src="static/js/module-template.js"></script>
     <script src="static/js/navigation.js"></script>
     
-    <!-- AGGRESSIVE VIDEO MUTING SCRIPT -->
+    <!-- OPTIMIZED VIDEO MUTING SCRIPT -->
     <script>
-        // Immediate muting function
-        function forcemuteAllVideos() {
-            // Mute all video elements
+        let mutingInProgress = false;
+        let processedElements = new WeakSet();
+        let lastMuteCount = { videos: 0, audios: 0 };
+        
+        function smartMuteVideos() {
+            if (mutingInProgress) return;
+            mutingInProgress = true;
+            
+            let videosMuted = 0;
+            let audiosMuted = 0;
+            
+            // Mute all video elements (only if not already processed correctly)
             document.querySelectorAll('video').forEach(video => {
-                video.muted = true;
-                video.volume = 0;
-                video.defaultMuted = true;
+                if (!video.muted || video.volume > 0 || !video.defaultMuted) {
+                    video.muted = true;
+                    video.volume = 0;
+                    video.defaultMuted = true;
+                    if (!processedElements.has(video)) {
+                        processedElements.add(video);
+                        videosMuted++;
+                    }
+                }
             });
             
-            // Mute all audio elements EXCEPT feedback sounds
+            // Process audio elements EXCEPT feedback sounds
             document.querySelectorAll('audio').forEach(audio => {
-                // Don't mute feedback audio elements
                 const audioId = audio.id;
-                if (audioId === 'selectSound' || audioId === 'correctSound' || audioId === 'incorrectSound' || audioId === 'cameraSound') {
-                    // Keep feedback sounds unmuted
-                    audio.muted = false;
-                    audio.volume = 1;
-                    audio.defaultMuted = false;
-                    console.log(`🔊 Keeping ${audioId} unmuted for feedback`);
+                const isFeedbackSound = audioId === 'selectSound' || audioId === 'correctSound' || 
+                                      audioId === 'incorrectSound' || audioId === 'cameraSound';
+                
+                if (isFeedbackSound) {
+                    // Ensure feedback sounds stay unmuted (set once, don't log repeatedly)
+                    if (!processedElements.has(audio)) {
+                        audio.muted = false;
+                        audio.volume = 1;
+                        audio.defaultMuted = false;
+                        processedElements.add(audio);
+                        console.log(`🔊 Feedback sound enabled: ${audioId}`);
+                    }
                 } else {
-                    // Mute other audio elements
-                    audio.muted = true;
-                    audio.volume = 0;
-                    audio.defaultMuted = true;
+                    // Mute non-feedback audio
+                    if (!audio.muted || audio.volume > 0 || !audio.defaultMuted) {
+                        audio.muted = true;
+                        audio.volume = 0;
+                        audio.defaultMuted = true;
+                        if (!processedElements.has(audio)) {
+                            processedElements.add(audio);
+                            audiosMuted++;
+                        }
+                    }
                 }
             });
             
-            // Try to control iframes
-            document.querySelectorAll('iframe').forEach(iframe => {
-                try {
-                    iframe.contentWindow.postMessage(JSON.stringify({
-                        event: 'command',
-                        func: 'mute',
-                        args: ''
-                    }), '*');
-                } catch (e) {
-                    // Cross-origin, can't control
-                }
-            });
+            // Log only if new elements were processed
+            if (videosMuted > 0 && videosMuted !== lastMuteCount.videos) {
+                console.log(`🔇 Muted ${videosMuted} new video elements`);
+                lastMuteCount.videos = videosMuted;
+            }
+            if (audiosMuted > 0 && audiosMuted !== lastMuteCount.audios) {
+                console.log(`🔇 Muted ${audiosMuted} new audio elements`);
+                lastMuteCount.audios = audiosMuted;
+            }
+            
+            mutingInProgress = false;
         }
         
-        // Run immediately when script loads
-        forcemuteAllVideos();
+        // Run initial muting
+        smartMuteVideos();
         
-        // Run when DOM is ready
-        document.addEventListener('DOMContentLoaded', forcemuteAllVideos);
+        // Run when DOM is ready (if not already run)
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(smartMuteVideos, 100);
+        });
         
-        // Run when page is fully loaded
-        window.addEventListener('load', forcemuteAllVideos);
-        
-        // Run every second aggressively
-        setInterval(forcemuteAllVideos, 1000);
-        
-        // Capture all video events and mute immediately
-        ['play', 'playing', 'loadeddata', 'canplay', 'loadedmetadata', 'loadstart', 'volumechange'].forEach(event => {
+        // Event-based muting (no console spam)
+        ['play', 'playing', 'loadeddata', 'canplay', 'volumechange'].forEach(event => {
             document.addEventListener(event, function(e) {
                 if (e.target.tagName === 'VIDEO') {
-                    e.target.muted = true;
-                    e.target.volume = 0;
-                    console.log('🔇 FORCE MUTED VIDEO on', event);
-                } else if (e.target.tagName === 'AUDIO') {
-                    // Only mute audio if it's NOT a feedback sound
-                    const audioId = e.target.id;
-                    if (audioId !== 'selectSound' && audioId !== 'correctSound' && audioId !== 'incorrectSound' && audioId !== 'cameraSound') {
+                    if (!e.target.muted || e.target.volume > 0) {
                         e.target.muted = true;
                         e.target.volume = 0;
-                        console.log('🔇 FORCE MUTED AUDIO on', event);
+                    }
+                } else if (e.target.tagName === 'AUDIO') {
+                    const audioId = e.target.id;
+                    const isFeedbackSound = audioId === 'selectSound' || audioId === 'correctSound' || 
+                                          audioId === 'incorrectSound' || audioId === 'cameraSound';
+                    
+                    if (!isFeedbackSound && (!e.target.muted || e.target.volume > 0)) {
+                        e.target.muted = true;
+                        e.target.volume = 0;
                     }
                 }
             }, true);
         });
         
-        // Observer for new elements
-        new MutationObserver(forcemuteAllVideos).observe(document.body, {
-            childList: true,
-            subtree: true
+        // Throttled observer for new elements (prevents infinite loops)
+        let observerTimeout;
+        const debouncedMute = () => {
+            clearTimeout(observerTimeout);
+            observerTimeout = setTimeout(smartMuteVideos, 300);
+        };
+        
+        const muteObserver = new MutationObserver((mutations) => {
+            // Only react to actual element additions, not attribute changes
+            const hasNewElements = mutations.some(mutation => 
+                mutation.type === 'childList' && mutation.addedNodes.length > 0
+            );
+            
+            if (hasNewElements) {
+                debouncedMute();
+            }
         });
         
-        console.log('🔇 SELECTIVE MUTING ACTIVATED - Videos muted, feedback sounds enabled');
+        muteObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: false // Don't watch attribute changes to prevent loops
+        });
+        
+        console.log('🔇 Smart muting system activated - Videos muted, feedback sounds preserved');
     </script>
 </body>
 </html>
